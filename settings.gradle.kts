@@ -24,4 +24,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "NativeMinds"
 include(":app")
+include(":core:designsystem")
+include(":core:model")
+include(":core:database")
+include(":core:data")
+include(":feature:home")
  
