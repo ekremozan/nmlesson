@@ -1,4 +1,4 @@
-package com.example.nativeminds.ui.theme
+package com.example.nativeminds.designsystem.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes

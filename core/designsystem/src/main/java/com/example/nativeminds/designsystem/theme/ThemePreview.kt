@@ -1,4 +1,4 @@
-package com.example.nativeminds.ui.theme
+package com.example.nativeminds.designsystem.theme
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background

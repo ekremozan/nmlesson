@@ -1,4 +1,4 @@
-package com.example.nativeminds.ui.theme
+package com.example.nativeminds.designsystem.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

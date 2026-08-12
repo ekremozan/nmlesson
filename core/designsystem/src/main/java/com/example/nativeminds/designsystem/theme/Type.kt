@@ -1,4 +1,4 @@
-package com.example.nativeminds.ui.theme
+package com.example.nativeminds.designsystem.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Immutable
@@ -9,7 +9,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import com.example.nativeminds.R
+import com.example.nativeminds.designsystem.R
 
 /**
  * The design system uses three voices:
