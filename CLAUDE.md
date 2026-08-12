@@ -46,6 +46,38 @@ Intended shape (adjust as the implementation evolves and keep this section curre
 - **AI feature**: server-side or direct API call — decision + prompt design to be recorded when made.
 - **Observability**: Firebase Analytics + Crashlytics (or equivalent) — log key funnel events: content viewed, listen started, paywall shown, subscription started, AI feature used.
 
+## Design System
+
+The UI source of truth is the Claude Design project **"NativeMinds home screen"**
+(`4bf75b90-94d9-4b19-a564-1948e808974f`) — read it with the `DesignSync` tool before implementing
+or changing any screen. `NativeMinds Home.dc.html` holds every screen (Home light/dark/no-results,
+Reader, Audio player, Paywall, Offline & error states); `_ds/organic-*/styles.css` holds the
+"Organic" token set.
+
+Those tokens are ported to Compose in `ui/theme/`:
+
+- `Color.kt` — the raw palette (the only literal colors in the app). Never referenced from
+  composables directly.
+- `Theme.kt` — light and dark Material 3 color schemes plus the `NativeMindsTheme` entry point and
+  its token accessor object.
+- `NativeMindsColors.kt` — brand roles Material has no slot for (`accentText`, `cardBorder`,
+  `textMuted`, `cover`, `premiumBadge*`, `navInactive`).
+- `Type.kt` — the three type voices (Display/Reading/UI) and semantic text styles.
+- `Shape.kt`, `Spacing.kt` — radii and the spacing scale.
+- `ThemePreview.kt` — specimen of every token in both themes; check a palette change here first.
+
+Rules:
+
+- **No hardcoded colors, sizes, or text styles in composables.** Use `MaterialTheme.colorScheme`
+  for standard roles, `NativeMindsTheme.colors/typography/spacing` for brand ones. If a screen
+  needs a value the system doesn't have, add it to the token layer rather than inlining it.
+- **Both themes are first-class.** Every screen must work in light and dark; give new composables
+  a `@Preview` pair like `ThemePreview.kt` does.
+- **Dynamic color is off on purpose** — the paper-and-terracotta palette is the product's identity.
+  Don't re-enable it.
+- Fills use `colorScheme.primary`; anything with a glyph uses `NativeMindsTheme.colors.accentText`,
+  which is darker so text passes WCAG AA on the paper ground.
+
 ## Commands
 
 All commands run from the project root with the Gradle wrapper:

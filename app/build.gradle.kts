@@ -5,10 +5,11 @@ plugins {
 
 android {
     namespace = "com.example.nativeminds"
+    // AndroidX (core 1.19, lifecycle 2.11) requires compiling against API 37.
+    // targetSdk stays at 36 deliberately: compiling against newer APIs is separate from opting
+    // in to the new runtime behavior, which needs its own testing pass.
     compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
+        version = release(37)
     }
 
     defaultConfig {
