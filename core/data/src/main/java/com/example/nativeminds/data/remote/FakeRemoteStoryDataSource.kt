@@ -2,6 +2,7 @@ package com.example.nativeminds.data.remote
 
 import com.example.nativeminds.data.local.DummyStorySeed
 import com.example.nativeminds.model.Story
+import javax.inject.Inject
 import kotlinx.coroutines.delay
 
 /**
@@ -9,7 +10,7 @@ import kotlinx.coroutines.delay
  * round-trip. Cut corner: no backend exists yet; swapping this for a Retrofit/Ktor implementation
  * later changes nothing on [com.example.nativeminds.data.RoomStoryRepository]'s side.
  */
-class FakeRemoteStoryDataSource : RemoteStoryDataSource {
+class FakeRemoteStoryDataSource @Inject constructor() : RemoteStoryDataSource {
     override suspend fun fetchStories(): List<Story> {
         delay(300)
         return DummyStorySeed.stories

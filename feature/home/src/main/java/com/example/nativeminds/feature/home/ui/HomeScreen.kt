@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,13 +24,15 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.example.nativeminds.designsystem.icons.NativeMindsIcons
+import com.example.nativeminds.designsystem.preview.PreviewSurface
+import com.example.nativeminds.designsystem.preview.ThemePreviews
 import com.example.nativeminds.designsystem.theme.NativeMindsTheme
 import com.example.nativeminds.feature.home.R
 import com.example.nativeminds.feature.home.ui.components.CategoryChipRow
@@ -45,7 +46,7 @@ import com.example.nativeminds.feature.home.ui.model.StoryUiModel
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
+    viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val stories = viewModel.pagedStories.collectAsLazyPagingItems()
@@ -55,6 +56,7 @@ fun HomeScreen(
         onQueryChange = viewModel::onQueryChange,
         onClearQuery = viewModel::onClearQuery,
         onCategorySelected = viewModel::onCategorySelected,
+        onSuggestionSelected = viewModel::onSuggestionSelected,
         modifier = modifier,
     )
 }
@@ -66,87 +68,86 @@ fun HomeScreenContent(
     stories: LazyPagingItems<StoryUiModel>,
     onQueryChange: (String) -> Unit,
     onClearQuery: () -> Unit,
-    onCategorySelected: (String) -> Unit,
+    onCategorySelected: (String?) -> Unit,
+    onSuggestionSelected: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val isEmpty = stories.itemCount == 0 && stories.loadState.refresh is LoadState.NotLoading
 
     Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 108.dp),
-        ) {
-            item {
-                Column(
-                    modifier = Modifier.padding(horizontal = NativeMindsTheme.spacing.screen),
-                    verticalArrangement = Arrangement.spacedBy(NativeMindsTheme.spacing.lg),
-                ) {
-                    GreetingHeader(greeting = state.greeting, userName = state.userName)
-                    SearchField(query = state.query, onQueryChange = onQueryChange, onClear = onClearQuery)
-                }
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Header is pinned: the search field and the category chips stay reachable while the
+            // story list scrolls underneath them.
+            Column(
+                modifier = Modifier.padding(horizontal = NativeMindsTheme.spacing.screen),
+                verticalArrangement = Arrangement.spacedBy(NativeMindsTheme.spacing.lg),
+            ) {
+                GreetingHeader(greeting = state.greeting, userName = state.userName)
+                SearchField(query = state.query, onQueryChange = onQueryChange, onClear = onClearQuery)
             }
 
-            item {
-                CategoryChipRow(
-                    chips = state.chips,
-                    onChipSelected = onCategorySelected,
-                    modifier = Modifier.padding(
-                        top = NativeMindsTheme.spacing.lg,
+            CategoryChipRow(
+                chips = state.chips,
+                onChipSelected = onCategorySelected,
+                modifier = Modifier.padding(
+                    top = NativeMindsTheme.spacing.lg,
+                    start = NativeMindsTheme.spacing.screen,
+                    end = NativeMindsTheme.spacing.screen,
+                ),
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
                         start = NativeMindsTheme.spacing.screen,
                         end = NativeMindsTheme.spacing.screen,
+                        top = NativeMindsTheme.spacing.xl,
+                        bottom = NativeMindsTheme.spacing.md,
                     ),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = if (state.isFiltering) {
+                        stringResource(R.string.home_heading_results)
+                    } else {
+                        stringResource(R.string.home_heading_for_you)
+                    }.uppercase(),
+                    style = NativeMindsTheme.typography.sectionHeading,
+                    color = NativeMindsTheme.colors.textMuted,
+                )
+                Text(
+                    text = pluralStringResource(R.plurals.home_story_count, stories.itemCount, stories.itemCount),
+                    style = NativeMindsTheme.typography.sectionCount,
+                    color = NativeMindsTheme.colors.textSubtle,
                 )
             }
 
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = NativeMindsTheme.spacing.screen,
-                            end = NativeMindsTheme.spacing.screen,
-                            top = NativeMindsTheme.spacing.xl,
-                            bottom = NativeMindsTheme.spacing.md,
-                        ),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = if (state.isFiltering) {
-                            stringResource(R.string.home_heading_results)
-                        } else {
-                            stringResource(R.string.home_heading_for_you)
-                        }.uppercase(),
-                        style = NativeMindsTheme.typography.sectionHeading,
-                        color = NativeMindsTheme.colors.textMuted,
-                    )
-                    Text(
-                        text = pluralStringResource(R.plurals.home_story_count, stories.itemCount, stories.itemCount),
-                        style = NativeMindsTheme.typography.sectionCount,
-                        color = NativeMindsTheme.colors.textSubtle,
-                    )
-                }
-            }
-
-            if (isEmpty) {
-                item {
-                    EmptyResultsState(
-                        query = state.query,
-                        suggestions = state.suggestions,
-                        onSuggestionSelected = onCategorySelected,
-                        onClearSearch = onClearQuery,
-                    )
-                }
-            } else {
-                items(count = stories.itemCount, key = stories.itemKey { it.id }) { index ->
-                    val story = stories[index] ?: return@items
-                    StoryCard(
-                        story = story,
-                        onClick = {},
-                        modifier = Modifier.padding(
-                            horizontal = NativeMindsTheme.spacing.screen,
-                            vertical = 7.dp,
-                        ),
-                    )
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                contentPadding = PaddingValues(bottom = 108.dp),
+            ) {
+                if (isEmpty) {
+                    item {
+                        EmptyResultsState(
+                            query = state.query,
+                            suggestions = state.suggestions,
+                            onSuggestionSelected = onSuggestionSelected,
+                            onClearSearch = onClearQuery,
+                        )
+                    }
+                } else {
+                    items(count = stories.itemCount, key = stories.itemKey { it.id }) { index ->
+                        val story = stories[index] ?: return@items
+                        StoryCard(
+                            story = story,
+                            onClick = {},
+                            modifier = Modifier.padding(
+                                horizontal = NativeMindsTheme.spacing.screen,
+                                vertical = 7.dp,
+                            ),
+                        )
+                    }
                 }
             }
         }
@@ -192,4 +193,23 @@ private fun GreetingPeriod.toStringRes() = when (this) {
     GreetingPeriod.MORNING -> R.string.home_greeting_morning
     GreetingPeriod.AFTERNOON -> R.string.home_greeting_afternoon
     GreetingPeriod.EVENING -> R.string.home_greeting_evening
+}
+
+/**
+ * All three time-of-day variants at once — the greeting label is the only thing that changes, and
+ * seeing them stacked catches a label that no longer fits next to the avatar.
+ *
+ * ([HomeScreen] itself is the Hilt-wired wrapper and has no preview: `hiltViewModel()` can't run in
+ * the tool. `HomeScreenContent` is the stateless one, previewed in `HomeScreenPreview.kt`.)
+ */
+@ThemePreviews
+@Composable
+private fun GreetingHeaderPreview() {
+    PreviewSurface {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            GreetingPeriod.entries.forEach { period ->
+                GreetingHeader(greeting = period, userName = "Ozan")
+            }
+        }
+    }
 }

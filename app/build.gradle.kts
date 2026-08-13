@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -19,7 +21,8 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Custom runner so instrumented tests boot HiltTestApplication instead of the real one.
+        testInstrumentationRunner = "com.example.nativeminds.HiltTestRunner"
     }
 
     buildTypes {
@@ -42,6 +45,12 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
     implementation(project(":feature:home"))
+    // :app is the composition root — it is the one module that pulls in the implementations so
+    // their Hilt modules land in the generated component. Feature modules still only see :core:domain.
+    implementation(project(":core:data"))
+    // Only so the generated component can name StoryDao. Using api() on :core:data instead would
+    // leak Room types up to every consumer, which is exactly what the layering avoids.
+    implementation(project(":core:database"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
@@ -52,11 +61,18 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.hilt.android.testing)
+    // Room stays an implementation detail of :core:database everywhere except here, where the test
+    // module has to build an in-memory database itself.
+    androidTestImplementation(libs.androidx.room.runtime)
+    kspAndroidTest(libs.hilt.compiler)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

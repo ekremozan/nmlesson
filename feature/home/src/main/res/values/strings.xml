@@ -8,6 +8,9 @@
     <string name="home_search_clear_cd">Clear search</string>
     <string name="home_avatar_cd">Account</string>
 
+    <!-- The unfiltered category chip. Not a category in the data — see ChipUiModel. -->
+    <string name="category_all">All</string>
+
     <string name="home_heading_for_you">For you</string>
     <string name="home_heading_results">Results</string>
 

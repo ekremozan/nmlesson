@@ -38,7 +38,26 @@ These are the acceptance criteria — every feature decision should trace back t
 Intended shape (adjust as the implementation evolves and keep this section current):
 
 - **Pattern**: Clean Architecture + MVVM with unidirectional data flow (ViewModel → StateFlow → Compose), repository layer between UI and data sources.
-- **Layers**: `ui/` (Compose screens + ViewModels), `domain/` (models, use cases if needed), `data/` (repositories, local cache, remote source).
+- **Modules** (dependency arrows point inwards, towards `:core:domain`):
+  - `:app` — composition root; the **only** module that depends on concrete implementations
+    (`:core:data`, `:core:database`). Holds `NativeMindsApplication` (`@HiltAndroidApp`).
+  - `:feature:*` — Compose screens + ViewModels. Depend on `:core:domain`, **never** on `:core:data`.
+  - `:core:domain` — pure Kotlin: repository interfaces + use cases. No Android, no Hilt (only
+    `javax.inject` + plain `dagger`).
+  - `:core:data` — repository implementations, remote sources, `NetworkMonitor`, and the `@Binds`
+    that connect them to the domain contracts.
+  - `:core:database` — Room entities/DAOs and the `@Provides` for the database.
+  - `:core:common` — dispatcher qualifiers (`@IoDispatcher`, `@DefaultDispatcher`) and
+    `@ApplicationScope`.
+  - `:core:model`, `:core:designsystem` — shared domain models and the theme/token layer.
+- **Dependency injection: Hilt.** Every dependency is resolved by Hilt — there are no service
+  locators, no `getInstance()` singletons, and no hand-written `ViewModel` factories, and none
+  should be reintroduced. A new dependency means: `@Inject constructor` on the class, and a
+  `@Binds`/`@Provides` in the `di/` package of the module that owns it. Interfaces get `@Binds`;
+  types you don't own (Room, Retrofit) get `@Provides`. Never inject a `CoroutineDispatcher` or
+  `CoroutineScope` unqualified.
+- **Layers**: `ui/` (Compose screens + ViewModels), `domain/` (models, use cases), `data/`
+  (repositories, local cache, remote source).
 - **Model separation (mandatory)**: data model (DTO/entity), domain model, and UI model are always separate classes. Conversions go through mappers written as **extension functions** (e.g. `StoryDto.toDomain()`, `Story.toUiModel()`). Never pass a DTO/entity directly to the UI.
 - **Offline-first**: local database (Room) is the single source of truth; remote data syncs into it. Reading works fully offline; audio gracefully degrades.
 - **Audio**: TTS or pre-generated audio via Media3 — decision to be recorded when made.
@@ -71,8 +90,20 @@ Rules:
 - **No hardcoded colors, sizes, or text styles in composables.** Use `MaterialTheme.colorScheme`
   for standard roles, `NativeMindsTheme.colors/typography/spacing` for brand ones. If a screen
   needs a value the system doesn't have, add it to the token layer rather than inlining it.
-- **Both themes are first-class.** Every screen must work in light and dark; give new composables
-  a `@Preview` pair like `ThemePreview.kt` does.
+- **Both themes are first-class.** Every screen must work in light and dark.
+- **Every composable has a `@Preview` — no exceptions without a written reason.** Annotate the
+  preview with `@ThemePreviews` (`:core:designsystem` `preview/ThemePreviews.kt`), which renders
+  the light/dark pair from one annotation, and wrap the body in `PreviewSurface { }` so it sits on
+  the app background. Where a composable has meaningful states (selected/unselected,
+  empty/filled, free/locked), the preview shows them together rather than only the happy one.
+  - Previews live **in the same file** as the composable they cover — that's what keeps a private
+    composable previewable and stops the two from drifting apart. The only exception is a preview
+    needing heavy fixture wiring (`HomeScreenPreview.kt` builds `PagingData`).
+  - Sample data comes from the feature's shared fixture file (`ui/preview/HomePreviewData.kt`),
+    never from a ViewModel or the database — previews must render with no dependencies.
+  - Exempt: Hilt-wired wrappers whose only job is `hiltViewModel()` (preview the stateless
+    `…Content` composable instead), the `NativeMindsTheme` wrapper itself, and preview scaffolding
+    such as `PreviewSurface` and the `ThemePreview.kt` specimen helpers.
 - **Dynamic color is off on purpose** — the paper-and-terracotta palette is the product's identity.
   Don't re-enable it.
 - Fills use `colorScheme.primary`; anything with a glyph uses `NativeMindsTheme.colors.accentText`,
@@ -86,7 +117,9 @@ All commands run from the project root with the Gradle wrapper:
 ./gradlew assembleDebug          # Build debug APK
 ./gradlew installDebug           # Build and install on a connected device/emulator
 ./gradlew test                   # Run local unit tests (app/src/test)
-./gradlew connectedAndroidTest   # Run instrumented tests (needs device/emulator)
+# Instrumented tests (needs device/emulator). Name the modules that actually have androidTest
+# sources — the project-wide `connectedAndroidTest` fails on modules that have none.
+./gradlew :app:connectedDebugAndroidTest :core:database:connectedDebugAndroidTest
 ./gradlew lint                   # Run Android Lint
 ```
 

@@ -7,18 +7,24 @@ import androidx.paging.map
 import com.example.nativeminds.data.local.DummyStorySeed
 import com.example.nativeminds.data.mapper.toDomain
 import com.example.nativeminds.data.mapper.toEntity
+import com.example.nativeminds.common.di.IoDispatcher
 import com.example.nativeminds.data.remote.RemoteStoryDataSource
 import com.example.nativeminds.database.StoryDao
+import com.example.nativeminds.domain.repository.StoryRepository
 import com.example.nativeminds.model.Story
+import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 private const val PAGE_SIZE = 20
 
-class RoomStoryRepository(
+class RoomStoryRepository @Inject constructor(
     private val dao: StoryDao,
     private val remote: RemoteStoryDataSource,
     private val networkMonitor: NetworkMonitor,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : StoryRepository {
 
     override fun pagedStories(category: String?, query: String): Flow<PagingData<Story>> =
@@ -26,7 +32,11 @@ class RoomStoryRepository(
             dao.pagingSource(category, query)
         }.flow.map { pagingData -> pagingData.map { it.toDomain() } }
 
-    override suspend fun syncIfNeeded() {
+    override fun categories(): Flow<List<String>> = dao.categories()
+
+    // The injected dispatcher rather than Dispatchers.IO inline: NetworkMonitor's ConnectivityManager
+    // lookup is a blocking binder call, and tests can substitute a TestDispatcher for the whole body.
+    override suspend fun syncIfNeeded() = withContext(ioDispatcher) {
         if (dao.count() == 0) {
             dao.upsertAll(DummyStorySeed.stories.map { it.toEntity() })
         }
@@ -37,5 +47,6 @@ class RoomStoryRepository(
             runCatching { remote.fetchStories() }
                 .onSuccess { stories -> dao.upsertAll(stories.map { it.toEntity() }) }
         }
+        Unit
     }
 }

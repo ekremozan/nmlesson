@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -32,7 +34,9 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
-    implementation(project(":core:data"))
+    // :core:domain, never :core:data — the feature layer talks to use cases and interfaces only.
+    // Which implementation satisfies them is decided by :app, the composition root.
+    implementation(project(":core:domain"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material3)
@@ -44,6 +48,9 @@ dependencies {
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.paging.compose)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
+    ksp(libs.hilt.compiler)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.junit)

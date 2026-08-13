@@ -1,92 +1,104 @@
 package com.example.nativeminds.feature.home.ui
 
-import android.app.Application
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
-import com.example.nativeminds.data.StoryRepository
-import com.example.nativeminds.data.StoryRepositoryProvider
+import com.example.nativeminds.domain.usecase.GetCategoriesUseCase
+import com.example.nativeminds.domain.usecase.GetPagedStoriesUseCase
+import com.example.nativeminds.domain.usecase.SyncStoriesUseCase
 import com.example.nativeminds.feature.home.ui.mapper.toUiModel
 import com.example.nativeminds.feature.home.ui.model.ChipUiModel
 import com.example.nativeminds.feature.home.ui.model.GreetingPeriod
 import com.example.nativeminds.feature.home.ui.model.StoryUiModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-private const val ALL_CATEGORY = "All"
-private val CATEGORIES = listOf(ALL_CATEGORY, "Fiction", "History", "Science", "Essays")
-private val SEARCH_SUGGESTIONS = listOf("Fiction", "Science", "Essays")
+/** How many category chips the empty state has room for. */
+private const val SUGGESTION_COUNT = 3
+private const val USER_NAME = "Ozan"
 
-private data class FilterParams(val category: String = ALL_CATEGORY, val query: String = "")
+/** [category] `null` means no category filter — the "All" chip. */
+private data class FilterParams(val category: String? = null, val query: String = "")
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class HomeViewModel(
-    private val repository: StoryRepository,
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    getCategories: GetCategoriesUseCase,
+    private val getPagedStories: GetPagedStoriesUseCase,
+    private val syncStories: SyncStoriesUseCase,
 ) : ViewModel() {
 
     private val filterParams = MutableStateFlow(FilterParams())
 
-    private val _uiState = MutableStateFlow(HomeUiState(userName = "Ozan", greeting = greetingForNow()))
-    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+    /** Fixed for the lifetime of the screen, so the header doesn't change under the user at 12:00. */
+    private val greeting = greetingForNow()
+
+    /**
+     * Derived rather than assigned: the chips follow whatever categories the database currently
+     * holds, so a sync that adds or empties one is reflected without anything to keep in step.
+     */
+    val uiState: StateFlow<HomeUiState> = combine(filterParams, getCategories()) { params, categories ->
+        HomeUiState(
+            greeting = greeting,
+            userName = USER_NAME,
+            query = params.query,
+            // The leading null is the "All" chip — a UI affordance, not a category in the data.
+            chips = (listOf(null) + categories).map { category ->
+                ChipUiModel(category = category, isSelected = category == params.category)
+            },
+            isFiltering = params.query.isNotEmpty() || params.category != null,
+            // Already ordered by story count, so the first few are the fullest shelves.
+            suggestions = categories.take(SUGGESTION_COUNT).map { ChipUiModel(category = it) },
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        // Stops observing Room while the screen is backgrounded, and survives a config change.
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = HomeUiState(greeting = greeting, userName = USER_NAME),
+    )
 
     val pagedStories: Flow<PagingData<StoryUiModel>> = filterParams
-        .flatMapLatest { params ->
-            val category = params.category.takeUnless { it == ALL_CATEGORY }
-            repository.pagedStories(category, params.query.trim())
-        }
+        .flatMapLatest { params -> getPagedStories(params.category, params.query.trim()) }
         .map { pagingData -> pagingData.map { it.toUiModel() } }
         .cachedIn(viewModelScope)
 
     init {
-        viewModelScope.launch { repository.syncIfNeeded() }
-        refreshChrome()
+        viewModelScope.launch { syncStories() }
     }
 
     fun onQueryChange(newQuery: String) {
         filterParams.value = filterParams.value.copy(query = newQuery)
-        refreshChrome()
     }
 
     fun onClearQuery() {
         filterParams.value = FilterParams()
-        refreshChrome()
     }
 
-    fun onCategorySelected(category: String) {
+    /** [category] `null` is the "All" chip. Keeps the query — filtering within a search is valid. */
+    fun onCategorySelected(category: String?) {
         filterParams.value = filterParams.value.copy(category = category)
-        refreshChrome()
     }
 
-    /** Updates the chrome (search text, chips) that doesn't come from the Pager. */
-    private fun refreshChrome() {
-        val params = filterParams.value
-        _uiState.value = _uiState.value.copy(
-            query = params.query,
-            chips = CATEGORIES.map { ChipUiModel(label = it, isSelected = it == params.category) },
-            isFiltering = params.query.isNotEmpty() || params.category != ALL_CATEGORY,
-            suggestions = SEARCH_SUGGESTIONS.map { ChipUiModel(label = it) },
-        )
-    }
-
-    companion object {
-        val Factory = viewModelFactory {
-            initializer {
-                val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as Application
-                HomeViewModel(StoryRepositoryProvider.create(app))
-            }
-        }
+    /**
+     * A suggestion from the empty state, which means "show me this category instead". The failed
+     * query has to go with it — narrowing a search that already matched nothing by category can
+     * only ever produce the same empty screen the user is trying to leave.
+     */
+    fun onSuggestionSelected(category: String?) {
+        filterParams.value = FilterParams(category = category)
     }
 }
 

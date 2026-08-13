@@ -4,6 +4,7 @@ import androidx.paging.PagingSource
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -89,6 +90,28 @@ class StoryDaoTest {
         val result = load(category = null, query = "quantum lullabies")
 
         assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun categoriesAreOrderedByStoryCountThenAlphabetically() = runTest {
+        // Fiction: 3, Science: 2, then History and Essays tie at 1 and fall back to alphabetical.
+        dao.upsertAll(
+            stories + listOf(
+                StoryEntity(4, "Fiction", "Second Fiction", "", 3, hasAudio = false, isLocked = false),
+                StoryEntity(5, "Fiction", "Third Fiction", "", 3, hasAudio = false, isLocked = false),
+                StoryEntity(6, "Science", "Second Science", "", 3, hasAudio = false, isLocked = false),
+                StoryEntity(7, "Essays", "An Essay", "", 3, hasAudio = false, isLocked = false),
+            ),
+        )
+
+        val result = dao.categories().first()
+
+        assertEquals(listOf("Fiction", "Science", "Essays", "History"), result)
+    }
+
+    @Test
+    fun categoriesIsEmptyWhenThereAreNoStories() = runTest {
+        assertTrue(dao.categories().first().isEmpty())
     }
 
     @Test

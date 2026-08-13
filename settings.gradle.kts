@@ -26,6 +26,8 @@ rootProject.name = "NativeMinds"
 include(":app")
 include(":core:designsystem")
 include(":core:model")
+include(":core:domain")
+include(":core:common")
 include(":core:database")
 include(":core:data")
 include(":feature:home")

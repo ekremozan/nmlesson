@@ -12,6 +12,9 @@ kotlinxCoroutines = "1.10.2"
 room = "2.8.4"
 paging = "3.5.0"
 ksp = "2.2.10-2.0.2"
+hilt = "2.60.1"
+androidxHilt = "1.4.0"
+javaxInject = "1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,6 +42,15 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
+# paging-common is the pure-JVM half of Paging: :core:domain needs PagingData without an Android dependency.
+androidx-paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "paging" }
+# Plain Dagger (pure JVM, no Android) — what the generated @Inject factories in :core:domain need.
+dagger = { group = "com.google.dagger", name = "dagger", version.ref = "hilt" }
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
+androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHilt" }
+javax-inject = { group = "javax.inject", name = "javax.inject", version.ref = "javaxInject" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -46,4 +58,5 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 

@@ -21,19 +21,25 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.nativeminds.designsystem.icons.NativeMindsIcons
+import com.example.nativeminds.designsystem.preview.PreviewSurface
+import com.example.nativeminds.designsystem.preview.ThemePreviews
 import com.example.nativeminds.designsystem.theme.NativeMindsTheme
 import com.example.nativeminds.feature.home.R
 import com.example.nativeminds.feature.home.ui.model.ChipUiModel
+import com.example.nativeminds.feature.home.ui.preview.PreviewSuggestions
 
 /**
  * The "no results" branch of Home — search field stays live above this (see [HomeScreen]), and a
  * tapped suggestion re-filters by that category rather than navigating anywhere (design `1a`).
+ *
+ * [onSuggestionSelected] is deliberately not the filter row's handler: a suggestion means "show me
+ * this category instead", so it also clears the query that found nothing.
  */
 @Composable
 fun EmptyResultsState(
     query: String,
     suggestions: List<ChipUiModel>,
-    onSuggestionSelected: (String) -> Unit,
+    onSuggestionSelected: (String?) -> Unit,
     onClearSearch: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -74,7 +80,7 @@ fun EmptyResultsState(
             modifier = Modifier.padding(top = 6.dp),
         ) {
             suggestions.forEach { suggestion ->
-                CategoryChip(chip = suggestion, onClick = { onSuggestionSelected(suggestion.label) })
+                CategoryChip(chip = suggestion, onClick = { onSuggestionSelected(suggestion.category) })
             }
         }
 
@@ -89,6 +95,19 @@ fun EmptyResultsState(
                     indication = null,
                     onClick = onClearSearch,
                 ),
+        )
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun EmptyResultsStatePreview() {
+    PreviewSurface {
+        EmptyResultsState(
+            query = "quantum lullabies",
+            suggestions = PreviewSuggestions,
+            onSuggestionSelected = {},
+            onClearSearch = {},
         )
     }
 }
