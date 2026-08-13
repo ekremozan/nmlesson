@@ -13,10 +13,12 @@ import com.example.nativeminds.feature.home.ui.model.StoryUiModel
  * static — they never reach the database or a ViewModel.
  */
 
-internal val PreviewChips = listOf(null, "Fiction", "History", "Science", "Essays")
+internal val PreviewCategories = listOf("Fiction", "History", "Science", "Essays")
+
+internal val PreviewChips = (listOf(null) + PreviewCategories)
     .mapIndexed { index, category -> ChipUiModel(category = category, isSelected = index == 0) }
 
-internal val PreviewSuggestions = listOf("Fiction", "Science", "Essays").map { ChipUiModel(it) }
+internal val PreviewSuggestions = PreviewCategories.take(3).map { ChipUiModel(it) }
 
 internal val PreviewStory = StoryUiModel(
     id = 1,
@@ -58,7 +60,7 @@ internal class HomePreviewCases : PreviewParameterProvider<HomePreviewCase> {
             state = HomeUiState(
                 greeting = GreetingPeriod.MORNING,
                 userName = "Ozan",
-                chips = PreviewChips,
+                categories = PreviewCategories,
             ),
             stories = PreviewStories,
         ),
@@ -67,9 +69,7 @@ internal class HomePreviewCases : PreviewParameterProvider<HomePreviewCase> {
                 greeting = GreetingPeriod.MORNING,
                 userName = "Ozan",
                 query = "quantum lullabies",
-                chips = PreviewChips,
-                isFiltering = true,
-                suggestions = PreviewSuggestions,
+                categories = PreviewCategories,
             ),
             stories = emptyList(),
         ),

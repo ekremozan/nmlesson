@@ -14,9 +14,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,7 +30,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
@@ -49,20 +55,32 @@ import com.example.nativeminds.feature.home.ui.preview.HomePreviewCase
 import com.example.nativeminds.feature.home.ui.preview.HomePreviewCases
 import kotlinx.coroutines.flow.flowOf
 
+private val BottomBarInset = 108.dp
+
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val stories = viewModel.pagedStories.collectAsLazyPagingItems()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val syncErrorMessage = stringResource(R.string.home_sync_error)
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(viewModel, lifecycle) {
+        viewModel.effects.flowWithLifecycle(lifecycle).collect { effect ->
+            when (effect) {
+                HomeEffect.ShowSyncError -> snackbarHostState.showSnackbar(syncErrorMessage)
+            }
+        }
+    }
+
     HomeScreenContent(
         state = state,
         stories = stories,
-        onQueryChange = viewModel::onQueryChange,
-        onClearQuery = viewModel::onClearQuery,
-        onCategorySelected = viewModel::onCategorySelected,
-        onSuggestionSelected = viewModel::onSuggestionSelected,
+        snackbarHostState = snackbarHostState,
+        onIntent = viewModel::onIntent,
         modifier = modifier,
     )
 }
@@ -72,10 +90,8 @@ fun HomeScreen(
 fun HomeScreenContent(
     state: HomeUiState,
     stories: LazyPagingItems<StoryUiModel>,
-    onQueryChange: (String) -> Unit,
-    onClearQuery: () -> Unit,
-    onCategorySelected: (String?) -> Unit,
-    onSuggestionSelected: (String?) -> Unit,
+    snackbarHostState: SnackbarHostState,
+    onIntent: (HomeIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val isEmpty = stories.itemCount == 0 && stories.loadState.refresh is LoadState.NotLoading
@@ -87,12 +103,16 @@ fun HomeScreenContent(
                 verticalArrangement = Arrangement.spacedBy(NativeMindsTheme.spacing.lg),
             ) {
                 GreetingHeader(greeting = state.greeting, userName = state.userName)
-                SearchField(query = state.query, onQueryChange = onQueryChange, onClear = onClearQuery)
+                SearchField(
+                    query = state.query,
+                    onQueryChange = { onIntent(HomeIntent.QueryChanged(it)) },
+                    onClear = { onIntent(HomeIntent.QueryCleared) },
+                )
             }
 
             CategoryChipRow(
                 chips = state.chips,
-                onChipSelected = onCategorySelected,
+                onChipSelected = { onIntent(HomeIntent.CategorySelected(it)) },
                 modifier = Modifier.padding(
                     top = NativeMindsTheme.spacing.lg,
                     start = NativeMindsTheme.spacing.screen,
@@ -129,15 +149,15 @@ fun HomeScreenContent(
 
             LazyColumn(
                 modifier = Modifier.fillMaxWidth().weight(1f),
-                contentPadding = PaddingValues(bottom = 108.dp),
+                contentPadding = PaddingValues(bottom = BottomBarInset),
             ) {
                 if (isEmpty) {
                     item {
                         EmptyResultsState(
                             query = state.query,
                             suggestions = state.suggestions,
-                            onSuggestionSelected = onSuggestionSelected,
-                            onClearSearch = onClearQuery,
+                            onSuggestionSelected = { onIntent(HomeIntent.SuggestionSelected(it)) },
+                            onClearSearch = { onIntent(HomeIntent.QueryCleared) },
                         )
                     }
                 } else {
@@ -155,6 +175,13 @@ fun HomeScreenContent(
                 }
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = BottomBarInset),
+        )
 
         HomeBottomNavBar(modifier = Modifier.align(Alignment.BottomCenter))
     }
@@ -210,7 +237,7 @@ private fun HomeScreenContentPreview(
 ) {
     NativeMindsTheme {
         val stories = flowOf(PagingData.from(case.stories)).collectAsLazyPagingItems()
-        HomeScreenContent(case.state, stories, {}, {}, {}, {})
+        HomeScreenContent(case.state, stories, remember { SnackbarHostState() }, onIntent = {})
     }
 }
 

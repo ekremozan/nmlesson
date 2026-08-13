@@ -26,6 +26,8 @@
     <string name="home_empty_body">We couldn\'t find a story for “%1$s”. Try a shorter word, or browse a category below.</string>
     <string name="home_clear_search">Clear search</string>
 
+    <string name="home_sync_error">Couldn\'t refresh stories. Showing what\'s saved.</string>
+
     <string name="home_nav_home">Home</string>
     <string name="home_nav_library">Library</string>
     <string name="home_nav_ask_ai">Ask AI</string>

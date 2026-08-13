@@ -38,8 +38,7 @@ class RoomStoryRepository @Inject constructor(
             dao.upsertAll(DummyStorySeed.stories.map { it.toEntity() })
         }
         if (networkMonitor.isOnline()) {
-            runCatching { remote.fetchStories() }
-                .onSuccess { stories -> dao.upsertAll(stories.map { it.toEntity() }) }
+            dao.upsertAll(remote.fetchStories().map { it.toEntity() })
         }
         Unit
     }
