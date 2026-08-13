@@ -28,6 +28,21 @@ import com.example.nativeminds.designsystem.theme.NativeMindsTheme
 annotation class ThemePreviews
 
 /**
+ * [ThemePreviews] for full screens: same light/dark pair, but on a phone-sized canvas so a screen
+ * is laid out at the height it actually gets instead of shrinking to its content.
+ */
+@Preview(name = "Light", group = "themes", showBackground = true, widthDp = 390, heightDp = 844)
+@Preview(
+    name = "Dark",
+    group = "themes",
+    showBackground = true,
+    widthDp = 390,
+    heightDp = 844,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+annotation class ScreenThemePreviews
+
+/**
  * Preview host: applies the theme and paints the app background, so a preview shows the component
  * on the ground it actually sits on rather than on the tool's white canvas.
  */

@@ -1,6 +1,9 @@
 package com.example.nativeminds.feature.home.ui.preview
 
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.example.nativeminds.feature.home.ui.HomeUiState
 import com.example.nativeminds.feature.home.ui.model.ChipUiModel
+import com.example.nativeminds.feature.home.ui.model.GreetingPeriod
 import com.example.nativeminds.feature.home.ui.model.StoryUiModel
 
 /**
@@ -10,7 +13,6 @@ import com.example.nativeminds.feature.home.ui.model.StoryUiModel
  * static — they never reach the database or a ViewModel.
  */
 
-// Leading null is the "All" chip.
 internal val PreviewChips = listOf(null, "Fiction", "History", "Science", "Essays")
     .mapIndexed { index, category -> ChipUiModel(category = category, isSelected = index == 0) }
 
@@ -42,3 +44,34 @@ internal val PreviewStories = listOf(
     PreviewLockedStory,
     StoryUiModel(4, "Essays", "On Walking Slowly", "What a city gives back when you stop trying to cross it.", "5 min", hasAudio = true, isLocked = false),
 )
+
+/** One row of the home screen's preview matrix: a state and the stories the pager returns for it. */
+internal data class HomePreviewCase(
+    val state: HomeUiState,
+    val stories: List<StoryUiModel>,
+)
+
+/** Content states of the home screen. The theme axis comes from `@ScreenThemePreviews`. */
+internal class HomePreviewCases : PreviewParameterProvider<HomePreviewCase> {
+    override val values = sequenceOf(
+        HomePreviewCase(
+            state = HomeUiState(
+                greeting = GreetingPeriod.MORNING,
+                userName = "Ozan",
+                chips = PreviewChips,
+            ),
+            stories = PreviewStories,
+        ),
+        HomePreviewCase(
+            state = HomeUiState(
+                greeting = GreetingPeriod.MORNING,
+                userName = "Ozan",
+                query = "quantum lullabies",
+                chips = PreviewChips,
+                isFiltering = true,
+                suggestions = PreviewSuggestions,
+            ),
+            stories = emptyList(),
+        ),
+    )
+}

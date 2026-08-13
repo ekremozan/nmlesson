@@ -23,15 +23,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.example.nativeminds.designsystem.icons.NativeMindsIcons
 import com.example.nativeminds.designsystem.preview.PreviewSurface
+import com.example.nativeminds.designsystem.preview.ScreenThemePreviews
 import com.example.nativeminds.designsystem.preview.ThemePreviews
 import com.example.nativeminds.designsystem.theme.NativeMindsTheme
 import com.example.nativeminds.feature.home.R
@@ -42,6 +45,9 @@ import com.example.nativeminds.feature.home.ui.components.SearchField
 import com.example.nativeminds.feature.home.ui.components.StoryCard
 import com.example.nativeminds.feature.home.ui.model.GreetingPeriod
 import com.example.nativeminds.feature.home.ui.model.StoryUiModel
+import com.example.nativeminds.feature.home.ui.preview.HomePreviewCase
+import com.example.nativeminds.feature.home.ui.preview.HomePreviewCases
+import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun HomeScreen(
@@ -76,8 +82,6 @@ fun HomeScreenContent(
 
     Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Header is pinned: the search field and the category chips stay reachable while the
-            // story list scrolls underneath them.
             Column(
                 modifier = Modifier.padding(horizontal = NativeMindsTheme.spacing.screen),
                 verticalArrangement = Arrangement.spacedBy(NativeMindsTheme.spacing.lg),
@@ -196,11 +200,23 @@ private fun GreetingPeriod.toStringRes() = when (this) {
 }
 
 /**
+ * Every content state × both themes from a single declaration: [ScreenThemePreviews] supplies the
+ * light/dark pair on a phone canvas, [HomePreviewCases] supplies the states.
+ */
+@ScreenThemePreviews
+@Composable
+private fun HomeScreenContentPreview(
+    @PreviewParameter(HomePreviewCases::class) case: HomePreviewCase,
+) {
+    NativeMindsTheme {
+        val stories = flowOf(PagingData.from(case.stories)).collectAsLazyPagingItems()
+        HomeScreenContent(case.state, stories, {}, {}, {}, {})
+    }
+}
+
+/**
  * All three time-of-day variants at once — the greeting label is the only thing that changes, and
  * seeing them stacked catches a label that no longer fits next to the avatar.
- *
- * ([HomeScreen] itself is the Hilt-wired wrapper and has no preview: `hiltViewModel()` can't run in
- * the tool. `HomeScreenContent` is the stateless one, previewed in `HomeScreenPreview.kt`.)
  */
 @ThemePreviews
 @Composable
