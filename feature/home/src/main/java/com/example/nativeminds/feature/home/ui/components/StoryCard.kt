@@ -24,9 +24,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.nativeminds.designsystem.icons.NativeMindsIcons
+import com.example.nativeminds.designsystem.preview.PreviewSurface
+import com.example.nativeminds.designsystem.preview.ThemePreviews
 import com.example.nativeminds.designsystem.theme.NativeMindsTheme
 import com.example.nativeminds.feature.home.R
 import com.example.nativeminds.feature.home.ui.model.StoryUiModel
+import com.example.nativeminds.feature.home.ui.preview.PreviewLockedStory
+import com.example.nativeminds.feature.home.ui.preview.PreviewStory
 
 /**
  * The story card in the Home list — cover, optional "Premium" overlay when locked, category kicker,
@@ -132,6 +136,29 @@ private fun StoryCover(story: StoryUiModel) {
                     color = NativeMindsTheme.colors.premiumBadgeContent,
                 )
             }
+        }
+    }
+}
+
+/** Free story (audio meta) above a locked one (dimmed cover + Premium badge, no audio). */
+@ThemePreviews
+@Composable
+private fun StoryCardPreview() {
+    PreviewSurface {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            StoryCard(story = PreviewStory, onClick = {})
+            StoryCard(story = PreviewLockedStory, onClick = {})
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun StoryCoverPreview() {
+    PreviewSurface {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            StoryCover(story = PreviewStory)
+            StoryCover(story = PreviewLockedStory)
         }
     }
 }

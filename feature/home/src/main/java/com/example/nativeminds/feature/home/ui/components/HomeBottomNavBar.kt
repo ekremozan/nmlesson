@@ -17,6 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.nativeminds.designsystem.icons.NativeMindsIcons
+import com.example.nativeminds.designsystem.preview.PreviewSurface
+import com.example.nativeminds.designsystem.preview.ThemePreviews
 import com.example.nativeminds.designsystem.theme.NativeMindsTheme
 import com.example.nativeminds.feature.home.R
 
@@ -75,5 +77,33 @@ private fun NavItem(
     ) {
         icon(tint)
         Text(text = label, style = NativeMindsTheme.typography.navLabel, color = tint)
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun HomeBottomNavBarPreview() {
+    PreviewSurface(padding = 0.dp) {
+        HomeBottomNavBar()
+    }
+}
+
+/** The item alone, in both states — active (primary) and inactive (muted). */
+@ThemePreviews
+@Composable
+private fun NavItemPreview() {
+    PreviewSurface {
+        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+            NavItem(
+                label = stringResource(R.string.home_nav_home),
+                tint = MaterialTheme.colorScheme.primary,
+                icon = { color -> NativeMindsIcons.Home(tint = color) },
+            )
+            NavItem(
+                label = stringResource(R.string.home_nav_library),
+                tint = NativeMindsTheme.colors.navInactive,
+                icon = { color -> NativeMindsIcons.Library(tint = color) },
+            )
+        }
     }
 }

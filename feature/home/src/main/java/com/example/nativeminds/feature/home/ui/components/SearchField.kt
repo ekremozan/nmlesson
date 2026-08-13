@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +24,8 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.nativeminds.designsystem.icons.NativeMindsIcons
+import com.example.nativeminds.designsystem.preview.PreviewSurface
+import com.example.nativeminds.designsystem.preview.ThemePreviews
 import com.example.nativeminds.designsystem.theme.NativeMindsTheme
 import com.example.nativeminds.designsystem.theme.Pill
 import com.example.nativeminds.feature.home.R
@@ -82,6 +85,18 @@ fun SearchField(
             ) {
                 NativeMindsIcons.Close(tint = MaterialTheme.colorScheme.onSurface, size = 13.dp)
             }
+        }
+    }
+}
+
+/** Empty (placeholder, neutral border) above active (query, primary border + clear button). */
+@ThemePreviews
+@Composable
+private fun SearchFieldPreview() {
+    PreviewSurface {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            SearchField(query = "", onQueryChange = {}, onClear = {})
+            SearchField(query = "lighthouse", onQueryChange = {}, onClear = {})
         }
     }
 }

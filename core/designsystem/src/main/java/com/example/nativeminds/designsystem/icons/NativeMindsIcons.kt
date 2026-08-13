@@ -1,7 +1,10 @@
 package com.example.nativeminds.designsystem.icons
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -13,6 +16,8 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.nativeminds.designsystem.preview.PreviewSurface
+import com.example.nativeminds.designsystem.preview.ThemePreviews
 
 /**
  * Hand-authored stroke icons tracing the design's own SVG paths (24×24 viewBox, 2.75 stroke).
@@ -215,5 +220,28 @@ private fun StrokeCanvas(
             join = StrokeJoin.Round,
         )
         onDraw(s, stroke)
+    }
+}
+
+/**
+ * Gallery of the whole icon set at one size — the fastest way to spot a path that broke, and the
+ * preview that covers [StrokeCanvas] (it has no visual of its own).
+ */
+@ThemePreviews
+@Composable
+private fun NativeMindsIconsPreview() {
+    PreviewSurface {
+        Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            val tint = MaterialTheme.colorScheme.onSurface
+            NativeMindsIcons.Search(tint = tint, size = 24.dp)
+            NativeMindsIcons.Person(tint = tint, size = 24.dp)
+            NativeMindsIcons.ImagePlaceholder(tint = tint, size = 24.dp)
+            NativeMindsIcons.Headphones(tint = tint, size = 24.dp)
+            NativeMindsIcons.Lock(tint = tint, size = 24.dp)
+            NativeMindsIcons.Home(tint = tint, size = 24.dp)
+            NativeMindsIcons.Library(tint = tint, size = 24.dp)
+            NativeMindsIcons.Sparkle(tint = tint, size = 24.dp)
+            NativeMindsIcons.Close(tint = tint, size = 24.dp)
+        }
     }
 }
