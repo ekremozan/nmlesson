@@ -41,7 +41,26 @@ These are the acceptance criteria — every feature decision should trace back t
 
 Intended shape (adjust as the implementation evolves and keep this section current):
 
-- **Pattern**: Clean Architecture + MVVM with unidirectional data flow (ViewModel → StateFlow → Compose), repository layer between UI and data sources.
+- **Pattern**: Clean Architecture + **MVI** with unidirectional data flow (Compose → `onIntent` →
+  reducer → `StateFlow` → Compose), repository layer between UI and data sources.
+  - Each feature owns a `…Contract.kt` (state + intents + effects) and a `…Reducer.kt`. The reducer
+    is a **pure** top-level extension function — no Android, no coroutines, no ViewModel — and is
+    the **only** thing that writes state. A ViewModel that branches on an intent itself, or that
+    assigns to its state flow outside the reducer, is a bug.
+  - State holds only irreducible facts; anything derivable is a computed property on the state, not
+    a field the reducer has to keep in step.
+  - Every user action is an intent. ViewModels expose exactly one `onIntent(…)` — never a set of
+    `onSomethingHappened()` methods, and never a public mutable state flow.
+  - Data that arrives from outside (a Room `Flow`, a sync result) folds back in as an intent too,
+    so there is a single mutation path rather than one for the user and one for everything else.
+  - One-shot events (snackbar, navigation) go through an effect `Channel(BUFFERED)` +
+    `receiveAsFlow()`, collected in the Hilt wrapper composable with `flowWithLifecycle`. Never a
+    `MutableSharedFlow` — it drops events raised while the screen is stopped.
+  - The intent boundary stops at the screen. Reusable composables (`SearchField`, `StoryCard`, …)
+    keep their own plain callbacks; only the `…ScreenContent` translates them into intents.
+  - Paged content stays **outside** the state — `PagingData` has no place in an equatable state
+    object. When a pager derives its parameters from state, `distinctUntilChanged()` on that slice
+    is mandatory, or unrelated state changes restart paging.
 - **Modules** (dependency arrows point inwards, towards `:core:domain`):
   - `:app` — composition root; the **only** module that depends on concrete implementations
     (`:core:data`, `:core:database`). Holds `NativeMindsApplication` (`@HiltAndroidApp`).
@@ -60,8 +79,8 @@ Intended shape (adjust as the implementation evolves and keep this section curre
   `@Binds`/`@Provides` in the `di/` package of the module that owns it. Interfaces get `@Binds`;
   types you don't own (Room, Retrofit) get `@Provides`. Never inject a `CoroutineDispatcher` or
   `CoroutineScope` unqualified.
-- **Layers**: `ui/` (Compose screens + ViewModels), `domain/` (models, use cases), `data/`
-  (repositories, local cache, remote source).
+- **Layers**: `ui/` (Compose screens, contract, reducer, ViewModels), `domain/` (models, use cases),
+  `data/` (repositories, local cache, remote source).
 - **Model separation (mandatory)**: data model (DTO/entity), domain model, and UI model are always separate classes. Conversions go through mappers written as **extension functions** (e.g. `StoryDto.toDomain()`, `Story.toUiModel()`). Never pass a DTO/entity directly to the UI.
 - **Offline-first**: local database (Room) is the single source of truth; remote data syncs into it. Reading works fully offline; audio gracefully degrades.
 - **Audio**: TTS or pre-generated audio via Media3 — decision to be recorded when made.

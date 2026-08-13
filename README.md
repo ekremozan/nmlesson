@@ -28,14 +28,14 @@
 
 **Stack:** Kotlin, Jetpack Compose (Material 3), Room, Paging 3, Hilt _TODO: Media3, Firebase_
 
-**Shape:** Clean Architecture + MVVM with unidirectional data flow, offline-first (local DB as
+**Shape:** Clean Architecture + MVI with unidirectional data flow, offline-first (local DB as
 source of truth), dependencies resolved by Hilt at compile time.
 
 **Modules** — the arrows only ever point inwards, towards the domain:
 
 ```
 :app             composition root — the only module that knows which implementations exist
-  ├── :feature:home     Compose screens + ViewModels     → :core:domain, :core:designsystem
+  ├── :feature:home     Compose screens + MVI ViewModels → :core:domain, :core:designsystem
   ├── :core:data        RoomStoryRepository, NetworkMonitor, @Binds  → :core:domain, :core:database
   └── :core:database    Room entities, DAO, DatabaseModule
 
@@ -58,7 +58,10 @@ recompiling any feature. `:app` is the single place where contract meets impleme
 | Decision | What I chose | Why | Trade-off / at 10× scale |
 |---|---|---|---|
 | Platform & UI | Native Android, Compose | _TODO_ | _TODO_ |
-| Architecture pattern | _TODO_ | _TODO_ | _TODO_ |
+| Architecture pattern | **MVI**, not MVVM: one `onIntent(HomeIntent)` entry point, a pure `HomeUiState.reduce(intent)` as the only writer of state, and a one-shot `HomeEffect` channel alongside it | MVVM's N-public-functions-per-ViewModel shape does not survive the screens still to come — Reader, Audio player, Paywall and Ask-AI all carry navigation, snackbars and error states, so the choice was to discover the same event plumbing four times or to define it once. The reducer is the concrete win today: it is pure and Android-free, so the screen's whole behaviour is verifiable without `Dispatchers.setMain`, a fake repository, or a coroutine test scope. The effect channel is the other: the app had no way at all to say "something failed" before it | Honestly a net negative at one screen — a sealed interface and a `when` branch per tap buys little when there are four taps. The bet is on the roadmap, not on today. At 10× the reducer stops being one `when` and splits per concern (filtering, playback, entitlement), and the intent stream becomes the natural place to hang analytics and a crash-time breadcrumb trail, which per-method callbacks cannot offer |
+| MVI contract placement | Feature-local (`HomeContract.kt` in `:feature:home`), **not** a shared `BaseViewModel` in a core module | A shared generic base would have to live somewhere: `:core:common` would push `androidx.lifecycle` onto `:core:data`'s compile classpath, and a new `:core:mvi` module is real infrastructure to justify with one consumer. There is also a design cost — `pagedStories` deliberately sits *outside* the state (a `PagingData` snapshot has no business inside an equatable state object), and a generic `MviViewModel<S, I, E>` invites forcing it in | Screen two and three will repeat ~15 lines of channel and reducer wiring. That repetition is the signal to extract, and by then there will be three real call sites shaping the abstraction instead of one imagined one |
+| State shape | `HomeUiState` holds only irreducible facts (`query`, `selectedCategory`, `categories`); `chips`, `suggestions` and `isFiltering` are computed properties | The reducer cannot leave a derived field stale if there is no derived field to update — chip selection drifting from `selectedCategory` becomes unrepresentable rather than merely tested-for. It also keeps `equals` meaningful: two states are equal when the facts match | The computed lists are new instances on every read, so Compose cannot skip a recomposition of the chip row on an unrelated state change. Measured against a five-item row this is noise; if a screen ever derives something expensive, that one moves back into the reducer as an eagerly-computed field |
+| One-shot events | `Channel(BUFFERED)` + `receiveAsFlow()`, not `MutableSharedFlow` | A `SharedFlow` with no replay drops events emitted while the screen is stopped — `tryEmit` returns `true` and the snackbar silently never happens, which is exactly the failure mode the project's "no silently swallowed" rule exists to prevent. A channel buffers until the collector returns, and its single-consumer semantics make double navigation from two collectors impossible | Round-robin delivery if a second collector ever subscribes. With one screen and one collector that is a guarantee, not a limitation. No replay also means a snackbar is not re-shown across a configuration change, which is the behaviour we want |
 | Dependency injection | **Hilt**, not Koin or hand-rolled providers | The graph is verified at **compile time**. In a multi-module project the realistic failure is forgetting to register a new feature's bindings — with Hilt that doesn't compile; with Koin's runtime service locator it compiles fine and throws `NoBeanDefFoundException` when the user opens the screen. That matches the project rule that failures must be visible. KSP was already in the build for Room, so the marginal cost was small, and Hilt brings `hiltViewModel()`, `SavedStateHandle` and WorkManager integration for free | Steeper learning curve and an extra KSP round per module. Koin would have won on KMP support — irrelevant here, the app is Android-only. At 10× the single `SingletonComponent` stops being enough: long-lived, expensive dependencies (player, AI client) move to their own scopes, and feature modules get `@InstallIn(ViewModelComponent::class)` bindings so they don't all inflate the app component |
 | Layering | `StoryRepository` contract and use cases live in a pure-Kotlin `:core:domain`; `:core:data` implements it; `:app` is the only module that wires the two together | Makes the dependency arrow point inwards for real rather than on a diagram: `:feature:home` cannot reference Room or `RoomStoryRepository` even by accident, because they are not on its compile classpath. Use cases also give premium gating a home that is neither the ViewModel nor the DAO | Two extra modules and a thin use-case layer that is nearly pass-through today. At 10× that thinness is the point — gating, entitlement checks and AI pre/post-processing land in the use case without any feature module changing |
 | Category chips | Derived from the stories table (`GROUP BY category ORDER BY COUNT(*) DESC`) instead of a hardcoded list in the ViewModel | A second, hand-maintained list of categories is a copy that drifts: a sync introducing a new category would leave it invisible, and one emptying out would leave a chip that returns nothing. The same ordered query feeds the empty state's suggestions, so "suggested" means "most content" rather than an arbitrary pick | Chip order can shift as content changes, which costs some muscle memory. At 10× the `GROUP BY` over the whole table stops being free — it becomes a maintained `categories` table (or a curated, server-supplied order, which is what an editorial team would want anyway) |
@@ -109,12 +112,22 @@ recompiling any feature. `:app` is the single place where contract meets impleme
 - `:core:domain` depends on `com.google.dagger:dagger` (pure JVM) so its `@Inject` factories are
   generated locally. `javax.inject` alone would have been purer, at the cost of moving factory
   generation into `:app` and a compiler warning per class.
-- **Sync failures are swallowed on purpose** — the one place the "failures must be visible" rule is
-  knowingly bent. A failed refresh leaves the database (seeded or previously synced) as the source
-  of truth so the UI keeps working offline, which is the offline-first contract. It is a cut corner
-  only until crash reporting is wired up: `RoomStoryRepository`'s catch is where the exception gets
-  reported, and until then a sync that never succeeds is indistinguishable from one that has
-  nothing new. No user-facing "couldn't refresh" signal exists yet either.
+- Sync failures now reach the user as a snackbar via `HomeEffect.ShowSyncError`; the repository no
+  longer swallows them. The offline-first contract is unchanged — the seeded or previously synced
+  database stays the source of truth and the screen keeps working. What is still missing is the
+  other half of the rule: the exception is not reported anywhere, because crash reporting is not
+  wired up yet. `HomeViewModel`'s `runCatching` is where that call goes.
+- `StoryCard`'s `onClick` is still an empty lambda rather than a `HomeIntent.StoryClicked`. There is
+  no navigation and no Reader screen for it to reach, and an intent whose reducer branch returns
+  `this` and whose effect nobody consumes is dead code that reads like a feature.
+- The visible snackbar has no `@Preview`. A `Snackbar` only appears in response to a `showSnackbar`
+  call on a `SnackbarHostState`, which a static preview never makes; the preview would render an
+  empty host and prove nothing. This is the "written reason" the preview rule asks for.
+- `HomeUiState` is no longer shared with `WhileSubscribed(5_000)` — MVI needs state to survive
+  without subscribers so reducer results are not lost, so it is a plain always-hot `MutableStateFlow`.
+  The category `Flow` is therefore collected for the ViewModel's whole life rather than stopping
+  five seconds after the screen goes away. One Room query; acceptable now, worth revisiting if a
+  screen ever observes something expensive.
 
 ## 🔭 What I'd Do Next / At 10× Scale
 
