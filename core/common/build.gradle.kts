@@ -28,8 +28,6 @@ android {
 }
 
 dependencies {
-    // api: the qualifier annotations appear in the constructor signatures of consumers, and those
-    // consumers inject CoroutineDispatcher/CoroutineScope types from here.
     api(libs.kotlinx.coroutines.core)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Color
  * `MaterialTheme.colorScheme` so light/dark switching keeps working.
  */
 
-// ── Ground ────────────────────────────────────────────────────────────────────────────────
 /** Page background, light theme. */
 internal val Paper = Color(0xFFF5EAD8)
 
@@ -36,7 +35,6 @@ internal val InkSurface = Color(0xFF272220)
 /** Primary text on the ink ground. */
 internal val Parchment = Color(0xFFF3E9D9)
 
-// ── Neutral ramp ──────────────────────────────────────────────────────────────────────────
 internal val Neutral100 = Color(0xFFF9F4ED)
 internal val Neutral200 = Color(0xFFEEE7DB)
 internal val Neutral300 = Color(0xFFDCD3C4)
@@ -47,7 +45,6 @@ internal val Neutral700 = Color(0xFF645C50)
 internal val Neutral800 = Color(0xFF474238)
 internal val Neutral900 = Color(0xFF2E2B25)
 
-// ── Accent ramp (terracotta) ──────────────────────────────────────────────────────────────
 internal val Accent100 = Color(0xFFFFF2EB)
 internal val Accent200 = Color(0xFFFFE1D0)
 internal val Accent300 = Color(0xFFFFC6A5)
@@ -64,7 +61,6 @@ internal val Accent = Color(0xFFC67139)
 /** Accent tuned for the dark ground — the light-theme accent is too dim on ink. */
 internal val AccentDark = Color(0xFFE0954F)
 
-// ── Secondary accent ramp (sage) ──────────────────────────────────────────────────────────
 internal val Sage100 = Color(0xFFF0FAE1)
 internal val Sage200 = Color(0xFFE1EECC)
 internal val Sage300 = Color(0xFFCCDBB2)

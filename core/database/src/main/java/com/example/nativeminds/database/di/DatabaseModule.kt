@@ -21,7 +21,6 @@ private const val DATABASE_NAME = "nativeminds.db"
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-
     @Provides
     @Singleton
     fun nativeMindsDatabase(@ApplicationContext context: Context): NativeMindsDatabase =

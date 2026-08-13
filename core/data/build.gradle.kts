@@ -28,8 +28,6 @@ android {
 }
 
 dependencies {
-    // api: this module's whole purpose is to satisfy the domain contracts, and :app needs them
-    // visible to build the Hilt graph.
     api(project(":core:domain"))
     implementation(project(":core:common"))
     implementation(project(":core:database"))

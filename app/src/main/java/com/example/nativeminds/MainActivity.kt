@@ -22,8 +22,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NativeMindsTheme {
-                // System-bar insets are applied once here at the app root, so individual screens
-                // never need to add statusBarsPadding()/navigationBarsPadding() themselves.
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     HomeScreen(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing))
                 }

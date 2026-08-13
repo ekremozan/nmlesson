@@ -21,7 +21,6 @@ import javax.inject.Singleton
 @Module
 @TestInstallIn(components = [SingletonComponent::class], replaces = [DatabaseModule::class])
 object TestDatabaseModule {
-
     @Provides
     @Singleton
     fun nativeMindsDatabase(@ApplicationContext context: Context): NativeMindsDatabase =

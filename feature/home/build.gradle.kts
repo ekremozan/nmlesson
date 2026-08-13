@@ -34,8 +34,6 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
-    // :core:domain, never :core:data — the feature layer talks to use cases and interfaces only.
-    // Which implementation satisfies them is decided by :app, the composition root.
     implementation(project(":core:domain"))
 
     implementation(platform(libs.androidx.compose.bom))

@@ -27,7 +27,6 @@ import com.example.nativeminds.designsystem.preview.ThemePreviews
  * glyph-for-glyph, and the app only needs about eight of them.
  */
 object NativeMindsIcons {
-
     @Composable
     fun Search(tint: Color, modifier: Modifier = Modifier, size: Dp = 20.dp) {
         StrokeCanvas(modifier, size) { s, stroke ->

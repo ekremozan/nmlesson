@@ -40,7 +40,6 @@ class HomeViewModel @Inject constructor(
     private val getPagedStories: GetPagedStoriesUseCase,
     private val syncStories: SyncStoriesUseCase,
 ) : ViewModel() {
-
     private val filterParams = MutableStateFlow(FilterParams())
 
     /** Fixed for the lifetime of the screen, so the header doesn't change under the user at 12:00. */
@@ -55,17 +54,14 @@ class HomeViewModel @Inject constructor(
             greeting = greeting,
             userName = USER_NAME,
             query = params.query,
-            // The leading null is the "All" chip — a UI affordance, not a category in the data.
             chips = (listOf(null) + categories).map { category ->
                 ChipUiModel(category = category, isSelected = category == params.category)
             },
             isFiltering = params.query.isNotEmpty() || params.category != null,
-            // Already ordered by story count, so the first few are the fullest shelves.
             suggestions = categories.take(SUGGESTION_COUNT).map { ChipUiModel(category = it) },
         )
     }.stateIn(
         scope = viewModelScope,
-        // Stops observing Room while the screen is backgrounded, and survives a config change.
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = HomeUiState(greeting = greeting, userName = USER_NAME),
     )

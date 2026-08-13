@@ -29,9 +29,6 @@ import com.example.nativeminds.feature.home.R
 @Composable
 fun HomeBottomNavBar(modifier: Modifier = Modifier) {
     val background = MaterialTheme.colorScheme.background
-    // Solid for the bottom ~62% of the bar, fading to transparent only at the top edge — matches
-    // the design's `linear-gradient(to top, background 62%, transparent)`, not a bar that's
-    // transparent all the way through.
     val scrim = Brush.verticalGradient(
         0f to background.copy(alpha = 0f),
         0.38f to background,

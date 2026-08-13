@@ -14,10 +14,8 @@ import androidx.compose.ui.unit.dp
 internal val NativeMindsShapes = Shapes(
     extraSmall = RoundedCornerShape(8.dp),
     small = RoundedCornerShape(12.dp),
-    // Story cards and cover art.
     medium = RoundedCornerShape(16.dp),
     large = RoundedCornerShape(28.dp),
-    // Sheets and dialogs.
     extraLarge = RoundedCornerShape(32.dp),
 )
 

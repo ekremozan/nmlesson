@@ -51,7 +51,6 @@ private class RecordingStoryRepository : StoryRepository {
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
-
     private val repository = RecordingStoryRepository()
 
     @Before
@@ -136,7 +135,6 @@ class HomeViewModelTest {
             listOf(null, "Fiction", "Science", "History", "Essays"),
             viewModel.uiState.value.chips.map { it.category },
         )
-        // Nothing filtered yet, so the leading "All" chip is the selected one.
         assertTrue(viewModel.uiState.value.chips.first().isSelected)
     }
 
@@ -157,7 +155,6 @@ class HomeViewModelTest {
         viewModel.onSuggestionSelected("Science")
         viewModel.collectOnce()
 
-        // Query gone, category applied — otherwise the empty state would just reappear.
         assertEquals("", repository.lastQuery)
         assertEquals("Science", repository.lastCategory)
         assertEquals("", viewModel.uiState.value.query)

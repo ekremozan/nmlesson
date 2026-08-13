@@ -27,6 +27,10 @@ These are the acceptance criteria — every feature decision should trace back t
 
 - **Every architectural decision must be defensible.** The case evaluates reasoning, not just output. When making a non-obvious choice (library, pattern, data model), record it briefly in the README's "Key Decisions" section — what was chosen, why, what the trade-off is, and what would change at 10× scale.
 - **Known shortcuts must be logged.** If a corner is knowingly cut (mock billing, hardcoded content seed, skipped edge case), add it to the README's "Cut Corners / Assumptions" section immediately — don't leave it undocumented.
+- **No `//` comments anywhere in the codebase** — not explanations, not rationale, not section
+  banners. The code carries its own meaning through naming and structure; if something needs
+  explaining, rename it, extract it, or put the rationale in the README's "Key Decisions" section.
+  KDoc blocks (`/** … */`) on public declarations are the one exception.
 - Keep the slice **vertical and working end-to-end** rather than broad and half-finished. A small feature set that runs, syncs offline, and reports errors beats many stub screens.
 - Failures must be visible: no silently swallowed exceptions; surface errors to the user where relevant and to crash reporting always.
 - UI text goes through string resources, not hardcoded literals (the app may need localization later).
@@ -94,13 +98,23 @@ Rules:
 - **Every composable has a `@Preview` — no exceptions without a written reason.** Annotate the
   preview with `@ThemePreviews` (`:core:designsystem` `preview/ThemePreviews.kt`), which renders
   the light/dark pair from one annotation, and wrap the body in `PreviewSurface { }` so it sits on
-  the app background. Where a composable has meaningful states (selected/unselected,
+  the app background. Full screens use `@ScreenThemePreviews` instead — the same pair on a
+  phone-sized canvas — and wrap the body in `NativeMindsTheme { }` rather than `PreviewSurface`.
+  Where a composable has meaningful states (selected/unselected,
   empty/filled, free/locked), the preview shows them together rather than only the happy one.
-  - Previews live **in the same file** as the composable they cover — that's what keeps a private
-    composable previewable and stops the two from drifting apart. The only exception is a preview
-    needing heavy fixture wiring (`HomeScreenPreview.kt` builds `PagingData`).
-  - Sample data comes from the feature's shared fixture file (`ui/preview/HomePreviewData.kt`),
-    never from a ViewModel or the database — previews must render with no dependencies.
+  - **Never hand-write a theme × state matrix as N copies of `@Preview`.** Themes come from the
+    multipreview annotation, states from a `PreviewParameterProvider` — one `@Composable` renders
+    the whole grid (see `HomePreviewCases` in `HomeScreen.kt`).
+  - Previews live **in the same file** as the composable they cover — no separate `*Preview.kt`
+    files. That's what keeps a private composable previewable and stops the two from drifting
+    apart; even previews with heavy fixture wiring (the `HomeScreenContent` ones build `PagingData`)
+    sit next to their composable.
+  - **All previews go at the bottom of the file**, after the last production composable — never
+    interleaved between them. Production code reads top to bottom without preview scaffolding
+    cutting through it.
+  - Sample data **and `PreviewParameterProvider`s** live in the feature's shared fixture file
+    (`ui/preview/HomePreviewData.kt`), never in the screen file and never from a ViewModel or the
+    database — previews must render with no dependencies.
   - Exempt: Hilt-wired wrappers whose only job is `hiltViewModel()` (preview the stateless
     `…Content` composable instead), the `NativeMindsTheme` wrapper itself, and preview scaffolding
     such as `PreviewSurface` and the `ThemePreview.kt` specimen helpers.

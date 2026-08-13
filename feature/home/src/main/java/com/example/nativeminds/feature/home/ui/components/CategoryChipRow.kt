@@ -55,7 +55,6 @@ fun CategoryChip(
     val content = if (chip.isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
 
     Text(
-        // A category is content and renders as-is; the null "All" chip is UI text and is localized.
         text = chip.category ?: stringResource(R.string.category_all),
         style = NativeMindsTheme.typography.chip,
         color = content,

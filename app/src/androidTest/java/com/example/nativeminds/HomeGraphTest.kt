@@ -19,7 +19,6 @@ import org.junit.rules.RuleChain
  */
 @HiltAndroidTest
 class HomeGraphTest {
-
     private val hiltRule = HiltAndroidRule(this)
     private val composeRule = createAndroidComposeRule<MainActivity>()
 

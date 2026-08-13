@@ -26,7 +26,6 @@ class RoomStoryRepository @Inject constructor(
     private val networkMonitor: NetworkMonitor,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : StoryRepository {
-
     override fun pagedStories(category: String?, query: String): Flow<PagingData<Story>> =
         Pager(PagingConfig(pageSize = PAGE_SIZE)) {
             dao.pagingSource(category, query)
@@ -34,16 +33,11 @@ class RoomStoryRepository @Inject constructor(
 
     override fun categories(): Flow<List<String>> = dao.categories()
 
-    // The injected dispatcher rather than Dispatchers.IO inline: NetworkMonitor's ConnectivityManager
-    // lookup is a blocking binder call, and tests can substitute a TestDispatcher for the whole body.
     override suspend fun syncIfNeeded() = withContext(ioDispatcher) {
         if (dao.count() == 0) {
             dao.upsertAll(DummyStorySeed.stories.map { it.toEntity() })
         }
         if (networkMonitor.isOnline()) {
-            // Failures are swallowed on purpose: the DB (seeded or previously synced) stays the
-            // source of truth and the UI keeps working offline. Once crash reporting is wired up
-            // (see README "Cut Corners"), this is where it gets reported.
             runCatching { remote.fetchStories() }
                 .onSuccess { stories -> dao.upsertAll(stories.map { it.toEntity() }) }
         }

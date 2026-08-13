@@ -15,7 +15,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class StoryDaoTest {
-
     private lateinit var database: NativeMindsDatabase
     private lateinit var dao: StoryDao
 
@@ -94,7 +93,6 @@ class StoryDaoTest {
 
     @Test
     fun categoriesAreOrderedByStoryCountThenAlphabetically() = runTest {
-        // Fiction: 3, Science: 2, then History and Essays tie at 1 and fall back to alphabetical.
         dao.upsertAll(
             stories + listOf(
                 StoryEntity(4, "Fiction", "Second Fiction", "", 3, hasAudio = false, isLocked = false),

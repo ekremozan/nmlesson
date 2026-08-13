@@ -10,6 +10,5 @@ import androidx.room.RoomDatabase
  */
 @Database(entities = [StoryEntity::class], version = 1, exportSchema = true)
 abstract class NativeMindsDatabase : RoomDatabase() {
-
     abstract fun storyDao(): StoryDao
 }

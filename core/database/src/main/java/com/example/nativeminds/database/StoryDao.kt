@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface StoryDao {
-
     /**
      * [category] `null` means "no category filter" — what the UI draws as the "All" chip. `null`
      * is the representation the whole stack uses; no layer translates a label into it.
