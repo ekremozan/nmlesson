@@ -183,6 +183,33 @@ data class NativeMindsTypography(
     val emptyBody: TextStyle,
     /** Long-form story body in the reader. */
     val readingBody: TextStyle,
+    /** The story's own title at the head of the reader — larger than any card ever shows it. */
+    val readerTitle: TextStyle,
+    /** "by Marguerite Halloran" under the reader's title. */
+    val readerAuthor: TextStyle,
+    /** The story title repeated, small and muted, in the reader's top bar. */
+    val readerTopBarTitle: TextStyle,
+    /**
+     * The oversized initial that opens a story.
+     *
+     * Its line height is deliberately smaller than its font size — that negative leading is what
+     * lets the glyph sink into the paragraph instead of pushing the first line down.
+     */
+    val readerDropCap: TextStyle,
+    /** "Next in Fiction — …" closing the story. */
+    val readerClosingNote: TextStyle,
+    /** "Unlock the full story" heading in the premium sheet. */
+    val unlockTitle: TextStyle,
+    /** The sentence under it, explaining how much was free. */
+    val unlockBody: TextStyle,
+    /** One benefit line beside its check. */
+    val unlockBenefit: TextStyle,
+    /** Label inside a primary call-to-action button. */
+    val actionLabel: TextStyle,
+    /** Price and cancellation terms under the call to action. */
+    val unlockTerms: TextStyle,
+    /** Elapsed and remaining labels above the reading-progress bar. */
+    val progressLabel: TextStyle,
 )
 
 internal val NativeMindsTextStyles = NativeMindsTypography(
@@ -268,6 +295,63 @@ internal val NativeMindsTextStyles = NativeMindsTypography(
         fontFamily = ReadingFontFamily,
         fontSize = 17.sp,
         lineHeight = 28.sp,
+    ),
+    readerTitle = TextStyle(
+        fontFamily = DisplayFontFamily,
+        fontSize = 32.sp,
+        lineHeight = 36.sp,
+        letterSpacing = (-0.02).em,
+    ),
+    readerAuthor = TextStyle(
+        fontFamily = UiFontFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 13.sp,
+    ),
+    readerTopBarTitle = TextStyle(
+        fontFamily = UiFontFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 12.5.sp,
+        letterSpacing = 0.01.em,
+    ),
+    readerDropCap = TextStyle(
+        fontFamily = DisplayFontFamily,
+        fontSize = 52.sp,
+        lineHeight = 42.sp,
+    ),
+    readerClosingNote = TextStyle(
+        fontFamily = ReadingFontFamily,
+        fontSize = 14.sp,
+        lineHeight = 22.sp,
+    ),
+    unlockTitle = TextStyle(
+        fontFamily = DisplayFontFamily,
+        fontSize = 25.sp,
+        lineHeight = 28.5.sp,
+        letterSpacing = (-0.02).em,
+    ),
+    unlockBody = TextStyle(
+        fontFamily = ReadingFontFamily,
+        fontSize = 14.5.sp,
+        lineHeight = 21.75.sp,
+    ),
+    unlockBenefit = TextStyle(
+        fontFamily = UiFontFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp,
+    ),
+    actionLabel = TextStyle(
+        fontFamily = DisplayFontFamily,
+        fontSize = 16.sp,
+    ),
+    unlockTerms = TextStyle(
+        fontFamily = UiFontFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp,
+    ),
+    progressLabel = TextStyle(
+        fontFamily = UiFontFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 11.5.sp,
     ),
 )
 

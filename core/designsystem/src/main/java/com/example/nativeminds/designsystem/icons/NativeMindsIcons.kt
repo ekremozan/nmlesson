@@ -196,6 +196,56 @@ object NativeMindsIcons {
         }
     }
 
+    /** Back chevron in the reader's top bar. */
+    @Composable
+    fun ChevronLeft(tint: Color, modifier: Modifier = Modifier, size: Dp = 21.dp) {
+        StrokeCanvas(modifier, size) { s, stroke ->
+            val chevron = Path().apply {
+                moveTo(15f * s, 5f * s)
+                lineTo(8f * s, 12f * s)
+                lineTo(15f * s, 19f * s)
+            }
+            drawPath(chevron, tint, style = stroke)
+        }
+    }
+
+    /** Overflow menu — three stacked dots. */
+    @Composable
+    fun MoreVertical(tint: Color, modifier: Modifier = Modifier, size: Dp = 20.dp) {
+        StrokeCanvas(modifier, size) { s, stroke ->
+            listOf(6f, 12f, 18f).forEach { y ->
+                drawCircle(tint, radius = stroke.width / 2f, center = Offset(12f * s, y * s))
+            }
+        }
+    }
+
+    /** Filled play triangle inside the listen control. */
+    @Composable
+    fun Play(tint: Color, modifier: Modifier = Modifier, size: Dp = 17.dp) {
+        StrokeCanvas(modifier, size) { s, _ ->
+            val triangle = Path().apply {
+                moveTo(8f * s, 5.5f * s)
+                lineTo(19f * s, 12f * s)
+                lineTo(8f * s, 18.5f * s)
+                close()
+            }
+            drawPath(triangle, tint)
+        }
+    }
+
+    /** Benefit check in the premium sheet. */
+    @Composable
+    fun Check(tint: Color, modifier: Modifier = Modifier, size: Dp = 12.dp) {
+        StrokeCanvas(modifier, size) { s, stroke ->
+            val tick = Path().apply {
+                moveTo(5f * s, 13f * s)
+                lineTo(9.5f * s, 17.5f * s)
+                lineTo(19f * s, 7f * s)
+            }
+            drawPath(tick, tint, style = stroke)
+        }
+    }
+
     @Composable
     fun Close(tint: Color, modifier: Modifier = Modifier, size: Dp = 13.dp) {
         StrokeCanvas(modifier, size) { s, stroke ->
@@ -241,6 +291,10 @@ private fun NativeMindsIconsPreview() {
             NativeMindsIcons.Library(tint = tint, size = 24.dp)
             NativeMindsIcons.Sparkle(tint = tint, size = 24.dp)
             NativeMindsIcons.Close(tint = tint, size = 24.dp)
+            NativeMindsIcons.ChevronLeft(tint = tint, size = 24.dp)
+            NativeMindsIcons.MoreVertical(tint = tint, size = 24.dp)
+            NativeMindsIcons.Play(tint = tint, size = 24.dp)
+            NativeMindsIcons.Check(tint = tint, size = 24.dp)
         }
     }
 }

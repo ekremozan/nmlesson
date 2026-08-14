@@ -134,6 +134,7 @@ fun NativeMindsTheme(
         LocalNativeMindsColors provides nativeMindsColors,
         LocalNativeMindsTypography provides NativeMindsTextStyles,
         LocalNativeMindsSpacing provides NativeMindsSpacing(),
+        LocalNativeMindsSizes provides NativeMindsSizes(),
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
@@ -163,4 +164,7 @@ object NativeMindsTheme {
 
     val spacing: NativeMindsSpacing
         @Composable @ReadOnlyComposable get() = LocalNativeMindsSpacing.current
+
+    val sizes: NativeMindsSizes
+        @Composable @ReadOnlyComposable get() = LocalNativeMindsSizes.current
 }

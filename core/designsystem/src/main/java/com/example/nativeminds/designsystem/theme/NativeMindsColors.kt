@@ -39,6 +39,21 @@ data class NativeMindsColors(
     val premiumBadgeContent: Color,
     /** Unselected bottom-navigation item. */
     val navInactive: Color,
+    /**
+     * Premium chip sitting on the page rather than on a cover.
+     *
+     * Separate from [premiumBadgeBackground]: that one has to hold its own against arbitrary cover
+     * art, while this one sits on the paper ground and can be a flat tint.
+     */
+    val premiumChipBackground: Color,
+    /** Lock glyph and label inside [premiumChipBackground]. */
+    val premiumChipContent: Color,
+    /** Filled portion of the reading-progress bar. */
+    val readingProgress: Color,
+    /** Round check beside a benefit line in the premium sheet. */
+    val benefitCheckBackground: Color,
+    /** The check glyph itself. */
+    val benefitCheckContent: Color,
     /** True when this palette is the dark one — for the few places that must branch on it. */
     val isDark: Boolean,
 )
@@ -56,6 +71,11 @@ internal val LightNativeMindsColors = NativeMindsColors(
     premiumBadgeBackground = PaperCard.copy(alpha = 0.94f),
     premiumBadgeContent = Accent700,
     navInactive = Ink.copy(alpha = 0.42f),
+    premiumChipBackground = Accent200,
+    premiumChipContent = Accent700,
+    readingProgress = Sage,
+    benefitCheckBackground = Sage200,
+    benefitCheckContent = Sage700,
     isDark = false,
 )
 
@@ -75,6 +95,11 @@ internal val DarkNativeMindsColors = NativeMindsColors(
     premiumBadgeBackground = InkGround.copy(alpha = 0.90f),
     premiumBadgeContent = AccentDark,
     navInactive = Parchment.copy(alpha = 0.38f),
+    premiumChipBackground = Accent800,
+    premiumChipContent = Accent300,
+    readingProgress = Sage400,
+    benefitCheckBackground = Sage800,
+    benefitCheckContent = Sage300,
     isDark = true,
 )
 
