@@ -2,6 +2,7 @@ package com.example.nativeminds.domain.repository
 
 import androidx.paging.PagingData
 import com.example.nativeminds.model.Story
+import com.example.nativeminds.model.StoryContent
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -21,6 +22,27 @@ interface StoryRepository {
      * step with them.
      */
     fun categories(): Flow<List<String>>
+
+    /** One story, re-emitted on every change. `null` once the row is no longer stored locally. */
+    fun story(id: Long): Flow<Story?>
+
+    /**
+     * The story's text, re-emitted once a refresh writes it. `null` means "never stored" — not an
+     * error, just a story this device has not read yet.
+     *
+     * Reads never touch the network, which is what makes offline reading a property of the read
+     * path rather than a fallback branch someone has to remember to write.
+     */
+    fun storyContent(id: Long): Flow<StoryContent?>
+
+    /**
+     * Fetches the story's text and stores it.
+     *
+     * **Throws** when offline or when the fetch fails, rather than returning quietly with nothing:
+     * the caller is the one that knows how to turn a failure into something the reader can see and
+     * something the error reporter records.
+     */
+    suspend fun refreshContent(id: Long)
 
     /**
      * Seeds the local database on first run and, if online, refreshes it from the remote source.
