@@ -9,7 +9,7 @@ class FakeEntitlementRepository(initiallyPremium: Boolean = false) : Entitlement
 
     override fun isPremium(): Flow<Boolean> = premium
 
-    fun setPremium(value: Boolean) {
+    override fun setPremium(value: Boolean) {
         premium.value = value
     }
 }

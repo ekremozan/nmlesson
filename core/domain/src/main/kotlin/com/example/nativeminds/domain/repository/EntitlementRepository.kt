@@ -14,4 +14,7 @@ import kotlinx.coroutines.flow.Flow
  */
 interface EntitlementRepository {
     fun isPremium(): Flow<Boolean>
+
+    /** Writes the entitlement — the mock purchase flow's only way to grant premium access. */
+    fun setPremium(value: Boolean)
 }
