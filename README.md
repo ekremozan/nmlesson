@@ -16,7 +16,7 @@
 - [x] Story list — browse & search
 - [x] Story reader (read experience) — full text, drop cap, reading progress, offline/error states
 - [ ] Listen mode (audio / TTS) — the control is drawn and says it is not available yet
-- [x] Free vs Premium gating — 30% preview + premium unlock bottom sheet (purchase itself out of scope)
+- [x] Free vs Premium gating — 30% preview + full-screen Paywall/Purchase-Success flow (mock purchase)
 - [ ] AI feature: _TODO — hangi AI özelliği, neden_
 - [x] Offline support (cached stories readable without network)
 - [ ] Analytics (key funnel events) — deferred; see Cut Corners
@@ -37,7 +37,8 @@ source of truth), dependencies resolved by Hilt at compile time.
 :app             composition root — owns NativeMindsNavHost, the only module that knows
                  which implementations and which destinations exist
   ├── :feature:home     Compose screens + MVI ViewModels → :core:domain, :core:designsystem
-  ├── :feature:reader   Reader screen, premium unlock sheet, its own route declaration
+  ├── :feature:reader   Reader screen, its own route declaration
+  ├── :feature:paywall  Paywall + Purchase Success screens, mock purchase, its own routes
   ├── :core:data        RoomStoryRepository, entitlement, observability, @Binds
   └── :core:database    Room entities, DAOs, migrations, DatabaseModule
 
@@ -88,13 +89,19 @@ recompiling any feature. `:app` is the single place where contract meets impleme
 | Reader reducer returns effects | `Reduction(state, effects)`, unlike `HomeReducer`'s bare state | Only the reducer may decide intent → effect without the ViewModel branching | Two reducer shapes until Home needs its own effect — see research.md R2 |
 | Story content storage | Separate `story_content` table, not columns on `stories`; DB 1→2 with a written migration | Keeps kilobyte bodies out of the paged list query | See research.md R3 |
 | Premium preview rule | `ReaderAccess.Preview` has no field for the withheld text | A leak-proof type beats a flag a UI bug could ignore | See research.md R4 |
-| Paywall UI | `ModalBottomSheet`, not the anchored card the design draws (per user request) | A sheet is what dismiss/recall actually is | Departs from the drawn comp |
 | Entitlement & observability | `EntitlementRepository`/`ErrorReporter` interfaces in `:core:domain`, mock/logcat behind them; analytics deferred entirely | Interface has to be right now, real backend is a later `@Binds` swap | See Cut Corners |
 | Robolectric + `NetworkMonitor` interface | Test-only dependency; `NetworkMonitor` turned into an interface | `SavedStateHandle`/Room need a real `Bundle`/DB in tests; offline behavior needs a settable input | One more test dependency and binding |
 | Audio approach (TTS vs pre-generated) | _TODO_ | _TODO_ | _TODO_ |
-| Subscription / gating model | Single entitlement source of truth + a domain-side preview rule; the purchase flow itself is out of scope and says so | Covered by the "Premium preview rule" and "Entitlement" rows above | — |
 | AI feature design | _TODO_ | _TODO_ | _TODO_ |
 | Analytics & crash reporting | Crash/error reporting shipped this feature (`ErrorReporter` seam); analytics deferred | Covered by the "Observability" row above | — |
+| **Paywall feature** — full reasoning in [`specs/002-paywall-screen/research.md`](specs/002-paywall-screen/research.md), one line each below | | | |
+| Paywall UI | Full-screen `:feature:paywall` module (screens 4 + 8 of the design), replacing the reader's in-place `ModalBottomSheet` | The gate needed to be reachable from any premium surface, not owned by `:feature:reader`; a shared destination has to be its own module per the "no feature depends on another feature" rule | The old bottom-sheet row above no longer applies — superseded here rather than deleted, so the "why we changed it" stays visible |
+| Reader → Paywall trigger | Plain callback (`onUnlockRequested`) resolved in `:app`'s nav graph, not a `ReaderIntent` | Same rule as "Story tap → reader": leaving the screen is the graph's concern, not local state | The reader no longer owns any unlock-sheet state at all — `isRestricted` is the only thing left |
+| Granting the mock entitlement | `EntitlementRepository.setPremium(Boolean)` promoted onto the domain interface itself, called directly from `PaywallViewModel.onIntent` keyed on `PurchaseClicked` | `:feature:paywall` can only depend on `:core:domain`, so the write path has to live on the interface it already has; no use case was worth inventing for a flag write with no business rule | The one place a ViewModel does a repository side effect keyed on a specific intent rather than only forwarding effects — a deliberate, narrow exception, not a pattern to spread |
+| Paywall hero "washed" covers | `alpha`, not the design's `blur(1.5px)` | `Modifier.blur` is a silent no-op below API 31 and `minSdk` is 24 — a third of the supported range would have simply lost the effect with no signal. Alpha reads the same everywhere | Slightly flatter than the comp. Revisit once `minSdk` ≥ 31 |
+| Paywall bottom block | Plan cards + CTA + footer links pinned outside the scroll region (`weight(1f)` on the scrolling part, same shape as `HomeScreen.kt:153`) | The design's `margin-top:auto` footer only works because the comp is a fixed 844px canvas; on real devices a single scroll leaves the CTA floating mid-screen on tall phones and unreachable on short ones | The top region can get tight on very small screens — it scrolls, which is the right trade for keeping the purchase action always visible |
+| Carrying story context across screens | `storyId`/`progressPercent` (and `plan`) travel as `@Serializable` nav-route arguments from `PaywallRoute` to `PurchaseSuccessRoute` | Matches the existing `ReaderRoute(storyId)` convention; two primitives don't justify a shared flow/ViewModel scope | Success screen re-fetches the story from `StoryRepository` rather than trusting stale reader state |
+| Subscription / gating model | Single entitlement source of truth + a domain-side preview rule; purchase is fully mocked (no billing SDK, no network call) and says so on the success screen | Covered by the "Premium preview rule", "Entitlement", and "Granting the mock entitlement" rows | At 10× scale the mock purchase becomes a real Play Billing / App Store integration behind the same `EntitlementRepository.setPremium` call site |
 
 ## 🤖 How I Worked With AI
 
@@ -145,9 +152,13 @@ Reader feature (spec-driven pass, `specs/001-story-detail-reader/`):
 - **Entitlement is an in-memory mock.** `MockEntitlementRepository` holds a `MutableStateFlow(false)`
   and resets with the process. Nothing in the app can grant a subscription yet, so there is nothing
   to persist; the demo drives it directly. Replacing it is one `@Binds`.
-- **The subscribe action does not subscribe.** "Start 7 days free" reports that subscriptions are
-  not available yet and leaves entitlement untouched. Deliberate: a button that looks alive and does
-  nothing is the most misleading thing a demo can contain.
+- **The purchase is fully mocked.** The Paywall's "Subscribe now" button calls
+  `EntitlementRepository.setPremium(true)` directly — no billing SDK, no payment credentials, no
+  network call. It is a genuine state change (every gated surface sees it immediately), just not a
+  real one; replacing it is one call site once real billing lands.
+- **Restore purchases, Terms, and Privacy are inert.** They match the design for fidelity, but
+  Restore only shows a "no purchase found" message and Terms/Privacy do not open a document — there
+  is no real store or legal copy to point at yet.
 - **The listen control does not play anything.** The pill and its progress bar are drawn as
   designed, the progress tracks the reader's position *in the text*, and a tap says playback is not
   available yet. Audio is its own feature.
