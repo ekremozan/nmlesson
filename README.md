@@ -13,14 +13,14 @@
 ## ✨ Features
 
 <!-- Tamamlandıkça işaretle -->
-- [ ] Story list — browse & search
-- [ ] Story reader (read experience)
-- [ ] Listen mode (audio / TTS)
-- [ ] Free vs Premium gating (paywall)
+- [x] Story list — browse & search
+- [x] Story reader (read experience) — full text, drop cap, reading progress, offline/error states
+- [ ] Listen mode (audio / TTS) — the control is drawn and says it is not available yet
+- [x] Free vs Premium gating — 30% preview + premium unlock bottom sheet (purchase itself out of scope)
 - [ ] AI feature: _TODO — hangi AI özelliği, neden_
-- [ ] Offline support (cached stories readable without network)
-- [ ] Analytics (key funnel events)
-- [ ] Crash / error reporting
+- [x] Offline support (cached stories readable without network)
+- [ ] Analytics (key funnel events) — deferred; see Cut Corners
+- [x] Crash / error reporting — every failure routed through an `ErrorReporter` seam
 
 ## 🏗 Architecture
 
@@ -34,13 +34,15 @@ source of truth), dependencies resolved by Hilt at compile time.
 **Modules** — the arrows only ever point inwards, towards the domain:
 
 ```
-:app             composition root — the only module that knows which implementations exist
+:app             composition root — owns NativeMindsNavHost, the only module that knows
+                 which implementations and which destinations exist
   ├── :feature:home     Compose screens + MVI ViewModels → :core:domain, :core:designsystem
-  ├── :core:data        RoomStoryRepository, NetworkMonitor, @Binds  → :core:domain, :core:database
-  └── :core:database    Room entities, DAO, DatabaseModule
+  ├── :feature:reader   Reader screen, premium unlock sheet, its own route declaration
+  ├── :core:data        RoomStoryRepository, entitlement, observability, @Binds
+  └── :core:database    Room entities, DAOs, migrations, DatabaseModule
 
-:core:domain     StoryRepository contract + use cases    (pure Kotlin, no Android)
-:core:model      Story                                   (pure Kotlin)
+:core:domain     repository contracts + use cases        (pure Kotlin, no Android)
+:core:model      Story, StoryContent                     (pure Kotlin)
 :core:common     dispatcher qualifiers, @ApplicationScope
 :core:designsystem  theme tokens, shared components
 ```
@@ -80,11 +82,19 @@ recompiling any feature. `:app` is the single place where contract meets impleme
 | Error color | Mapped M3 `error` onto the deep terracotta ramp instead of adding a red | The design system has no red — warnings use terracotta, success uses sage. A stock red would read as a system dialog dropped into the app | Less "alarming" than a red; acceptable because the app has no destructive actions so far |
 | Fonts | Bundled static instances of Caprasimo / Newsreader / Figtree (OFL) instead of downloadable fonts | The type is part of the brand — it has to be right on first launch and offline, which a provider round-trip can't guarantee. Static instances (not variable) because variable axes need API 26 and `minSdk` is 24 | ~400 KB of APK. At scale: ship only the weights in use (already done), and revisit variable fonts once `minSdk` ≥ 26 |
 | Accent split | Two accents: `primary` (#C67139) for fills, `accentText` (#B2622D) for glyphs | The fill accent only reaches ~2.7:1 on the paper ground — it fails WCAG AA as text | One more token to reason about, in exchange for accessible accent text everywhere |
-| Data / offline strategy | _TODO_ | _TODO_ | _TODO_ |
+| **Reader feature** — full reasoning in [`specs/001-story-detail-reader/research.md`](specs/001-story-detail-reader/research.md), one line each below | | | |
+| Navigation | `navigation-compose`, type-safe `@Serializable` routes, each feature owns its route | App had none yet; typed route gives free `SavedStateHandle` restoration | Two new deps for one screen — bet on the screens still to come |
+| Story tap → reader | Plain callback, not a `HomeIntent` | Changes no state, so an intent would force a forbidden ViewModel branch | Reads as an exception to "every action is an intent" — see research.md R1 |
+| Reader reducer returns effects | `Reduction(state, effects)`, unlike `HomeReducer`'s bare state | Only the reducer may decide intent → effect without the ViewModel branching | Two reducer shapes until Home needs its own effect — see research.md R2 |
+| Story content storage | Separate `story_content` table, not columns on `stories`; DB 1→2 with a written migration | Keeps kilobyte bodies out of the paged list query | See research.md R3 |
+| Premium preview rule | `ReaderAccess.Preview` has no field for the withheld text | A leak-proof type beats a flag a UI bug could ignore | See research.md R4 |
+| Paywall UI | `ModalBottomSheet`, not the anchored card the design draws (per user request) | A sheet is what dismiss/recall actually is | Departs from the drawn comp |
+| Entitlement & observability | `EntitlementRepository`/`ErrorReporter` interfaces in `:core:domain`, mock/logcat behind them; analytics deferred entirely | Interface has to be right now, real backend is a later `@Binds` swap | See Cut Corners |
+| Robolectric + `NetworkMonitor` interface | Test-only dependency; `NetworkMonitor` turned into an interface | `SavedStateHandle`/Room need a real `Bundle`/DB in tests; offline behavior needs a settable input | One more test dependency and binding |
 | Audio approach (TTS vs pre-generated) | _TODO_ | _TODO_ | _TODO_ |
-| Subscription / gating model | _TODO_ | _TODO_ | _TODO_ |
+| Subscription / gating model | Single entitlement source of truth + a domain-side preview rule; the purchase flow itself is out of scope and says so | Covered by the "Premium preview rule" and "Entitlement" rows above | — |
 | AI feature design | _TODO_ | _TODO_ | _TODO_ |
-| Analytics & crash reporting | _TODO_ | _TODO_ | _TODO_ |
+| Analytics & crash reporting | Crash/error reporting shipped this feature (`ErrorReporter` seam); analytics deferred | Covered by the "Observability" row above | — |
 
 ## 🤖 How I Worked With AI
 
@@ -99,10 +109,61 @@ recompiling any feature. `:app` is the single place where contract meets impleme
 ### Where I overrode the AI
 <!-- TODO: AI çıktısını reddedip kendi yolumla yaptığım yerler — somut örnekler -->
 
+Reader feature (spec-driven pass, `specs/001-story-detail-reader/`):
+
+- **Rejected: "story tapped" as an MVI intent.** The obvious reading of the project's own rule
+  ("every user action is an intent") produced a design with an identity reducer and a `when` in the
+  ViewModel just to emit a navigation effect — which the *next* rule in the same document forbids.
+  Held both rules against each other, decided navigation out of a screen is the graph's concern, and
+  wrote the reasoning down rather than letting the exception look like sloppiness.
+- **Rejected: branching on intents in the ViewModel to raise effects.** The reader genuinely needs
+  intent-driven effects. Instead of the shortcut, changed the reducer to return
+  `Reduction(state, effects)` so the pure function keeps owning every consequence of an intent.
+- **Rejected: "full text + isTruncated flag" for the paywall.** That shape lets a UI bug leak paid
+  content. Replaced with a sealed `ReaderAccess.Preview` that has nowhere to put the withheld
+  paragraphs, and added an instrumented test asserting the withheld text is not in the tree at all.
+- **Rejected: an inert overflow button** in the reader's top bar, copied from the design. A control
+  that answers a tap with nothing contradicts the project's "failures must be visible" instinct;
+  omitted it and kept the layout balanced with a spacer.
+- **Caught by running it, not by reading it:** the first build put the floating listen pill over
+  live text with no scrim, and the progress bar read 57% before any scrolling (the formula counted
+  visible items instead of scroll position). Both were only visible in a screenshot on an emulator —
+  a reminder that "the tests pass" and "the screen is right" are different claims.
+- **Corrected after the fact: analytics was added without asking.** CLAUDE.md's constitutional
+  observability requirement ("log key funnel events: content viewed... paywall shown...") was read
+  as license to bake `content_viewed`/`paywall_shown` logging straight into the spec's functional
+  requirements, without surfacing it as a choice the way the two genuine `[NEEDS CLARIFICATION]`
+  items were. Removed on request; crash/error reporting was kept because it maps to a stricter,
+  unambiguous project rule ("no silently swallowed exceptions") rather than an additive one.
+  Lesson: a constitutional *requirement* still has scope decisions inside it (which events, when)
+  that are the user's to make, not mine to assume.
+
 ## ✂️ Cut Corners & Assumptions
 
 <!-- Bilerek kısılan köşeler — anında buraya ekle, sona bırakma -->
 - _TODO: örn. mock billing (gerçek Play Billing yerine), seed content, ..._
+- **Entitlement is an in-memory mock.** `MockEntitlementRepository` holds a `MutableStateFlow(false)`
+  and resets with the process. Nothing in the app can grant a subscription yet, so there is nothing
+  to persist; the demo drives it directly. Replacing it is one `@Binds`.
+- **The subscribe action does not subscribe.** "Start 7 days free" reports that subscriptions are
+  not available yet and leaves entitlement untouched. Deliberate: a button that looks alive and does
+  nothing is the most misleading thing a demo can contain.
+- **The listen control does not play anything.** The pill and its progress bar are drawn as
+  designed, the progress tracks the reader's position *in the text*, and a tap says playback is not
+  available yet. Audio is its own feature.
+- **The reader's overflow menu is omitted, not drawn inert.** Font size and theme controls belong to
+  a later feature; a spacer keeps the title optically centred until they exist.
+- **Analytics is deferred entirely.** No funnel events (`content_viewed`, `paywall_shown`, etc.) are
+  recorded yet — cut to keep this feature's scope to what was asked for. Planned as a follow-up: the
+  domain-level `AnalyticsLogger` seam pattern already exists in this codebase's design (mirrors
+  `ErrorReporter`) and is the shape to reintroduce it in.
+- **Crash/error reporting is logcat-only.** `LogcatErrorReporter` implements the real interface and
+  every call site reports through it, but nothing leaves the device yet. Firebase is a separate
+  build-and-account step.
+- **Story text is hand-seeded.** `DummyStoryContentSeed` stands in for a catalog, and
+  `FakeRemoteStoryDataSource.fetchContent` serves the same text back as if it were a fetch.
+- **The closing line says "Next in Fiction" without naming the next story.** The design names it;
+  resolving an actual next story needs an ordering rule the app does not have yet.
 - `GetPagedStoriesUseCase` / `SyncStoriesUseCase` are currently pass-throughs to the repository.
   They exist as the seam premium gating will occupy, not because they add logic today.
 - The whole graph lives in Hilt's `SingletonComponent`. Correct while every dependency is cheap and

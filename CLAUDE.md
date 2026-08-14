@@ -56,6 +56,16 @@ Intended shape (adjust as the implementation evolves and keep this section curre
   - One-shot events (snackbar, navigation) go through an effect `Channel(BUFFERED)` +
     `receiveAsFlow()`, collected in the Hilt wrapper composable with `flowWithLifecycle`. Never a
     `MutableSharedFlow` — it drops events raised while the screen is stopped.
+  - When an intent must *raise* an effect, the reducer returns it: `:feature:reader`'s reducer
+    returns `Reduction(state, effects)` and the ViewModel only applies the state and forwards the
+    effects. Mapping intent → effect is a decision, and the ViewModel is not allowed to make
+    decisions. `:feature:home` still returns a bare state; migrate it when it needs its first
+    intent-driven effect, and extract `Reduction` to a shared module at the second consumer.
+  - Async work is triggered by **state**, not by an intent handler: derive a load key from state,
+    `distinctUntilChanged()`, `flatMapLatest` into the source, fold results back in as an intent.
+    "Retry" is an intent whose only reduction increments a token in state.
+  - Navigating *out* of a screen is a plain callback supplied by the nav graph, not an intent — it
+    changes no state, so an intent would mean an identity reduction plus a forbidden branch.
   - The intent boundary stops at the screen. Reusable composables (`SearchField`, `StoryCard`, …)
     keep their own plain callbacks; only the `…ScreenContent` translates them into intents.
   - Paged content stays **outside** the state — `PagingData` has no place in an equatable state
@@ -63,8 +73,12 @@ Intended shape (adjust as the implementation evolves and keep this section curre
     is mandatory, or unrelated state changes restart paging.
 - **Modules** (dependency arrows point inwards, towards `:core:domain`):
   - `:app` — composition root; the **only** module that depends on concrete implementations
-    (`:core:data`, `:core:database`). Holds `NativeMindsApplication` (`@HiltAndroidApp`).
-  - `:feature:*` — Compose screens + ViewModels. Depend on `:core:domain`, **never** on `:core:data`.
+    (`:core:data`, `:core:database`) and the only one that knows every destination. Holds
+    `NativeMindsApplication` (`@HiltAndroidApp`) and `NativeMindsNavHost`.
+  - `:feature:*` — Compose screens + ViewModels. Depend on `:core:domain`, **never** on `:core:data`
+    and never on each other. Each owns a `navigation/` file declaring its `@Serializable` route and
+    a `NavGraphBuilder.<screen>()` extension; `:app` composes them. A screen composable never
+    receives a `NavController`, only plain lambdas.
   - `:core:domain` — pure Kotlin: repository interfaces + use cases. No Android, no Hilt (only
     `javax.inject` + plain `dagger`).
   - `:core:data` — repository implementations, remote sources, `NetworkMonitor`, and the `@Binds`
@@ -84,7 +98,15 @@ Intended shape (adjust as the implementation evolves and keep this section curre
 - **Model separation (mandatory)**: data model (DTO/entity), domain model, and UI model are always separate classes. Conversions go through mappers written as **extension functions** (e.g. `StoryDto.toDomain()`, `Story.toUiModel()`). Never pass a DTO/entity directly to the UI.
 - **Offline-first**: local database (Room) is the single source of truth; remote data syncs into it. Reading works fully offline; audio gracefully degrades.
 - **Audio**: TTS or pre-generated audio via Media3 — decision to be recorded when made.
-- **Premium state**: a single subscription/entitlement source of truth that all gating checks go through (never scatter `isPremium` checks against raw storage).
+- **Premium state**: a single subscription/entitlement source of truth that all gating checks go
+  through (never scatter `isPremium` checks against raw storage). That source is
+  `EntitlementRepository` in `:core:domain`; the gating *rule* lives in a domain use case and
+  returns a sealed result (`ReaderAccess.Full` / `.Preview`) so restricted UI structurally cannot
+  hold the content it is withholding.
+- **Observability seams**: `ErrorReporter` is a domain interface — never call a logging API from a
+  feature module directly, and never let a `runCatching` end without reporting. Analytics is not
+  wired yet (deliberately deferred); when it lands it should follow the same domain-interface /
+  data-implementation shape as `ErrorReporter`.
 - **AI feature**: server-side or direct API call — decision + prompt design to be recorded when made.
 - **Observability**: Firebase Analytics + Crashlytics (or equivalent) — log key funnel events: content viewed, listen started, paywall shown, subscription started, AI feature used.
 
