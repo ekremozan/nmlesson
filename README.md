@@ -102,6 +102,10 @@ recompiling any feature. `:app` is the single place where contract meets impleme
 | Paywall bottom block | Plan cards + CTA + footer links pinned outside the scroll region (`weight(1f)` on the scrolling part, same shape as `HomeScreen.kt:153`) | The design's `margin-top:auto` footer only works because the comp is a fixed 844px canvas; on real devices a single scroll leaves the CTA floating mid-screen on tall phones and unreachable on short ones | The top region can get tight on very small screens — it scrolls, which is the right trade for keeping the purchase action always visible |
 | Carrying story context across screens | `storyId`/`progressPercent` (and `plan`) travel as `@Serializable` nav-route arguments from `PaywallRoute` to `PurchaseSuccessRoute` | Matches the existing `ReaderRoute(storyId)` convention; two primitives don't justify a shared flow/ViewModel scope | Success screen re-fetches the story from `StoryRepository` rather than trusting stale reader state |
 | Subscription / gating model | Single entitlement source of truth + a domain-side preview rule; purchase is fully mocked (no billing SDK, no network call) and says so on the success screen | Covered by the "Premium preview rule", "Entitlement", and "Granting the mock entitlement" rows | At 10× scale the mock purchase becomes a real Play Billing / App Store integration behind the same `EntitlementRepository.setPremium` call site |
+| **Catalog seed (100 stories)** | | | |
+| Cover image field | `Story.image: String` holds an opaque key (`"cover_01"`…`"cover_10"`), resolved to a drawable only in `:core:designsystem`'s `StoryCoverAssets` | `:core:model` has no Android dependency; a `@DrawableRes Int` on the domain model would have forced one. The key is a plain column, so it survives Room round-trips and mapping through every layer with no special casing | Swapping to remote cover art later means changing what the key resolves to (a URL instead of a resource id) without touching the domain model or the database schema |
+| Cover art itself | 10 procedural vector drawables (`story_cover_01.xml`…`_10.xml`), API 24+ gradient `<vector>`s built from the existing Organic palette tokens | No Coil/image-loading dependency, no network fetch, no extra APK weight from bitmaps — offline-first holds for images the same way it already does for text | Visually abstract, not illustrative; see Cut Corners |
+| 100-story generation | 20 hand-written pieces (`StorySeedBases.kt`), each published under 5 titles; `DummyStorySeed`/`DummyStoryContentSeed` fan that out by a flat index (`baseIndex * 5 + variantIndex`) and rotate category (`% 4`) and cover (`% 10`) on that index | 100 divides evenly by both 4 and 10, so the rotation alone guarantees exactly 25 stories per category and exactly 10 per cover with no separate bookkeeping table. A unit test (`DummyStorySeedTest`) pins both invariants plus id uniqueness | The same paragraphs appear under 5 different titles — an intentional trade for catalog size over content volume; see Cut Corners |
 
 ## 🤖 How I Worked With AI
 
@@ -164,6 +168,15 @@ Reader feature (spec-driven pass, `specs/001-story-detail-reader/`):
   available yet. Audio is its own feature.
 - **The reader's overflow menu is omitted, not drawn inert.** Font size and theme controls belong to
   a later feature; a spacer keeps the title optically centred until they exist.
+- **The 100-story catalog is 20 pieces of writing, not 100.** Each of the 20 base stories in
+  `StorySeedBases.kt` is published under 5 different titles (and a rotating category/cover), so the
+  same paragraphs appear multiple times in the library under different names. This was a deliberate
+  choice to get catalog size, category spread, and paging/search behavior to demo realistically
+  without hand-writing 100 distinct stories.
+- **Cover art is procedural, not illustrated.** The 10 covers are code-generated gradient vector
+  drawables (`core/designsystem/src/main/res/drawable/story_cover_0X.xml`), not AI-generated or
+  hand-drawn illustrations — chosen to stay offline-first with zero image-loading dependency
+  (no Coil) and near-zero APK weight. They read as abstract brand texture, not per-story art.
 - **Analytics is deferred entirely.** No funnel events (`content_viewed`, `paywall_shown`, etc.) are
   recorded yet — cut to keep this feature's scope to what was asked for. Planned as a follow-up: the
   domain-level `AnalyticsLogger` seam pattern already exists in this codebase's design (mirrors
