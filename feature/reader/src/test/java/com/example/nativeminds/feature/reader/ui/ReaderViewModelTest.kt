@@ -1,11 +1,15 @@
 package com.example.nativeminds.feature.reader.ui
 
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModelStore
 import androidx.paging.PagingData
+import com.example.nativeminds.domain.model.NarrationState
 import com.example.nativeminds.domain.model.ReaderDetail
+import com.example.nativeminds.domain.narration.StoryNarrator
 import com.example.nativeminds.domain.observability.ErrorReporter
 import com.example.nativeminds.domain.repository.EntitlementRepository
 import com.example.nativeminds.domain.repository.StoryRepository
+import com.example.nativeminds.domain.usecase.ObserveNarrationUseCase
 import com.example.nativeminds.domain.usecase.ObserveStoryDetailUseCase
 import com.example.nativeminds.domain.usecase.RefreshStoryContentUseCase
 import com.example.nativeminds.model.Story
@@ -14,6 +18,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -68,6 +74,39 @@ private class SilentErrorReporter : ErrorReporter {
     override fun report(throwable: Throwable, context: String) = Unit
 }
 
+private class TestStoryNarrator : StoryNarrator {
+    private val _state = MutableStateFlow<NarrationState>(NarrationState.Idle)
+    override val state: StateFlow<NarrationState> = _state.asStateFlow()
+
+    var startedWith: Pair<Long, List<String>>? = null
+        private set
+
+    override fun start(storyId: Long, paragraphs: List<String>) {
+        startedWith = storyId to paragraphs
+        _state.value = NarrationState.Playing(storyId, sentenceIndex = 0, paragraphs.size)
+    }
+
+    override fun pause() {
+        val current = _state.value
+        if (current is NarrationState.Playing) {
+            _state.value =
+                NarrationState.Paused(current.storyId, current.sentenceIndex, current.totalSentences)
+        }
+    }
+
+    override fun resume() {
+        val current = _state.value
+        if (current is NarrationState.Paused) {
+            _state.value =
+                NarrationState.Playing(current.storyId, current.sentenceIndex, current.totalSentences)
+        }
+    }
+
+    override fun stop() {
+        _state.value = NarrationState.Idle
+    }
+}
+
 /**
  * Runs under Robolectric because the ViewModel reads its type-safe route through
  * `SavedStateHandle`, which stores arguments in a real `android.os.Bundle`. The alternative was to
@@ -96,6 +135,7 @@ class ReaderViewModelTest {
     private fun viewModel(
         repository: StoryRepository,
         entitlements: EntitlementRepository = TestEntitlementRepository(),
+        narrator: StoryNarrator = TestStoryNarrator(),
     ) = ReaderViewModel(
         savedStateHandle = SavedStateHandle(mapOf("storyId" to unlockedStory.id)),
         observeStoryDetail = ObserveStoryDetailUseCase(
@@ -103,6 +143,8 @@ class ReaderViewModelTest {
             entitlementRepository = entitlements,
             refreshStoryContent = RefreshStoryContentUseCase(repository, SilentErrorReporter()),
         ),
+        observeNarration = ObserveNarrationUseCase(narrator),
+        storyNarrator = narrator,
     )
 
     @Test
@@ -129,14 +171,40 @@ class ReaderViewModelTest {
     }
 
     @Test
-    fun anIntentThatOnlyRaisesAnEffectLeavesStateAlone() = runTest {
-        val viewModel = viewModel(TestStoryRepository())
-        val before = viewModel.state.first { it.content is ReaderContentUiState.Ready }
+    fun listenClickedFromIdleStartsNarrationDirectlyRatherThanThroughTheEffectChannel() = runTest {
+        val narrator = TestStoryNarrator()
+        val viewModel = viewModel(TestStoryRepository(), narrator = narrator)
+        viewModel.state.first { it.content is ReaderContentUiState.Ready }
 
         viewModel.onIntent(ReaderIntent.ListenClicked)
 
-        assertEquals(before, viewModel.state.value)
-        assertTrue(viewModel.effects.first() == ReaderEffect.ShowAudioUnavailable)
+        assertEquals(unlockedStory.id to storyContent.paragraphs, narrator.startedWith)
+    }
+
+    @Test
+    fun narrationFromTheNarratorFoldsBackIntoState() = runTest {
+        val narrator = TestStoryNarrator()
+        val viewModel = viewModel(TestStoryRepository(), narrator = narrator)
+        viewModel.state.first { it.content is ReaderContentUiState.Ready }
+
+        viewModel.onIntent(ReaderIntent.ListenClicked)
+        val playing = viewModel.state.first { it.narration is NarrationState.Playing }
+
+        assertTrue(playing.narration is NarrationState.Playing)
+    }
+
+    @Test
+    fun clearingTheViewModelStopsNarration() = runTest {
+        val narrator = TestStoryNarrator()
+        val viewModel = viewModel(TestStoryRepository(), narrator = narrator)
+        viewModel.state.first { it.content is ReaderContentUiState.Ready }
+        viewModel.onIntent(ReaderIntent.ListenClicked)
+
+        val store = ViewModelStore()
+        store.put("reader", viewModel)
+        store.clear()
+
+        assertEquals(NarrationState.Idle, narrator.state.value)
     }
 
     @Test

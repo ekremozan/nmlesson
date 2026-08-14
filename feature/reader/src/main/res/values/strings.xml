@@ -6,6 +6,8 @@
     <string name="reader_premium_badge">Premium</string>
     <string name="reader_closing_note">Next in %1$s</string>
     <string name="reader_listen">Listen</string>
+    <string name="reader_pause">Pause</string>
+    <string name="reader_resume">Resume</string>
     <string name="reader_progress">%1$d%%</string>
     <string name="reader_remaining">%1$d min left</string>
     <string name="reader_audio_unavailable">Listening is not available yet.</string>

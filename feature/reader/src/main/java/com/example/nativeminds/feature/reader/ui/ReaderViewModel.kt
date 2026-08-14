@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.example.nativeminds.domain.narration.StoryNarrator
+import com.example.nativeminds.domain.usecase.ObserveNarrationUseCase
 import com.example.nativeminds.domain.usecase.ObserveStoryDetailUseCase
 import com.example.nativeminds.feature.reader.navigation.ReaderRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,6 +34,8 @@ private data class LoadKey(val storyId: Long, val retryToken: Int)
 class ReaderViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     observeStoryDetail: ObserveStoryDetailUseCase,
+    observeNarration: ObserveNarrationUseCase,
+    private val storyNarrator: StoryNarrator,
 ) : ViewModel() {
     private val storyId = savedStateHandle.toRoute<ReaderRoute>().storyId
 
@@ -39,9 +43,9 @@ class ReaderViewModel @Inject constructor(
 
     val state: StateFlow<ReaderUiState> = _state.asStateFlow()
 
-    private val effectChannel = Channel<ReaderEffect>(Channel.BUFFERED)
+    private val effectChannel = Channel<ReaderUiEffect>(Channel.BUFFERED)
 
-    val effects: Flow<ReaderEffect> = effectChannel.receiveAsFlow()
+    val effects: Flow<ReaderUiEffect> = effectChannel.receiveAsFlow()
 
     init {
         _state
@@ -50,16 +54,38 @@ class ReaderViewModel @Inject constructor(
             .flatMapLatest { key -> observeStoryDetail(key.storyId) }
             .onEach { onIntent(ReaderIntent.DetailChanged(it)) }
             .launchIn(viewModelScope)
+
+        observeNarration(storyId)
+            .onEach { onIntent(ReaderIntent.NarrationStateChanged(it)) }
+            .launchIn(viewModelScope)
     }
 
     /**
-     * The whole ViewModel's decision-making, and there is none: the reducer decides what the next
-     * state is and which effects the intent raised, and this applies both. A `when (intent)` here
-     * would be a second place that knows what intents mean.
+     * The reducer decides what the next state is, which effects the intent raised, and — for the
+     * three narration effects — which [StoryNarrator] call they mean; this only carries that
+     * decision out. [ReaderEffect.ShowAudioUnavailable] is the one effect meant for the screen, so
+     * it is the one forwarded to [effectChannel] instead of acted on here.
      */
     fun onIntent(intent: ReaderIntent) {
         val reduction = _state.value.reduce(intent)
         _state.value = reduction.state
-        reduction.effects.forEach(effectChannel::trySend)
+        reduction.effects.forEach { effect ->
+            when (effect) {
+                is ReaderEffect.StartNarration -> storyNarrator.start(storyId, effect.paragraphs)
+                ReaderEffect.PauseNarration -> storyNarrator.pause()
+                ReaderEffect.ResumeNarration -> storyNarrator.resume()
+                ReaderEffect.ShowAudioUnavailable ->
+                    effectChannel.trySend(ReaderUiEffect.ShowAudioUnavailable)
+            }
+        }
+    }
+
+    /**
+     * Leaving the screen stops narration and discards its position (FR-007/FR-008) — backgrounding
+     * the whole app does not call this, since the composable and this ViewModel stay alive behind
+     * the lock screen or another app; only popping the destination off the back stack does.
+     */
+    override fun onCleared() {
+        storyNarrator.stop()
     }
 }

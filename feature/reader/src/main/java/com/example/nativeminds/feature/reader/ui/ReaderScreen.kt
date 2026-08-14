@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
@@ -44,8 +45,10 @@ import com.example.nativeminds.feature.reader.ui.components.ListenPill
 import com.example.nativeminds.feature.reader.ui.components.ReaderBody
 import com.example.nativeminds.feature.reader.ui.components.ReaderTopBar
 import com.example.nativeminds.feature.reader.ui.components.ReaderUnavailableState
+import com.example.nativeminds.feature.reader.ui.components.paragraphItemIndex
 import com.example.nativeminds.feature.reader.ui.preview.ReaderPreviewCase
 import com.example.nativeminds.feature.reader.ui.preview.ReaderPreviewCases
+import kotlin.math.ceil
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 private const val PERCENT = 100
@@ -65,7 +68,7 @@ fun ReaderScreen(
     LaunchedEffect(viewModel, lifecycle) {
         viewModel.effects.flowWithLifecycle(lifecycle).collect { effect ->
             when (effect) {
-                ReaderEffect.ShowAudioUnavailable -> snackbarHostState.showSnackbar(audioMessage)
+                ReaderUiEffect.ShowAudioUnavailable -> snackbarHostState.showSnackbar(audioMessage)
             }
         }
     }
@@ -93,6 +96,10 @@ fun ReaderScreenContent(
     val listState = rememberLazyListState()
 
     ReadingProgressReporter(listState = listState, onIntent = onIntent)
+    NarrationScrollFollower(
+        listState = listState,
+        paragraphIndex = state.narrationHighlight?.paragraphIndex,
+    )
 
     Box(
         modifier = modifier
@@ -125,6 +132,7 @@ fun ReaderScreenContent(
                             end = NativeMindsTheme.spacing.screen,
                             bottom = NativeMindsTheme.sizes.footerScrim,
                         ),
+                        highlight = state.narrationHighlight,
                     )
 
                     if (content.body.isTruncated) {
@@ -173,6 +181,28 @@ private fun ReadingProgressReporter(listState: LazyListState, onIntent: (ReaderI
             .distinctUntilChanged()
             .collect { onIntent(ReaderIntent.ScrollProgressChanged(it)) }
     }
+}
+
+/**
+ * Keeps the paragraph being narrated on screen without taking the scroll away from the reader.
+ *
+ * Keyed on the paragraph rather than the highlight, so it acts once per paragraph instead of once
+ * per spoken word, and it stays still whenever the paragraph is already visible or the reader has
+ * a drag of their own in flight — an automatic scroll that fights the finger is worse than none.
+ */
+@Composable
+private fun NarrationScrollFollower(listState: LazyListState, paragraphIndex: Int?) {
+    LaunchedEffect(listState, paragraphIndex) {
+        if (paragraphIndex == null || listState.isScrollInProgress) return@LaunchedEffect
+        val item = paragraphItemIndex(paragraphIndex)
+        if (listState.layoutInfo.isFullyVisible(item)) return@LaunchedEffect
+        listState.animateScrollToItem(item)
+    }
+}
+
+private fun LazyListLayoutInfo.isFullyVisible(index: Int): Boolean {
+    val item = visibleItemsInfo.firstOrNull { it.index == index } ?: return false
+    return item.offset >= viewportStartOffset && item.offset + item.size <= viewportEndOffset
 }
 
 @Composable
@@ -255,16 +285,20 @@ private fun ReaderFooter(
             )
         } else if (!content.body.isTruncated) {
             ListenPill(
-                progressPercent = state.progressPercent,
-                remainingMinutes = remainingMinutes(content.story.minutes, state.progressPercent),
+                progress = state.listenPillProgress,
+                remainingMinutes = remainingMinutes(
+                    totalMinutes = content.story.minutes,
+                    progress = state.listenPillProgress,
+                ),
+                status = state.listenPillStatus,
                 onListenClick = { onIntent(ReaderIntent.ListenClicked) },
             )
         }
     }
 }
 
-private fun remainingMinutes(totalMinutes: Int, progressPercent: Int): Int =
-    (totalMinutes * (PERCENT - progressPercent)) / PERCENT
+private fun remainingMinutes(totalMinutes: Int, progress: Float): Int =
+    ceil(totalMinutes * (1f - progress)).toInt()
 
 /**
  * Every reader state × both themes from one declaration: [ScreenThemePreviews] supplies the

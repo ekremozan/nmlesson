@@ -1,5 +1,6 @@
 package com.example.nativeminds.feature.reader.ui
 
+import com.example.nativeminds.domain.model.NarrationState
 import com.example.nativeminds.domain.model.ReaderDetail
 import com.example.nativeminds.feature.reader.ui.mapper.toBodyUiModel
 import com.example.nativeminds.feature.reader.ui.mapper.toStoryUiModel
@@ -25,7 +26,23 @@ fun ReaderUiState.reduce(intent: ReaderIntent): Reduction = when (intent) {
         copy(progressPercent = intent.percent.coerceIn(MIN_PROGRESS, MAX_PROGRESS)),
     )
 
-    ReaderIntent.ListenClicked -> Reduction(this, listOf(ReaderEffect.ShowAudioUnavailable))
+    ReaderIntent.ListenClicked -> reduceListenClicked()
+
+    is ReaderIntent.NarrationStateChanged -> Reduction(copy(narration = intent.narration))
+}
+
+/**
+ * What tapping the pill means depends on what narration is already doing — the toggle behavior
+ * pause/resume/leave-and-return requires lives entirely in this one branch.
+ */
+private fun ReaderUiState.reduceListenClicked(): Reduction {
+    val body = readyContent?.body ?: return Reduction(this)
+    return when (narration) {
+        NarrationState.Idle -> Reduction(this, listOf(ReaderEffect.StartNarration(body.paragraphs)))
+        is NarrationState.Playing -> Reduction(this, listOf(ReaderEffect.PauseNarration))
+        is NarrationState.Paused -> Reduction(this, listOf(ReaderEffect.ResumeNarration))
+        is NarrationState.Unavailable -> Reduction(this, listOf(ReaderEffect.ShowAudioUnavailable))
+    }
 }
 
 private fun ReaderUiState.reduceDetail(detail: ReaderDetail): Reduction = when (detail) {
