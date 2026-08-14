@@ -6,63 +6,28 @@ import com.example.nativeminds.model.Story
  * Bootstrap content written to Room the first time the app runs with an empty database, so
  * offline-first holds even before the first successful sync — see [com.example.nativeminds.data.RoomStoryRepository.syncIfNeeded].
  *
+ * Each of [StorySeedBases.all]'s 20 pieces is published under its 5 titles, so this list holds
+ * 100 rows. Category and cover image are assigned by rotating through [StorySeedBases.CATEGORIES]
+ * and [StorySeedBases.COVER_KEYS] on the flat position of each row — since 100 divides evenly by
+ * both 4 and 10, every category ends up with exactly 25 stories and every cover with exactly 10,
+ * with no bookkeeping needed beyond the rotation itself.
+ *
  * Cut corner: hand-seeded content standing in for a real catalog until a backend exists.
  */
 object DummyStorySeed {
-    val stories = listOf(
-        Story(
-            id = 1,
-            category = "Fiction",
-            title = "The Lighthouse Keeper's Last Letter",
-            teaser = "Forty years of weather notes, and one page he never sent.",
-            minutes = 6,
-            hasAudio = true,
-            isLocked = false,
-        ),
-        Story(
-            id = 2,
-            category = "Science",
-            title = "Why Bread Rises",
-            teaser = "A single-celled organism, quietly doing all the work.",
-            minutes = 4,
-            hasAudio = true,
-            isLocked = false,
-        ),
-        Story(
-            id = 3,
-            category = "History",
-            title = "The Cartographer of Missing Islands",
-            teaser = "For a century, the map showed land that was never there.",
-            minutes = 8,
-            hasAudio = false,
-            isLocked = true,
-        ),
-        Story(
-            id = 4,
-            category = "Essays",
-            title = "On Walking Slowly",
-            teaser = "What a city gives back when you stop trying to cross it.",
-            minutes = 5,
-            hasAudio = true,
-            isLocked = false,
-        ),
-        Story(
-            id = 5,
-            category = "Fiction",
-            title = "Salt, and Other Things We Keep",
-            teaser = "Her grandmother's pantry held one jar nobody opened.",
-            minutes = 7,
-            hasAudio = true,
-            isLocked = true,
-        ),
-        Story(
-            id = 6,
-            category = "Science",
-            title = "The Bird That Sleeps Mid-Flight",
-            teaser = "Ten months aloft, half a brain awake at a time.",
-            minutes = 3,
-            hasAudio = false,
-            isLocked = false,
-        ),
-    )
+    val stories: List<Story> = StorySeedBases.all.flatMapIndexed { baseIndex, base ->
+        base.titles.mapIndexed { variantIndex, title ->
+            val flatIndex = baseIndex * StorySeedBases.VARIANTS_PER_BASE + variantIndex
+            Story(
+                id = (flatIndex + 1).toLong(),
+                category = StorySeedBases.CATEGORIES[flatIndex % StorySeedBases.CATEGORIES.size],
+                title = title,
+                teaser = base.teaser,
+                minutes = base.minutes,
+                hasAudio = base.hasAudio,
+                isLocked = base.isLocked,
+                image = StorySeedBases.COVER_KEYS[flatIndex % StorySeedBases.COVER_KEYS.size],
+            )
+        }
+    }
 }

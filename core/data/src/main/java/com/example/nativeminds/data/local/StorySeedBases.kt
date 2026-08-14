@@ -1,0 +1,437 @@
+package com.example.nativeminds.data.local
+
+/**
+ * One piece of writing behind the seed catalog, together with the five title variants it is
+ * published under.
+ *
+ * [DummyStorySeed] and [DummyStoryContentSeed] both fan this list out into 100 rows — this is the
+ * single place the actual words live, so a change to a story's text never has to be made twice.
+ */
+internal data class StorySeedBase(
+    val author: String,
+    val titles: List<String>,
+    val teaser: String,
+    val minutes: Int,
+    val hasAudio: Boolean,
+    val isLocked: Boolean,
+    val paragraphs: List<String>,
+)
+
+/**
+ * Cut corner: 20 hand-written pieces standing in for a real catalog until a backend exists. Each
+ * is published under 5 titles, and combined with a rotating category and cover image, becomes 100
+ * distinct catalog rows — see [DummyStorySeed] for how the rotation is computed.
+ */
+internal object StorySeedBases {
+    const val VARIANTS_PER_BASE = 5
+
+    val COVER_KEYS = (1..10).map { "cover_%02d".format(it) }
+    val CATEGORIES = listOf("Fiction", "Science", "History", "Essays")
+
+    val all: List<StorySeedBase> = listOf(
+        StorySeedBase(
+            author = "Marguerite Halloran",
+            titles = listOf(
+                "The Lighthouse Keeper's Last Letter",
+                "Forty Winters at the Light",
+                "The Letter He Never Sent",
+                "What the Log Kept Him",
+                "A Keeper's Weather",
+            ),
+            teaser = "Forty years of weather notes, and one page he never sent.",
+            minutes = 6,
+            hasAudio = true,
+            isLocked = false,
+            paragraphs = listOf(
+                "Forty winters he kept the log, and forty winters the log kept him. Wind from the northwest, it said. Swell moderate. Nothing to report. The sentences were short because the weather was long, and because a man who writes too much about the sea begins to argue with it.",
+                "The keeper's handwriting changed twice in those years. Once in 1931, when the light was converted and the great brass clockwork he had wound every four hours was carried down the stairs in pieces. Once in 1948, for reasons the log does not give.",
+                "Between the pages of the final volume, folded into eighths and soft as cloth, the inspectors found a letter. It was addressed to a house in Galway that had been empty for a decade. It was never sent, and it was never thrown away, which are two different kinds of keeping.",
+                "He wrote about the birds, mostly. How they arrived in October in numbers he had stopped trying to count, and how they left without any signal he could see. He wrote that he had grown used to being the only person who knew certain things: the exact hour the fog would lift, the name of the dog on the supply boat, the sound the lamp made in the last second before it caught.",
+                "And then, near the bottom of the second page, one line with no weather in it at all.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Dr. Peter Vance",
+            titles = listOf(
+                "Why Bread Rises",
+                "The Argument Inside a Loaf",
+                "What Yeast Wants",
+                "Oven Spring",
+                "The Quiet Work of a Single Cell",
+            ),
+            teaser = "A single-celled organism, quietly doing all the work.",
+            minutes = 4,
+            hasAudio = true,
+            isLocked = false,
+            paragraphs = listOf(
+                "A loaf of bread is a record of an argument between two gases and a net. The net is gluten, built out of two proteins that only become one structure once flour meets water and someone applies force. The gas is carbon dioxide, and it is produced by an organism that has no interest whatsoever in bread.",
+                "Yeast eats sugar. In the absence of enough oxygen it does so inefficiently, and the waste products of that inefficiency are alcohol and carbon dioxide. Every hole in the crumb of a loaf is a bubble the dough was strong enough to hold and elastic enough not to tear around.",
+                "This is why kneading matters and why over-kneading ruins things. Work the dough and the protein strands align into sheets that trap gas. Work it too long and the same sheets stiffen past the point where they can stretch, and the bubbles either escape or burst the structure they were held in.",
+                "The oven does the last, strangest part. In the first minutes of baking the gas inside every bubble expands with the heat, the alcohol boils off, and the loaf rises faster than it ever did on the counter. Bakers call it oven spring. It is the dough's final expansion, happening at the exact moment the crust is setting hard enough to make it permanent.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Tomás Ferreiro",
+            titles = listOf(
+                "The Cartographer of Missing Islands",
+                "An Island That Was Never There",
+                "Ninety-One Years on the Chart",
+                "The Clerk Who Erased an Island",
+                "Land Seen in Fog",
+            ),
+            teaser = "For a century, the map showed land that was never there.",
+            minutes = 8,
+            hasAudio = false,
+            isLocked = true,
+            paragraphs = listOf(
+                "For ninety-one years, the Admiralty chart showed an island at 44° south. Ships were told to give it a wide berth. Whalers reported its cliffs in fog. A cable company planned a station on it. There was no island.",
+                "The error began, as most durable errors do, with a careful man. In 1826 a sealing captain named Ross recorded land where he had seen a bank of low cloud, and because his other measurements were unusually good, the mistake inherited his credibility.",
+                "Cartographers copy each other. That is not a scandal; it is the method. Each new edition of the chart carried the island forward, and each printing made it harder to remove, until removing it required more authority than putting it there ever had.",
+                "What finally undid it was not a discovery but a bookkeeper. In 1917 a hydrographic clerk in London noticed that every sighting since 1826 had been reported by a vessel that already carried the chart, and none by a vessel that did not. The island existed only where it was expected.",
+                "It was struck from the record the following year, in a single line of correction that named no one. The clerk's own name survives on nothing but the memorandum, which is the fate of most people who remove things from maps.",
+                "There are, at last count, still four such islands on charts in active use. Nobody is in a hurry to look for them.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Ines Marchetti",
+            titles = listOf(
+                "On Walking Slowly",
+                "The Pace of an Injury",
+                "What a Shortcut Costs",
+                "Fifty Minutes Instead of Twenty",
+                "The Courtyard I Never Saw",
+            ),
+            teaser = "What a city gives back when you stop trying to cross it.",
+            minutes = 5,
+            hasAudio = true,
+            isLocked = false,
+            paragraphs = listOf(
+                "A city crossed at speed is a set of instructions. A city walked slowly is a set of accidents, and the accidents are the point.",
+                "I learned this by injury. Six weeks on a bad ankle turned my twenty-minute route into fifty, and in the extra thirty minutes I found a courtyard I had passed for four years without seeing, a man who sells one kind of cheese and nothing else, and the fact that my street runs downhill, which I had never once noticed while hurrying up it.",
+                "Speed is a filter. It keeps out noise, which is the argument for it, and it keeps out everything that resembles noise, which is the argument against. A shortcut is a decision to see less, made once and then repeated for years.",
+                "I am not recommending injury. I am recommending the pace of one, which you can adopt at any time, and which costs nothing but the belief that arriving is the part that matters.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Ada Ferreira",
+            titles = listOf(
+                "Salt, and Other Things We Keep",
+                "The Jar Nobody Opened",
+                "Four Kitchens, One Jar",
+                "What My Grandmother Wouldn't Say",
+                "The Habit of Moving It",
+            ),
+            teaser = "Her grandmother's pantry held one jar nobody opened.",
+            minutes = 7,
+            hasAudio = true,
+            isLocked = true,
+            paragraphs = listOf(
+                "There was a jar at the back of my grandmother's pantry that nobody opened, and everybody moved. It travelled through three kitchens and two countries, always to the back, always behind the things that were used.",
+                "It held salt. Coarse, grey, damp at the bottom in the way sea salt goes when it has been somewhere humid for long enough. There was no label. There was no story attached to it that anyone in the family could repeat without disagreeing about a detail.",
+                "My aunt said it came from the salt pans near where my grandmother was born, carried out in a coat pocket the week she left. My uncle said it was bought in a shop in 1974 and had simply outlived the meal it was meant for. Both of them were certain, and neither of them had ever asked.",
+                "My grandmother, when I finally asked her, looked at it for a while and said she could not remember either. Then she put it back at the back of the shelf, behind the things she used.",
+                "It is in my kitchen now. I have not opened it. I understand, at last, that the jar is not the point and never was — what the family kept was the habit of moving it, and I am the fourth kitchen.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Dr. Peter Vance",
+            titles = listOf(
+                "The Bird That Sleeps Mid-Flight",
+                "Ten Months Aloft",
+                "Half a Brain Awake",
+                "A Life Lived at Altitude",
+                "The Swift's Old Answer",
+            ),
+            teaser = "Ten months aloft, half a brain awake at a time.",
+            minutes = 3,
+            hasAudio = false,
+            isLocked = false,
+            paragraphs = listOf(
+                "The common swift lands to nest and for almost nothing else. Tagging studies have followed individual birds for ten months in continuous flight — feeding, mating, and sleeping without once touching down.",
+                "The sleeping is the part that resists belief. Swifts climb to two thousand metres at dusk, and there they enter a state that looks like sleep in one half of the brain while the other half stays awake enough to hold a course.",
+                "Dolphins do the same trick in water, and so do several ducks at the edge of a sleeping flock, keeping the outward eye open. It appears to be less an exotic adaptation than a common answer to an old problem: rest is not optional, and neither is watching.",
+                "What the swift adds is scale. Ten months is not a nap taken in shifts; it is an entire life lived at altitude, interrupted only by the few weeks a year in which the species remembers it has feet.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Dr. Peter Vance",
+            titles = listOf(
+                "Why Onions Make You Cry",
+                "The Chemistry of a Single Cut",
+                "A Reflex Borrowed From Grief",
+                "The Fastest Reaction in the Kitchen",
+                "What an Onion Does to Defend Itself",
+            ),
+            teaser = "A cut cell, an enzyme, and the fastest chemical reaction in your kitchen.",
+            minutes = 3,
+            hasAudio = true,
+            isLocked = false,
+            paragraphs = listOf(
+                "An onion does not want to be eaten, and it says so the moment a blade opens its cells. Two compartments that never touch in a whole onion — an enzyme in one, a sulfur compound in the other — are suddenly mixed, and the reaction between them is one of the fastest known in a kitchen.",
+                "The gas produced, syn-propanethial S-oxide, does not smell like much. It doesn't need to. It drifts up to the eye, where it meets the thin film of tears already coating the surface, and dissolves into a mild sulfuric acid — enough to sting, not enough to harm.",
+                "The eye responds the only way it knows how: it flushes. Reflex tears arrive within seconds, produced by glands that otherwise activate only for grief or wind, borrowed here for a chemistry problem instead.",
+                "Chilling an onion slows the enzyme; cutting underwater traps the gas before it rises. Both work by interrupting a reaction that took the plant millions of years to perfect, purely to keep from being eaten quietly.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Henrik Solberg",
+            titles = listOf(
+                "The Silent Auction of 1907",
+                "A Sale Conducted Without a Word",
+                "The Hat That Bid the Painting Up",
+                "What the Auctioneer's Ledger Left Out",
+                "A Room That Watched Itself Bid",
+            ),
+            teaser = "No one raised a paddle, and the painting sold for more than any in the room.",
+            minutes = 6,
+            hasAudio = false,
+            isLocked = true,
+            paragraphs = listOf(
+                "In March of 1907, a minor auction house in Antwerp sold a landscape attributed to no one in particular for a sum that embarrassed the room into silence. No bidder had spoken. No paddle had risen. The auctioneer's own ledger records the sale as if it had happened by itself.",
+                "It hadn't. Three collectors, unwilling to be seen wanting the same painting, had arranged in advance to signal bids by touching the brim of a hat — once for a raise, twice to withdraw. The system worked exactly as intended, which is why nobody in the room understood what they had watched.",
+                "The practice was not rare. Dealers of the period describe entire sales conducted this way, prices climbing in total silence while onlookers assumed the market had simply lost interest. The theatre of an auction, it turns out, was never the bidding — it was always the watching.",
+                "The painting itself was reattributed twice more before the century was out, and sold, both times, in the ordinary way, out loud. Nobody has ever explained why the silent method fell out of use, only that it did, all at once, as customs do.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Naomi Okafor",
+            titles = listOf(
+                "The Dog Who Learned to Read Faces",
+                "A Minute Before the Feeling Arrives",
+                "The Ordinary Dog Who Noticed Everything",
+                "Sitting Against the Right Leg",
+                "What He Read on Their Faces",
+            ),
+            teaser = "He wasn't trained. He was just paying closer attention than anyone else in the house.",
+            minutes = 5,
+            hasAudio = true,
+            isLocked = false,
+            paragraphs = listOf(
+                "The dog arrived thin and nameless in October and by December had worked out, without anyone teaching him, which of the three people in the house was about to cry before they knew it themselves. He would cross the room and sit against their leg a full minute early, every time.",
+                "Nobody could explain how he knew. The father thought it was smell. The daughter thought it was the way a voice changes half a sentence before the feeling does. The mother didn't think about it at all; she had simply stopped being surprised.",
+                "It only failed once, the week the grandmother died, when he sat against no one because everyone in the house was already past the point he watched for. He lay by the door instead, for four days, which the daughter later understood as its own kind of accuracy.",
+                "He was, in the end, an ordinary dog with an extraordinary habit of looking. What he read on their faces was never named directly, but the house got quieter around him anyway, in the specific way a room goes quiet when it is finally being listened to.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Priya Anand",
+            titles = listOf(
+                "What the Recipe Doesn't Say",
+                "Cook It Until It Is Done",
+                "The Instructions My Mother Left Out",
+                "A Trust Disguised as a Recipe",
+                "Two Hundred Pots of Learning",
+            ),
+            teaser = "Every family dish is missing an instruction nobody thought to write down.",
+            minutes = 4,
+            hasAudio = true,
+            isLocked = false,
+            paragraphs = listOf(
+                "My mother's recipe for the rice says to cook it until it is done, which is not an instruction so much as a memory disguised as one. She knows what done looks like. I am still learning to see it, twenty years and probably two hundred pots in.",
+                "Every family recipe has a sentence like this, the part that assumes a kitchen the reader already stood in as a child. Add the spices; you will know how much. Let it rest; you will know how long. The recipe is not a set of steps. It is a set of steps with the actual instructions removed and replaced with trust.",
+                "I have started writing my own version down, with the real measurements this time, in case there is a daughter someday who did not grow up in that kitchen and needs the numbers I was never given. I don't know yet if that is a gift or a loss.",
+                "Either way, a measuring cup makes the rice taste right, and only one of them is technically correct. My mother has never once used one, and her rice, done, is the only rice I have ever fully trusted.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Dr. Peter Vance",
+            titles = listOf(
+                "The Physics of a Skipping Stone",
+                "The Angle Nobody Gets Right on Purpose",
+                "What Keeps a Stone Out of the Water",
+                "Spin, Not Speed",
+                "Eighty Skips and a Narrow Angle",
+            ),
+            teaser = "The angle that matters most is one most people get wrong on purpose.",
+            minutes = 3,
+            hasAudio = true,
+            isLocked = false,
+            paragraphs = listOf(
+                "A stone thrown to skip is fighting two things at once: gravity, which wants it in the water, and its own spin, which is the only thing keeping it out. Between twenty and forty-five degrees of tilt, the flat face slaps the surface hard enough to bounce; outside that range, it simply enters.",
+                "Spin is the part almost everyone underestimates. A stone thrown without it will skip once, maybe twice, before the smallest wobble tips it under. A stone spinning at even a modest rate behaves like a gyroscope, resisting that wobble skip after skip, which is why the best throwers snap the wrist and don't just swing the arm.",
+                "Speed matters less than people assume, past a certain minimum. A fast, flat, well-spun stone at a modest fifteen-degree angle will out-skip a stronger throw at the wrong tilt every time. Physicists studying the sport found the optimum angle sits close to twenty degrees, almost exactly what champion throwers use without ever doing the math.",
+                "The record, as of the last careful count, stands past eighty skips, achieved with a stone flat enough, spun fast enough, and released at an angle so narrow it looks, on film, almost like a mistake.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Henrik Solberg",
+            titles = listOf(
+                "The Woman Who Mapped the Underground Rivers",
+                "A Map Built From Two Hundred Wells",
+                "What the Water Told Her",
+                "Eleven Years on Foot",
+                "The Map Signed Only With Initials",
+            ),
+            teaser = "She never went below ground once — she mapped it entirely from what the wells told her.",
+            minutes = 7,
+            hasAudio = false,
+            isLocked = true,
+            paragraphs = listOf(
+                "Elisabet Roos never once went underground, and yet by 1889 she had produced the most accurate map of the city's buried watercourses that anyone had drawn, working entirely from the temperature and mineral content of two hundred household wells.",
+                "The method was hers alone. Where a well ran cold and mineral-light in August, she reasoned, an underground stream ran close and fast beneath it; where it ran warm and heavy, the water had sat longer, further down, moving slowly if at all. She built the map one well at a time, on foot, over eleven years.",
+                "The city engineers dismissed it for a decade, relying instead on old construction records that turned out to be wrong in at least four places where new buildings had, without anyone predicting it, caused wells to run dry.",
+                "Her map was finally adopted in 1901, after the fourth such failure, and used without major correction for the next sixty years. She received no formal credit in her lifetime; the map itself, in the city archive, is still labelled only with her initials.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Naomi Okafor",
+            titles = listOf(
+                "A Return to the House on Elm Street",
+                "The Pencil Mark They Missed",
+                "A Ledger the House Kept Anyway",
+                "The Third Stair Still Creaks",
+                "A Box Addressed to No One",
+            ),
+            teaser = "The house had been sold twice since she left it, and it still knew her step on the stairs.",
+            minutes = 6,
+            hasAudio = true,
+            isLocked = true,
+            paragraphs = listOf(
+                "The new owners had painted over the pencil marks on the kitchen doorframe, the ones that had tracked her height every August for eleven years, but they had missed one, low and half-hidden by the baseboard, that put her, at age four, exactly level with the doorknob.",
+                "She had come back to collect nothing in particular — a box the estate agent had found in the attic, addressed to no one, that the current owners had been glad to be rid of. She had not expected the third stair to still creak in the same place, or for her hand to still know, without thinking, which way the bathroom door stuck.",
+                "The owners were kind about it, standing back while she looked, understanding without being told that she was not really seeing their kitchen at all. Houses keep this kind of ledger whether anyone asks them to; the new family was already halfway into their own version of it, marks that would mean nothing to her and everything to them.",
+                "She left with the box unopened, in the end. Some things, she had decided on the drive over, were better carried out than read on someone else's stairs.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Dr. Elena Kowalski",
+            titles = listOf(
+                "The Mathematics of Traffic Jams",
+                "A Jam With No Cause at All",
+                "The Wave That Moves Backward",
+                "What One Tapped Brake Becomes",
+                "Twenty Kilometers an Hour, Every Time",
+            ),
+            teaser = "No crash, no exit, no reason at all — and the highway stops anyway.",
+            minutes = 4,
+            hasAudio = true,
+            isLocked = false,
+            paragraphs = listOf(
+                "The strangest traffic jam is the one with no cause at all — no crash, no lane closure, no merge. Traffic engineers call it a phantom jam, and it can be produced, reliably, in a laboratory, using nothing but a ring of cars driven in a circle at a constant speed.",
+                "One driver taps the brake, for no particular reason. The driver behind reacts a fraction of a second late and brakes a little harder. The one behind that brakes harder still, and within a dozen cars the small, meaningless tap has become a full stop, propagating backward through the line like a wave.",
+                "The wave moves backward even though every car is moving forward, which is the part that confuses most people watching it happen. It travels at a fixed, almost eerie speed — roughly twenty kilometers an hour, regardless of how fast traffic was originally moving — because that speed is set by human reaction time, not by the cars.",
+                "The fix, where cities have tried it, is not more road. It's simply enough space between cars that one late brake tap has room to absorb itself before it reaches anyone else — which asks drivers to do the one thing the phantom jam depends on them never doing.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Tomás Ferreiro",
+            titles = listOf(
+                "The Last Telegraph Operator",
+                "Sending Into a Line Gone Dead",
+                "Eleven Months of Silence He Mistook",
+                "A Wire That Carried Nothing",
+                "The Sign-Off Nobody Received",
+            ),
+            teaser = "He kept sending for a network that had already stopped listening a year before.",
+            minutes = 8,
+            hasAudio = false,
+            isLocked = true,
+            paragraphs = listOf(
+                "By 1962, the transcontinental telegraph line through the station at Alcorta had exactly one subscriber left, a shipping office two towns over that sent a single confirmation message a week. The operator, a man named Duarte, kept the office open six days regardless, out of a sense of duty nobody had asked him to hold.",
+                "The line itself had been quietly decommissioned the year before, a fact the regional office had failed to inform him of, or perhaps had assumed he would notice. He hadn't. For eleven months, Duarte tapped out messages into a wire that carried them nowhere, receiving no replies, and attributed the silence to a distracted client.",
+                "He discovered the truth by accident, from a passing engineer repairing an unrelated line, who mentioned in passing that Alcorta's had been dead since the spring. Duarte's own account, recorded decades later by a local historian, describes not anger but a kind of relief — he had, he said, been growing tired of talking to no one and finally had a reason for it.",
+                "He closed the station the following week, the last of its kind in the province. The final message in his log, sent the day he learned the truth, was never received by anyone: a routine sign-off, out of habit, to a line that had stopped listening a year before he had.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Ada Ferreira",
+            titles = listOf(
+                "Two Sisters and a Broken Clock",
+                "Stopped at 4:17",
+                "The Hallway That Wouldn't Move On",
+                "A Museum of One Terrible Night",
+                "The Girl Who Wound It Back",
+            ),
+            teaser = "Neither of them would fix it, because neither of them agreed on what time it had stopped at.",
+            minutes = 5,
+            hasAudio = true,
+            isLocked = false,
+            paragraphs = listOf(
+                "The clock in the hallway had stopped at 4:17 the night their mother died, and in the nine years since, neither sister had allowed the other to fix it, though for entirely different reasons neither had ever said aloud.",
+                "The older one believed it should stay stopped, exactly as it was, a small refusal to let the house move forward without permission. The younger one believed the opposite — that fixing it was the only way to stop the hallway from being a museum of one terrible night, over and over, every time she walked past it.",
+                "They had negotiated around it for years without discussing it directly: dusting it, never touching the hands; mentioning, once a year around the date, that someone really ought to see to that clock, and then not seeing to it.",
+                "It was the younger sister's daughter, visiting at eleven years old and uninterested in either theory, who finally wound it back into motion one afternoon while nobody was watching, simply because a clock that didn't work bothered her. Neither sister ever said a word about it. The house has kept correct time since.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Ines Marchetti",
+            titles = listOf(
+                "On Forgetting a Language",
+                "The Verbs Went First",
+                "A Coastline, Grain by Grain",
+                "What Stayed Longest Were the Insults",
+                "The Shore It Used to Reach",
+            ),
+            teaser = "It doesn't leave all at once. It leaves the way a room empties — one object at a time.",
+            minutes = 4,
+            hasAudio = true,
+            isLocked = false,
+            paragraphs = listOf(
+                "I lost my grandmother's language the way I've heard people describe losing a limb they can still feel: slowly, then in a way that surprises you on an ordinary Tuesday, reaching for a word that used to be there without having to reach at all.",
+                "It didn't disappear all at once. The verbs went first, oddly, then the numbers past twenty, then, embarrassingly, the words for the vegetables I'd grown up eating twice a week. What stayed longest were the insults, which is either very funny or very sad, and I've never fully decided which.",
+                "Linguists have a word for this — attrition — as though a language wears down like a coastline, grain by grain, under water it never asked to be exposed to. That's about right. Nobody takes a language from you in a single afternoon. You just stop being the shore it used to reach.",
+                "I am trying to get it back now, badly, with an app and a patience I didn't have at twenty. Some of it returns easily, like it was only ever misplaced. Some of it, I suspect, is simply gone, the way certain rooms in a childhood house are gone even when the house still stands.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Dr. Elena Kowalski",
+            titles = listOf(
+                "The Secret Life of Ice",
+                "Eighteen Forms Nobody Has Touched",
+                "The Ice That Doesn't Float",
+                "Hot Ice, and Other Contradictions",
+                "A Hidden Taxonomy Behind One Cube",
+            ),
+            teaser = "Ordinary ice has at least eighteen known forms, and most of them have never touched a glass of water.",
+            minutes = 5,
+            hasAudio = true,
+            isLocked = false,
+            paragraphs = listOf(
+                "The ice in your freezer is called Ice I, and it is the only form most people will ever encounter, but physicists have catalogued at least eighteen distinct crystal structures of frozen water, most of them existing only under pressures no kitchen will ever produce.",
+                "Ice VII, for instance, forms only above about three gigapascals — roughly the pressure at the center of a small planet — and is, unusually, denser than the liquid water it froze from, unlike the ice that floats conveniently in your drink. Astronomers now believe it exists deep inside several of the solar system's icy moons.",
+                "Some forms are so structurally strange that they're colloquially called 'hot ice,' remaining solid at temperatures that would boil ordinary water, simply because the pressure is high enough to force the molecules into a rigid lattice regardless of how much thermal energy they're carrying.",
+                "Ice I, the familiar kind, is in this sense the odd one out: the only form of ice that floats, the only one common enough to have a season named after it. Every other form is a stranger, existing at pressures and depths that keep it entirely out of ordinary experience — a whole hidden taxonomy behind one unremarkable ice cube.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Naomi Okafor",
+            titles = listOf(
+                "The Merchant Who Sold Silence",
+                "Thirty Minutes for One Coin",
+                "The Stall That Sold Nothing You Could See",
+                "A Hunger for Quiet",
+                "An Inheritance of Permission",
+            ),
+            teaser = "He didn't sell goods. He sold the thirty minutes of quiet nobody in the market could otherwise afford.",
+            minutes = 6,
+            hasAudio = true,
+            isLocked = true,
+            paragraphs = listOf(
+                "Old Kesem kept a single stall at the edge of the market, no wider than a doorway, and sold nothing anyone could see: no cloth, no spice, no tool. What he sold, for a coin most people spent without thinking twice, was thirty minutes alone in the small curtained room behind his stall, with nothing in it but a chair.",
+                "The market did not understand him at first, and mocked the arrangement for a full season, until the vendors themselves — the loudest people in the loudest place in the city — began, quietly, to be his most frequent customers.",
+                "He never explained the price, which seemed arbitrary and was not: it was, he said once, the price of a good meal, because silence and food were, to a person who worked in that market twelve hours a day, exactly the same kind of hungry.",
+                "He never grew rich from it, and never seemed to want to. When he died, the curtained room passed to his nephew, who kept the price exactly the same, out of a respect he could not entirely explain either — some inheritances are not things but permissions, and this, he understood, was one of them.",
+            ),
+        ),
+        StorySeedBase(
+            author = "Priya Anand",
+            titles = listOf(
+                "The Weight of an Empty Room",
+                "The Phantom Room",
+                "What Moving the Furniture Didn't Fix",
+                "A Year to Actually Empty",
+                "Furnishing a Space That's Already Gone",
+            ),
+            teaser = "We moved out the furniture in an afternoon. The room took a great deal longer to actually empty.",
+            minutes = 4,
+            hasAudio = true,
+            isLocked = false,
+            paragraphs = listOf(
+                "We cleared my father's study in a single Saturday — the desk, the chair, the four decades of paper — and by evening the room was, by any reasonable measure, empty. It did not feel empty for another year.",
+                "A room holds more than what's in it, it turns out, and no amount of moving boxes touches the part that lingers: the particular quality of light at four in the afternoon that I only ever associate with him reading in that chair, the specific creak of the floor two steps from the door that I still, a year later, step around out of habit.",
+                "I have read since that this is common enough to have a name in grief literature — the phantom room, some call it, echoing the phantom limb — the mind's insistence on furnishing a space long after the furniture is gone, because the space itself was never really the point.",
+                "The room is a guest bedroom now, painted a color he would have found much too bright. I still, without meaning to, walk around the spot where the chair used to be. The room forgot faster than I did, which is either the room's mercy or its failure — I haven't decided, and I'm not sure it matters.",
+            ),
+        ),
+    )
+}
