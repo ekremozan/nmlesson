@@ -3,6 +3,7 @@ package com.example.nativeminds.database.di
 import android.content.Context
 import androidx.room.Room
 import com.example.nativeminds.database.MIGRATION_1_2
+import com.example.nativeminds.database.MIGRATION_2_3
 import com.example.nativeminds.database.NativeMindsDatabase
 import com.example.nativeminds.database.StoryContentDao
 import com.example.nativeminds.database.StoryDao
@@ -27,7 +28,7 @@ object DatabaseModule {
     @Singleton
     fun nativeMindsDatabase(@ApplicationContext context: Context): NativeMindsDatabase =
         Room.databaseBuilder(context, NativeMindsDatabase::class.java, DATABASE_NAME)
-            .addMigrations(MIGRATION_1_2)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
             .build()
 
     /**

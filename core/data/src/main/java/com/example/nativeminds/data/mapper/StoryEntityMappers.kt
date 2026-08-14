@@ -11,6 +11,7 @@ fun StoryEntity.toDomain(): Story = Story(
     minutes = minutes,
     hasAudio = hasAudio,
     isLocked = isLocked,
+    image = image,
 )
 
 fun Story.toEntity(): StoryEntity = StoryEntity(
@@ -21,4 +22,5 @@ fun Story.toEntity(): StoryEntity = StoryEntity(
     minutes = minutes,
     hasAudio = hasAudio,
     isLocked = isLocked,
+    image = image,
 )

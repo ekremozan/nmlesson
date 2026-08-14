@@ -46,4 +46,25 @@ class MigrationTest {
             assertEquals(0, cursor.getInt(0))
         }
     }
+
+    @Test
+    fun migratingFromTwoToThreeKeepsStoriesAndAddsImageColumn() {
+        helper.createDatabase(TEST_DATABASE, 1).use { database ->
+            database.execSQL(
+                """
+                INSERT INTO stories (id, category, title, teaser, minutes, hasAudio, isLocked)
+                VALUES (1, 'Fiction', 'The Lighthouse Keeper''s Last Letter', 'One page he never sent.', 6, 1, 0)
+                """.trimIndent(),
+            )
+        }
+        helper.runMigrationsAndValidate(TEST_DATABASE, 2, true, MIGRATION_1_2)
+
+        val migrated = helper.runMigrationsAndValidate(TEST_DATABASE, 3, true, MIGRATION_2_3)
+
+        migrated.query("SELECT title, image FROM stories").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("The Lighthouse Keeper's Last Letter", cursor.getString(0))
+            assertEquals("", cursor.getString(1))
+        }
+    }
 }

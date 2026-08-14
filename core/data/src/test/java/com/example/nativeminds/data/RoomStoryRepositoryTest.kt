@@ -125,6 +125,7 @@ class RoomStoryRepositoryTest {
                     minutes = story.minutes,
                     hasAudio = story.hasAudio,
                     isLocked = story.isLocked,
+                    image = story.image,
                 ),
             ),
         )

@@ -14,4 +14,5 @@ data class Story(
     val minutes: Int,
     val hasAudio: Boolean,
     val isLocked: Boolean,
+    val image: String,
 )

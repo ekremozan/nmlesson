@@ -26,6 +26,7 @@ class StoryContentDaoTest {
         minutes = 6,
         hasAudio = true,
         isLocked = false,
+        image = "cover_01",
     )
 
     private val content = StoryContentEntity(

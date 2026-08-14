@@ -14,6 +14,7 @@ private val story = Story(
     minutes = 8,
     hasAudio = false,
     isLocked = true,
+    image = "cover_03",
 )
 
 private fun initialState() =

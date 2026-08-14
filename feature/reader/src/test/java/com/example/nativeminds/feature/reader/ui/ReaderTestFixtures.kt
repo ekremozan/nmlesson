@@ -12,6 +12,7 @@ internal val unlockedStory = Story(
     minutes = 6,
     hasAudio = true,
     isLocked = false,
+    image = "cover_01",
 )
 
 internal val lockedStory = unlockedStory.copy(

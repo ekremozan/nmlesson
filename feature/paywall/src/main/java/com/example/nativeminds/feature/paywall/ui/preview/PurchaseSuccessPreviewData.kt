@@ -13,6 +13,7 @@ val PreviewResumeStory = Story(
     minutes = 8,
     hasAudio = false,
     isLocked = true,
+    image = "cover_03",
 )
 
 data class PurchaseSuccessPreviewCase(val label: String, val state: PurchaseSuccessUiState)
