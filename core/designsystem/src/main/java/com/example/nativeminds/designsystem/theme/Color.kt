@@ -74,5 +74,8 @@ internal val Sage700 = Color(0xFF56633F)
 internal val Sage800 = Color(0xFF3D472B)
 internal val Sage900 = Color(0xFF272E1B)
 
+/** The amber the design marks narrated words with — always laid over text at partial alpha. */
+internal val NarrationAmber = Color(0xFFF0B46A)
+
 /** The secondary accent: category labels, audio affordances, "available offline" states. */
 internal val Sage = Color(0xFF7A8A5E)

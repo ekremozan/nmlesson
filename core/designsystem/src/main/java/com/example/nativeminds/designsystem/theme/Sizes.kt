@@ -24,6 +24,10 @@ data class NativeMindsSizes(
     val readerCover: Dp = 150.dp,
     /** Inset of the hairline rule that closes a story, measured from each side. */
     val readerClosingRuleInset: Dp = 60.dp,
+    /** How far the narration highlight is grown past the word it marks, on every side. */
+    val narrationHighlightPadding: Dp = 3.dp,
+    /** Corner radius of that highlight, measured on its grown outer edge. */
+    val narrationHighlightRadius: Dp = 8.dp,
     /**
      * Height of the gradient that dissolves a restricted story into the page.
      *

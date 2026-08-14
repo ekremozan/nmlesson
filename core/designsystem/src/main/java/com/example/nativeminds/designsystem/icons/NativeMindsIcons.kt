@@ -233,6 +233,15 @@ object NativeMindsIcons {
         }
     }
 
+    /** Two filled bars — the listen control's Playing state, toggled with [Play]. */
+    @Composable
+    fun Pause(tint: Color, modifier: Modifier = Modifier, size: Dp = 17.dp) {
+        StrokeCanvas(modifier, size) { s, _ ->
+            drawRect(tint, topLeft = Offset(6f * s, 5f * s), size = Size(4f * s, 14f * s))
+            drawRect(tint, topLeft = Offset(14f * s, 5f * s), size = Size(4f * s, 14f * s))
+        }
+    }
+
     /** Benefit check in the premium sheet. */
     @Composable
     fun Check(tint: Color, modifier: Modifier = Modifier, size: Dp = 12.dp) {
@@ -309,6 +318,7 @@ private fun NativeMindsIconsPreview() {
             NativeMindsIcons.ChevronLeft(tint = tint, size = 24.dp)
             NativeMindsIcons.MoreVertical(tint = tint, size = 24.dp)
             NativeMindsIcons.Play(tint = tint, size = 24.dp)
+            NativeMindsIcons.Pause(tint = tint, size = 24.dp)
             NativeMindsIcons.Check(tint = tint, size = 24.dp)
             NativeMindsIcons.Download(tint = tint, size = 24.dp)
         }

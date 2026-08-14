@@ -60,6 +60,15 @@ data class NativeMindsColors(
     val premiumChipContent: Color,
     /** Filled portion of the reading-progress bar. */
     val readingProgress: Color,
+    /**
+     * Wash behind the words narration is speaking right now.
+     *
+     * The design's amber, laid over the page at partial alpha rather than as a solid fill: body
+     * text keeps drawing in `onBackground`, so the wash has to stay transparent enough for that
+     * text to keep passing WCAG AA as the highlight slides across it. The dark theme carries the
+     * same amber at a lower alpha — on the ink ground the identical value reads far heavier.
+     */
+    val narrationHighlight: Color,
     /** Round check beside a benefit line in the premium sheet. */
     val benefitCheckBackground: Color,
     /** The check glyph itself. */
@@ -86,6 +95,7 @@ internal val LightNativeMindsColors = NativeMindsColors(
     premiumChipBackground = Accent200,
     premiumChipContent = Accent700,
     readingProgress = Sage,
+    narrationHighlight = NarrationAmber.copy(alpha = 0.55f),
     benefitCheckBackground = Sage200,
     benefitCheckContent = Sage700,
     isDark = false,
@@ -112,6 +122,7 @@ internal val DarkNativeMindsColors = NativeMindsColors(
     premiumChipBackground = Accent800,
     premiumChipContent = Accent300,
     readingProgress = Sage400,
+    narrationHighlight = NarrationAmber.copy(alpha = 0.32f),
     benefitCheckBackground = Sage800,
     benefitCheckContent = Sage300,
     isDark = true,

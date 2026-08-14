@@ -61,6 +61,7 @@ private fun ThemeSpecimen() {
             SwatchRow("heroBand", NativeMindsTheme.colors.heroBand, MaterialTheme.colorScheme.onSurface)
             SwatchRow("premiumBadge", NativeMindsTheme.colors.premiumBadgeBackground, NativeMindsTheme.colors.premiumBadgeContent)
             SwatchRow("navInactive", NativeMindsTheme.colors.navInactive, MaterialTheme.colorScheme.background)
+            SwatchRow("narrationHighlight", NativeMindsTheme.colors.narrationHighlight, MaterialTheme.colorScheme.onBackground)
         }
 
         SpecimenSection("Type") {
