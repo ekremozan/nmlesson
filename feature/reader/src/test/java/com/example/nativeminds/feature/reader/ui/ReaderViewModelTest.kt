@@ -58,6 +58,10 @@ private class TestEntitlementRepository(premium: Boolean = false) : EntitlementR
     val flow = MutableStateFlow(premium)
 
     override fun isPremium(): Flow<Boolean> = flow
+
+    override fun setPremium(value: Boolean) {
+        flow.value = value
+    }
 }
 
 private class SilentErrorReporter : ErrorReporter {

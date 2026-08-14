@@ -11,14 +11,6 @@
     <string name="reader_audio_unavailable">Listening is not available yet.</string>
 
     <string name="reader_unlock_show">Unlock the full story</string>
-    <string name="reader_unlock_title">Unlock the full story</string>
-    <string name="reader_unlock_body">You\'ve read the first %1$d%%. Premium opens this one and everything else in the library.</string>
-    <string name="reader_unlock_benefit_library">Every story, including new ones weekly</string>
-    <string name="reader_unlock_benefit_audio">Narrated audio for the whole library</string>
-    <string name="reader_unlock_benefit_ai">Ask AI about anything you read</string>
-    <string name="reader_unlock_action">Start 7 days free</string>
-    <string name="reader_unlock_terms">Then $4.99/month · cancel anytime</string>
-    <string name="reader_subscription_unavailable">Subscriptions are not available yet.</string>
 
     <string name="reader_offline_title">You\'re offline</string>
     <string name="reader_offline_body">This story hasn\'t been downloaded yet. Reconnect and try again.</string>

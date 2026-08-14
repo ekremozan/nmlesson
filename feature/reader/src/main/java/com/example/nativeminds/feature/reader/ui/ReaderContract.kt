@@ -29,15 +29,6 @@ sealed interface ReaderContentUiState {
 data class ReaderUiState(
     val storyId: Long,
     val content: ReaderContentUiState = ReaderContentUiState.Loading,
-    val isUnlockSheetVisible: Boolean = false,
-    /**
-     * Whether the reader has already closed the sheet once.
-     *
-     * A fact about what the person did, not derivable from anything else: without it, every
-     * re-emission of the same restricted story would shove the sheet back over the text they just
-     * dismissed it to read.
-     */
-    val hasDismissedUnlockSheet: Boolean = false,
     val progressPercent: Int = 0,
     /**
      * Incremented by a retry so the load key changes and the content flow re-subscribes.
@@ -52,9 +43,6 @@ data class ReaderUiState(
 
     val isRestricted: Boolean
         get() = readyContent?.body?.isTruncated == true
-
-    val showUnlockAffordance: Boolean
-        get() = isRestricted && !isUnlockSheetVisible
 }
 
 sealed interface ReaderIntent {
@@ -65,18 +53,10 @@ sealed interface ReaderIntent {
 
     data class ScrollProgressChanged(val percent: Int) : ReaderIntent
 
-    data object UnlockSheetDismissed : ReaderIntent
-
-    data object UnlockSheetRequested : ReaderIntent
-
-    data object SubscribeClicked : ReaderIntent
-
     data object ListenClicked : ReaderIntent
 }
 
 sealed interface ReaderEffect {
-    data object ShowSubscriptionUnavailable : ReaderEffect
-
     data object ShowAudioUnavailable : ReaderEffect
 }
 

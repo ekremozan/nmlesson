@@ -36,37 +36,12 @@ class ReaderReducerTest {
     }
 
     @Test
-    fun restrictedContentOpensTheUnlockSheet() {
+    fun restrictedContentMarksTheStateAsRestricted() {
         val reduction = initialState().reduce(
             ReaderIntent.DetailChanged(ReaderDetail.Available(previewAccess)),
         )
 
         assertTrue(reduction.state.isRestricted)
-        assertTrue(reduction.state.isUnlockSheetVisible)
-    }
-
-    @Test
-    fun aDismissedSheetIsNotReopenedByTheSameStoryArrivingAgain() {
-        val dismissed = initialState()
-            .reduce(ReaderIntent.DetailChanged(ReaderDetail.Available(previewAccess))).state
-            .reduce(ReaderIntent.UnlockSheetDismissed).state
-
-        val reopened = dismissed
-            .reduce(ReaderIntent.DetailChanged(ReaderDetail.Available(previewAccess))).state
-
-        assertFalse(reopened.isUnlockSheetVisible)
-        assertTrue(reopened.showUnlockAffordance)
-    }
-
-    @Test
-    fun theReaderCanAskForTheSheetBack() {
-        val dismissed = initialState()
-            .reduce(ReaderIntent.DetailChanged(ReaderDetail.Available(previewAccess))).state
-            .reduce(ReaderIntent.UnlockSheetDismissed).state
-
-        val requested = dismissed.reduce(ReaderIntent.UnlockSheetRequested).state
-
-        assertTrue(requested.isUnlockSheetVisible)
     }
 
     @Test
@@ -78,7 +53,6 @@ class ReaderReducerTest {
             .reduce(ReaderIntent.DetailChanged(ReaderDetail.Available(fullAccess))).state
 
         assertFalse(unlocked.isRestricted)
-        assertFalse(unlocked.isUnlockSheetVisible)
     }
 
     @Test
@@ -100,16 +74,6 @@ class ReaderReducerTest {
 
         assertEquals(100, over.progressPercent)
         assertEquals(0, under.progressPercent)
-    }
-
-    @Test
-    fun subscribingReportsThatItIsUnavailableAndChangesNothing() {
-        val state = initialState()
-
-        val reduction = state.reduce(ReaderIntent.SubscribeClicked)
-
-        assertEquals(state, reduction.state)
-        assertEquals(listOf(ReaderEffect.ShowSubscriptionUnavailable), reduction.effects)
     }
 
     @Test

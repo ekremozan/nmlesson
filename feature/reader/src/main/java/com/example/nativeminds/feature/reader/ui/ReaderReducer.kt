@@ -25,17 +25,6 @@ fun ReaderUiState.reduce(intent: ReaderIntent): Reduction = when (intent) {
         copy(progressPercent = intent.percent.coerceIn(MIN_PROGRESS, MAX_PROGRESS)),
     )
 
-    ReaderIntent.UnlockSheetDismissed -> Reduction(
-        copy(isUnlockSheetVisible = false, hasDismissedUnlockSheet = true),
-    )
-
-    ReaderIntent.UnlockSheetRequested -> Reduction(copy(isUnlockSheetVisible = true))
-
-    ReaderIntent.SubscribeClicked -> Reduction(
-        this,
-        listOf(ReaderEffect.ShowSubscriptionUnavailable),
-    )
-
     ReaderIntent.ListenClicked -> Reduction(this, listOf(ReaderEffect.ShowAudioUnavailable))
 }
 
@@ -49,10 +38,7 @@ private fun ReaderUiState.reduceDetail(detail: ReaderDetail): Reduction = when (
     is ReaderDetail.Available -> {
         val body = detail.access.toBodyUiModel()
         Reduction(
-            copy(
-                content = ReaderContentUiState.Ready(detail.access.toStoryUiModel(), body),
-                isUnlockSheetVisible = body.isTruncated && !hasDismissedUnlockSheet,
-            ),
+            copy(content = ReaderContentUiState.Ready(detail.access.toStoryUiModel(), body)),
         )
     }
 }

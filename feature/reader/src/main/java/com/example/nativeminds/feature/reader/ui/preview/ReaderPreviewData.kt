@@ -73,12 +73,10 @@ class ReaderPreviewCases : PreviewParameterProvider<ReaderPreviewCase> {
             ),
         ),
         ReaderPreviewCase(
-            label = "Restricted, sheet dismissed",
+            label = "Restricted",
             state = ReaderUiState(
                 storyId = PreviewPremiumStory.id,
                 content = ReaderContentUiState.Ready(PreviewPremiumStory, PreviewTruncatedBody),
-                isUnlockSheetVisible = false,
-                hasDismissedUnlockSheet = true,
             ),
         ),
         ReaderPreviewCase(

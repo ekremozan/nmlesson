@@ -115,7 +115,7 @@ private fun ProgressTrack(progressPercent: Int) {
         )
     }
 }
-s
+
 @ThemePreviews
 @Composable
 private fun ListenPillPreview() {

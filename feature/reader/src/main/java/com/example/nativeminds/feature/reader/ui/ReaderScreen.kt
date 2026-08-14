@@ -16,12 +16,10 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,7 +41,6 @@ import com.example.nativeminds.designsystem.theme.NativeMindsTheme
 import com.example.nativeminds.designsystem.theme.Pill
 import com.example.nativeminds.feature.reader.R
 import com.example.nativeminds.feature.reader.ui.components.ListenPill
-import com.example.nativeminds.feature.reader.ui.components.PremiumUnlockSheet
 import com.example.nativeminds.feature.reader.ui.components.ReaderBody
 import com.example.nativeminds.feature.reader.ui.components.ReaderTopBar
 import com.example.nativeminds.feature.reader.ui.components.ReaderUnavailableState
@@ -56,21 +53,18 @@ private const val PERCENT = 100
 @Composable
 fun ReaderScreen(
     onBack: () -> Unit,
+    onUnlockRequested: (storyId: Long, progressPercent: Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ReaderViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val subscriptionMessage = stringResource(R.string.reader_subscription_unavailable)
     val audioMessage = stringResource(R.string.reader_audio_unavailable)
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     LaunchedEffect(viewModel, lifecycle) {
         viewModel.effects.flowWithLifecycle(lifecycle).collect { effect ->
             when (effect) {
-                ReaderEffect.ShowSubscriptionUnavailable ->
-                    snackbarHostState.showSnackbar(subscriptionMessage)
-
                 ReaderEffect.ShowAudioUnavailable -> snackbarHostState.showSnackbar(audioMessage)
             }
         }
@@ -81,22 +75,22 @@ fun ReaderScreen(
         snackbarHostState = snackbarHostState,
         onIntent = viewModel::onIntent,
         onBack = onBack,
+        onUnlockRequested = { onUnlockRequested(state.storyId, state.progressPercent) },
         modifier = modifier,
     )
 }
 
 /** Stateless so it is directly usable from previews and Compose tests. */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReaderScreenContent(
     state: ReaderUiState,
     snackbarHostState: SnackbarHostState,
     onIntent: (ReaderIntent) -> Unit,
     onBack: () -> Unit,
+    onUnlockRequested: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
-    val sheetState = rememberModalBottomSheetState()
 
     ReadingProgressReporter(listState = listState, onIntent = onIntent)
 
@@ -143,6 +137,7 @@ fun ReaderScreenContent(
         ReaderFooter(
             state = state,
             onIntent = onIntent,
+            onUnlockRequested = onUnlockRequested,
             modifier = Modifier.align(Alignment.BottomCenter),
         )
 
@@ -150,15 +145,6 @@ fun ReaderScreenContent(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter),
         )
-
-        if (state.isUnlockSheetVisible) {
-            PremiumUnlockSheet(
-                freeSharePercent = state.readyContent?.body?.freeSharePercent ?: 0,
-                sheetState = sheetState,
-                onDismiss = { onIntent(ReaderIntent.UnlockSheetDismissed) },
-                onSubscribe = { onIntent(ReaderIntent.SubscribeClicked) },
-            )
-        }
     }
 }
 
@@ -231,6 +217,7 @@ private fun BoxScope.BodyFade() {
 private fun ReaderFooter(
     state: ReaderUiState,
     onIntent: (ReaderIntent) -> Unit,
+    onUnlockRequested: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val content = state.readyContent ?: return
@@ -252,7 +239,7 @@ private fun ReaderFooter(
             ),
         contentAlignment = Alignment.BottomCenter,
     ) {
-        if (state.showUnlockAffordance) {
+        if (state.isRestricted) {
             Text(
                 text = stringResource(R.string.reader_unlock_show),
                 style = NativeMindsTheme.typography.actionLabel,
@@ -263,7 +250,7 @@ private fun ReaderFooter(
                     .height(NativeMindsTheme.sizes.actionButton)
                     .clip(Pill)
                     .background(MaterialTheme.colorScheme.primary)
-                    .clickable { onIntent(ReaderIntent.UnlockSheetRequested) }
+                    .clickable(onClick = onUnlockRequested)
                     .padding(vertical = NativeMindsTheme.spacing.md),
             )
         } else if (!content.body.isTruncated) {
@@ -294,6 +281,7 @@ private fun ReaderScreenContentPreview(
             snackbarHostState = remember { SnackbarHostState() },
             onIntent = {},
             onBack = {},
+            onUnlockRequested = {},
         )
     }
 }

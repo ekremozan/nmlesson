@@ -14,8 +14,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ReaderRoute(val storyId: Long)
 
-fun NavGraphBuilder.readerScreen(onBack: () -> Unit) {
+fun NavGraphBuilder.readerScreen(
+    onBack: () -> Unit,
+    onUnlockRequested: (storyId: Long, progressPercent: Int) -> Unit,
+) {
     composable<ReaderRoute> {
-        ReaderScreen(onBack = onBack)
+        ReaderScreen(onBack = onBack, onUnlockRequested = onUnlockRequested)
     }
 }
