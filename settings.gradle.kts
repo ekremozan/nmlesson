@@ -31,4 +31,5 @@ include(":core:common")
 include(":core:database")
 include(":core:data")
 include(":feature:home")
+include(":feature:reader")
  
