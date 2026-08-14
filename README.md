@@ -119,6 +119,11 @@ recompiling any feature. `:app` is the single place where contract meets impleme
 | Cover image field | `Story.image: String` holds an opaque key (`"cover_01"`…`"cover_10"`), resolved to a drawable only in `:core:designsystem`'s `StoryCoverAssets` | `:core:model` has no Android dependency; a `@DrawableRes Int` on the domain model would have forced one. The key is a plain column, so it survives Room round-trips and mapping through every layer with no special casing | Swapping to remote cover art later means changing what the key resolves to (a URL instead of a resource id) without touching the domain model or the database schema |
 | Cover art itself | 10 procedural vector drawables (`story_cover_01.xml`…`_10.xml`), API 24+ gradient `<vector>`s built from the existing Organic palette tokens | No Coil/image-loading dependency, no network fetch, no extra APK weight from bitmaps — offline-first holds for images the same way it already does for text | Visually abstract, not illustrative; see Cut Corners |
 | 100-story generation | 20 hand-written pieces (`StorySeedBases.kt`), each published under 5 titles; `DummyStorySeed`/`DummyStoryContentSeed` fan that out by a flat index (`baseIndex * 5 + variantIndex`) and rotate category (`% 4`) and cover (`% 10`) on that index | 100 divides evenly by both 4 and 10, so the rotation alone guarantees exactly 25 stories per category and exactly 10 per cover with no separate bookkeeping table. A unit test (`DummyStorySeedTest`) pins both invariants plus id uniqueness | The same paragraphs appear under 5 different titles — an intentional trade for catalog size over content volume; see Cut Corners |
+| **Story → Lesson repurposing** — short fiction replaced with subject/topic lesson content (Biyoloji, Tarih, Coğrafya, Kimya × 10 topics each) | | | |
+| Rename scope | Full `Story*` → `Lesson*` rename across every module (model, database, data, audio, all UI feature modules), and `category` → `subject` everywhere it names the lesson's subject field | The old fiction-app naming would have read as a lie next to lesson content — "story", "category" and 10 generic cover keys all meant something different once the content became educational. Doing it as one mechanical pass (script-driven identifier rename + manual fixups) kept it reviewable as a rename, not entangled with the content change | 102 files touched; the size is why it's its own commit/PR tier ahead of any real content authoring |
+| Database migration `3→4` | `MIGRATION_3_4` renames `stories`→`lessons`, `story_content`→`lesson_content`, `category`→`subject`, then `DELETE FROM lessons`/`lesson_content` | The catalog's *shape* changed (100 rotated fiction rows → 40 authored subject/topic rows), not just column names — there is no sane row-by-row mapping from the old catalog to the new one. `RoomLessonRepository.syncIfNeeded()` already reseeds on `count() == 0`, so clearing is what makes the next launch clean rather than half-migrated | Anyone who had the pre-rename build installed loses their local seed data on upgrade — acceptable for a demo app with no production installs, logged here rather than left silent |
+| Image model | Kept a single `image: String` field on `Lesson`/`LessonEntity` (no new column), but it's now derived from `subject` at seed time — one of 4 fixed keys (`subject_biology` etc.), not an independently authored per-row value | Cheapest path to "one image per subject": no migration beyond the rename, no mapper changes beyond the seed. `SubjectImageAssets` (was `LessonCoverAssets`) shrank from a 10-key to a 4-key lookup | The field can in principle drift from `subject` since nothing enforces the derivation past the seed — a fully normalized version would compute the drawable key from `subject` in `SubjectImageAssets` directly and drop the column; revisit at 10× if lesson-level (not subject-level) art is ever wanted |
+| Premium gating pattern | Per-subject: first 3 of each subject's 10 topics ship `isLocked = false`, the rest `true` — same `isLocked` + `ReaderAccess`/`FreePreviewRule` mechanism as before, just a different seed distribution | Reuses the existing, already-tested gating path unchanged; only the seed data's `isLocked` assignment needed to change | Locked/free ratio (3-of-10) is a seed-time constant, not a rule — moving it (e.g. per-subject override) means editing each `*Lessons.kt` file by hand |
 
 ## 🤖 How I Worked With AI
 
@@ -242,9 +247,22 @@ Reader feature (spec-driven pass, `specs/001-story-detail-reader/`):
   empty host and prove nothing. This is the "written reason" the preview rule asks for.
 - `HomeUiState` is no longer shared with `WhileSubscribed(5_000)` — MVI needs state to survive
   without subscribers so reducer results are not lost, so it is a plain always-hot `MutableStateFlow`.
-  The category `Flow` is therefore collected for the ViewModel's whole life rather than stopping
+  The subject `Flow` is therefore collected for the ViewModel's whole life rather than stopping
   five seconds after the screen goes away. One Room query; acceptable now, worth revisiting if a
   screen ever observes something expensive.
+- **Lesson bodies are still short placeholder text, not the ~500-line konu anlatımı target.** The
+  Story→Lesson rename (Faz A) ships all 40 topics (Biyoloji/Tarih/Coğrafya/Kimya × 10) with real
+  but short Turkish content (2-3 paragraphs each) so the whole pipeline — seeding, paging, search,
+  reader, premium gating, TTS — can be verified end-to-end without waiting on ~20,000 lines of
+  authored prose. Writing the real long-form content is deliberately deferred to separate follow-up
+  passes (one per subject), reviewed topic-by-topic rather than as one large diff.
+- **The 10 topic titles per subject are a first pass, not a vetted curriculum.** They were chosen
+  to read as plausible lise-level topics for each subject but haven't been checked against an
+  actual curriculum; expect them to be adjusted once real content is written.
+- **Every seeded lesson claims `hasAudio = true`.** Narration is meant to work universally for
+  lesson content, so nothing in the seed currently exercises the "no audio" reader/list state that
+  the old fiction catalog demonstrated — worth adding back as an explicit test case if that state
+  still needs coverage.
 
 ## 🔭 What I'd Do Next / At 10× Scale
 
