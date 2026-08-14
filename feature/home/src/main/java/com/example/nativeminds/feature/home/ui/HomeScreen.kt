@@ -59,6 +59,7 @@ private val BottomBarInset = 108.dp
 
 @Composable
 fun HomeScreen(
+    onStoryClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -81,6 +82,7 @@ fun HomeScreen(
         stories = stories,
         snackbarHostState = snackbarHostState,
         onIntent = viewModel::onIntent,
+        onStoryClick = onStoryClick,
         modifier = modifier,
     )
 }
@@ -92,6 +94,7 @@ fun HomeScreenContent(
     stories: LazyPagingItems<StoryUiModel>,
     snackbarHostState: SnackbarHostState,
     onIntent: (HomeIntent) -> Unit,
+    onStoryClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val isEmpty = stories.itemCount == 0 && stories.loadState.refresh is LoadState.NotLoading
@@ -165,7 +168,7 @@ fun HomeScreenContent(
                         val story = stories[index] ?: return@items
                         StoryCard(
                             story = story,
-                            onClick = {},
+                            onClick = { onStoryClick(story.id) },
                             modifier = Modifier.padding(
                                 horizontal = NativeMindsTheme.spacing.screen,
                                 vertical = 7.dp,
@@ -237,7 +240,13 @@ private fun HomeScreenContentPreview(
 ) {
     NativeMindsTheme {
         val stories = flowOf(PagingData.from(case.stories)).collectAsLazyPagingItems()
-        HomeScreenContent(case.state, stories, remember { SnackbarHostState() }, onIntent = {})
+        HomeScreenContent(
+            state = case.state,
+            stories = stories,
+            snackbarHostState = remember { SnackbarHostState() },
+            onIntent = {},
+            onStoryClick = {},
+        )
     }
 }
 

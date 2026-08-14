@@ -6,6 +6,7 @@ import com.example.nativeminds.domain.usecase.GetCategoriesUseCase
 import com.example.nativeminds.domain.usecase.GetPagedStoriesUseCase
 import com.example.nativeminds.domain.usecase.SyncStoriesUseCase
 import com.example.nativeminds.model.Story
+import com.example.nativeminds.model.StoryContent
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -46,6 +47,12 @@ private class RecordingStoryRepository : StoryRepository {
     }
 
     override fun categories(): Flow<List<String>> = categories
+
+    override fun story(id: Long): Flow<Story?> = flowOf(null)
+
+    override fun storyContent(id: Long): Flow<StoryContent?> = flowOf(null)
+
+    override suspend fun refreshContent(id: Long) = Unit
 
     override suspend fun syncIfNeeded() {
         syncCalls++
