@@ -6,6 +6,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.example.nativeminds.feature.home.navigation.HomeRoute
 import com.example.nativeminds.feature.home.navigation.homeScreen
+import com.example.nativeminds.feature.paywall.navigation.PaywallRoute
+import com.example.nativeminds.feature.paywall.navigation.PurchaseSuccessRoute
+import com.example.nativeminds.feature.paywall.navigation.paywallScreen
+import com.example.nativeminds.feature.paywall.navigation.purchaseSuccessScreen
 import com.example.nativeminds.feature.reader.navigation.ReaderRoute
 import com.example.nativeminds.feature.reader.navigation.readerScreen
 
@@ -27,6 +31,22 @@ fun NativeMindsNavHost(modifier: Modifier = Modifier) {
         modifier = modifier,
     ) {
         homeScreen(onStoryClick = { storyId -> navController.navigate(ReaderRoute(storyId)) })
-        readerScreen(onBack = navController::navigateUp)
+        readerScreen(
+            onBack = navController::navigateUp,
+            onUnlockRequested = { storyId, progressPercent ->
+                navController.navigate(PaywallRoute(storyId, progressPercent))
+            },
+        )
+        paywallScreen(
+            onClose = navController::navigateUp,
+            onPurchased = { storyId, progressPercent, plan ->
+                navController.popBackStack()
+                navController.navigate(PurchaseSuccessRoute(storyId, progressPercent, plan))
+            },
+        )
+        purchaseSuccessScreen(
+            onContinueReading = { navController.popBackStack() },
+            onExploreLibrary = { navController.popBackStack(HomeRoute, inclusive = false) },
+        )
     }
 }
