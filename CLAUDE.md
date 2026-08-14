@@ -87,6 +87,10 @@ Intended shape (adjust as the implementation evolves and keep this section curre
   - `:core:common` — dispatcher qualifiers (`@IoDispatcher`, `@DefaultDispatcher`) and
     `@ApplicationScope`.
   - `:core:model`, `:core:designsystem` — shared domain models and the theme/token layer.
+  - `:core:audio` — `StoryNarrator`'s on-device implementation (`TextToSpeech`), the
+    `MediaSessionService`/`SimpleBasePlayer` that hosts it behind a system media notification, and
+    the `@Binds` that connects it to the `:core:domain` contract — the same shape as `:core:data`
+    for repositories.
 - **Dependency injection: Hilt.** Every dependency is resolved by Hilt — there are no service
   locators, no `getInstance()` singletons, and no hand-written `ViewModel` factories, and none
   should be reintroduced. A new dependency means: `@Inject constructor` on the class, and a
@@ -97,7 +101,14 @@ Intended shape (adjust as the implementation evolves and keep this section curre
   `data/` (repositories, local cache, remote source).
 - **Model separation (mandatory)**: data model (DTO/entity), domain model, and UI model are always separate classes. Conversions go through mappers written as **extension functions** (e.g. `StoryDto.toDomain()`, `Story.toUiModel()`). Never pass a DTO/entity directly to the UI.
 - **Offline-first**: local database (Room) is the single source of truth; remote data syncs into it. Reading works fully offline; audio gracefully degrades.
-- **Audio**: TTS or pre-generated audio via Media3 — decision to be recorded when made.
+- **Audio**: on-device `TextToSpeech`, spoken one sentence per utterance so pausing has a real
+  point to resume at. Exposed to the system as a `androidx.media3.session` `MediaSession` (a
+  `SimpleBasePlayer` wrapping the narrator) so narration keeps playing and stays controllable
+  behind the lock screen or another app, matching the "Media3" half of the decision this line used
+  to flag as pending — see `specs/003-listen-tts-playback/research.md` and the README's Key
+  Decisions table. Sentence segmentation itself lives in `:core:domain`
+  (`narration/StorySentences.kt`) and keeps each sentence's character range in its paragraph, so
+  the reader can highlight the words being spoken without depending on `:core:audio`.
 - **Premium state**: a single subscription/entitlement source of truth that all gating checks go
   through (never scatter `isPremium` checks against raw storage). That source is
   `EntitlementRepository` in `:core:domain`; the gating *rule* lives in a domain use case and
