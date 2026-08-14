@@ -4,7 +4,7 @@ package com.example.nativeminds.audio
 
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
-import com.example.nativeminds.domain.narration.StoryNarrator
+import com.example.nativeminds.domain.narration.LessonNarrator
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -17,15 +17,15 @@ import kotlinx.coroutines.cancel
  * controllable (play/pause) from the system media notification while the app is backgrounded or
  * the screen is locked.
  *
- * Narration itself lives in the app-scoped [StoryNarrator], not in this service — this service
- * only keeps the process a foreground one and republishes [StoryNarrator]'s state as a
+ * Narration itself lives in the app-scoped [LessonNarrator], not in this service — this service
+ * only keeps the process a foreground one and republishes [LessonNarrator]'s state as a
  * [androidx.media3.common.Player] for the session to expose. It stops with the rest of the app's
  * in-memory state if the process is killed, same as the narrator itself.
  */
 @AndroidEntryPoint
 class NarrationSessionService : MediaSessionService() {
     @Inject
-    lateinit var storyNarrator: StoryNarrator
+    lateinit var lessonNarrator: LessonNarrator
 
     /**
      * Main dispatcher, not the default one: media3 requires every [androidx.media3.common.Player]
@@ -38,7 +38,7 @@ class NarrationSessionService : MediaSessionService() {
     override fun onCreate() {
         super.onCreate()
         val player = NarrationPlayer(
-            narrator = storyNarrator,
+            narrator = lessonNarrator,
             notificationTitle = getString(R.string.narration_notification_title),
         )
         player.startObserving(serviceScope)

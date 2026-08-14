@@ -40,11 +40,11 @@ private const val FILL_MILLIS = 300
  * The floating control at the foot of the reader: a listen action and how far narration has got.
  *
  * The bar is a measure of **listening**, taken from the words spoken rather than from the scroll
- * position: the two are independent ways through a story, and a bar that switched between them
+ * position: the two are independent ways through a lesson, and a bar that switched between them
  * would jump every time the reader scrolled ahead of the voice. It therefore sits at zero until
  * narration starts.
  *
- * [progress] arrives as a fraction rather than whole percent so the bar keeps moving on stories
+ * [progress] arrives as a fraction rather than whole percent so the bar keeps moving on lessons
  * long enough that a single word is worth less than one percent of them.
  */
 @Composable

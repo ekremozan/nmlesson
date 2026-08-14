@@ -68,14 +68,14 @@ private fun ThemeSpecimen() {
             Specimen("Good morning", NativeMindsTheme.typography.greetingLabel, NativeMindsTheme.colors.textMuted)
             Specimen("Ozan", NativeMindsTheme.typography.greetingName)
             Specimen("FOR YOU", NativeMindsTheme.typography.sectionHeading, NativeMindsTheme.colors.textMuted)
-            Specimen("FICTION", NativeMindsTheme.typography.storyCategory, MaterialTheme.colorScheme.secondary)
-            Specimen("The Lighthouse Keeper's Last Letter", NativeMindsTheme.typography.storyTitle)
+            Specimen("FICTION", NativeMindsTheme.typography.lessonSubject, MaterialTheme.colorScheme.secondary)
+            Specimen("The Lighthouse Keeper's Last Letter", NativeMindsTheme.typography.lessonTitle)
             Specimen(
                 "Forty years of weather notes, and one page he never sent.",
-                NativeMindsTheme.typography.storyTeaser,
+                NativeMindsTheme.typography.lessonTeaser,
                 NativeMindsTheme.colors.textMuted,
             )
-            Specimen("6 min", NativeMindsTheme.typography.storyMeta, NativeMindsTheme.colors.textMuted)
+            Specimen("6 min", NativeMindsTheme.typography.lessonMeta, NativeMindsTheme.colors.textMuted)
             Specimen("PREMIUM", NativeMindsTheme.typography.premiumBadge, NativeMindsTheme.colors.premiumBadgeContent)
             Specimen("Nothing here yet", NativeMindsTheme.typography.emptyTitle)
         }
@@ -109,7 +109,7 @@ private fun SwatchRow(name: String, background: Color, foreground: Color) {
                 .border(1.dp, NativeMindsTheme.colors.cardBorder, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center,
         ) {
-            Text("Aa", style = NativeMindsTheme.typography.storyMeta, color = foreground)
+            Text("Aa", style = NativeMindsTheme.typography.lessonMeta, color = foreground)
         }
         Text(name, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground)
     }

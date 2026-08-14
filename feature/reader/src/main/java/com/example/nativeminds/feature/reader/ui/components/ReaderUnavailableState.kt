@@ -28,13 +28,13 @@ import com.example.nativeminds.feature.reader.R
 import com.example.nativeminds.feature.reader.ui.preview.UnavailableReasons
 
 /**
- * Why the story is not on screen, and what to do about it.
+ * Why the lesson is not on screen, and what to do about it.
  *
  * One composable for all three reasons rather than three near-identical screens: they differ only
  * in their words and in whether retrying can help, and keeping them together is what stops one of
  * them from quietly drifting into a worse version of the others.
  *
- * A missing story offers no retry — nothing about trying again would bring it back.
+ * A missing lesson offers no retry — nothing about trying again would bring it back.
  */
 @Composable
 fun ReaderUnavailableState(
@@ -45,12 +45,12 @@ fun ReaderUnavailableState(
     val title = when (reason) {
         UnavailableReason.OFFLINE -> R.string.reader_offline_title
         UnavailableReason.ERROR -> R.string.reader_error_title
-        UnavailableReason.STORY_MISSING -> R.string.reader_missing_title
+        UnavailableReason.LESSON_MISSING -> R.string.reader_missing_title
     }
     val body = when (reason) {
         UnavailableReason.OFFLINE -> R.string.reader_offline_body
         UnavailableReason.ERROR -> R.string.reader_error_body
-        UnavailableReason.STORY_MISSING -> R.string.reader_missing_body
+        UnavailableReason.LESSON_MISSING -> R.string.reader_missing_body
     }
 
     Column(
@@ -73,7 +73,7 @@ fun ReaderUnavailableState(
             textAlign = TextAlign.Center,
         )
 
-        if (reason != UnavailableReason.STORY_MISSING) {
+        if (reason != UnavailableReason.LESSON_MISSING) {
             Text(
                 text = stringResource(R.string.reader_retry),
                 style = NativeMindsTheme.typography.actionLabel,

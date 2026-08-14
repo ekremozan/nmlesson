@@ -4,7 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-private fun initialState() = PaywallUiState(storyId = 3, progressPercent = 30)
+private fun initialState() = PaywallUiState(lessonId = 3, progressPercent = 30)
 
 class PaywallReducerTest {
     @Test
@@ -37,7 +37,7 @@ class PaywallReducerTest {
 
         assertEquals(state, reduction.state)
         assertEquals(
-            listOf(PaywallEffect.Purchased(state.storyId, state.progressPercent, PurchasePlan.YEARLY)),
+            listOf(PaywallEffect.Purchased(state.lessonId, state.progressPercent, PurchasePlan.YEARLY)),
             reduction.effects,
         )
     }

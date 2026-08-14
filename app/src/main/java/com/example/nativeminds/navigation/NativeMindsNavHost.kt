@@ -30,18 +30,18 @@ fun NativeMindsNavHost(modifier: Modifier = Modifier) {
         startDestination = HomeRoute,
         modifier = modifier,
     ) {
-        homeScreen(onStoryClick = { storyId -> navController.navigate(ReaderRoute(storyId)) })
+        homeScreen(onLessonClick = { lessonId -> navController.navigate(ReaderRoute(lessonId)) })
         readerScreen(
             onBack = navController::navigateUp,
-            onUnlockRequested = { storyId, progressPercent ->
-                navController.navigate(PaywallRoute(storyId, progressPercent))
+            onUnlockRequested = { lessonId, progressPercent ->
+                navController.navigate(PaywallRoute(lessonId, progressPercent))
             },
         )
         paywallScreen(
             onClose = navController::navigateUp,
-            onPurchased = { storyId, progressPercent, plan ->
+            onPurchased = { lessonId, progressPercent, plan ->
                 navController.popBackStack()
-                navController.navigate(PurchaseSuccessRoute(storyId, progressPercent, plan))
+                navController.navigate(PurchaseSuccessRoute(lessonId, progressPercent, plan))
             },
         )
         purchaseSuccessScreen(

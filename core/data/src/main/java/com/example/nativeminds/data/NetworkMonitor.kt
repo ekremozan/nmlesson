@@ -8,7 +8,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * One-shot connectivity check — enough for a sync gate and for deciding whether a missing story
+ * One-shot connectivity check — enough for a sync gate and for deciding whether a missing lesson
  * body is worth fetching, not a reactive connection state.
  *
  * An interface because connectivity is an *input to a decision* the repository makes, and a

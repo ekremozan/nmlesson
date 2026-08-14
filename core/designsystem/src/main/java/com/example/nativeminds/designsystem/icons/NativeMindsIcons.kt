@@ -51,7 +51,7 @@ object NativeMindsIcons {
         }
     }
 
-    /** Cover-art placeholder — a photo icon, shown behind a story's cover before art loads. */
+    /** Cover-art placeholder — a photo icon, shown behind a lesson's cover before art loads. */
     @Composable
     fun ImagePlaceholder(tint: Color, modifier: Modifier = Modifier, size: Dp = 26.dp) {
         StrokeCanvas(modifier, size) { s, stroke ->

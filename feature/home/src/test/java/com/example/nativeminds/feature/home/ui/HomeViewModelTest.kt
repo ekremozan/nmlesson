@@ -1,12 +1,12 @@
 package com.example.nativeminds.feature.home.ui
 
 import androidx.paging.PagingData
-import com.example.nativeminds.domain.repository.StoryRepository
-import com.example.nativeminds.domain.usecase.GetCategoriesUseCase
-import com.example.nativeminds.domain.usecase.GetPagedStoriesUseCase
-import com.example.nativeminds.domain.usecase.SyncStoriesUseCase
-import com.example.nativeminds.model.Story
-import com.example.nativeminds.model.StoryContent
+import com.example.nativeminds.domain.repository.LessonRepository
+import com.example.nativeminds.domain.usecase.GetPagedLessonsUseCase
+import com.example.nativeminds.domain.usecase.GetSubjectsUseCase
+import com.example.nativeminds.domain.usecase.SyncLessonsUseCase
+import com.example.nativeminds.model.Lesson
+import com.example.nativeminds.model.LessonContent
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,29 +28,29 @@ import org.junit.Before
 import org.junit.Test
 
 /** Records the parameters it was last asked for — the filtering logic itself now lives in the DAO
- * query, tested by `core:database`'s `StoryDaoTest` instead. */
-private class RecordingStoryRepository : StoryRepository {
+ * query, tested by `core:database`'s `LessonDaoTest` instead. */
+private class RecordingLessonRepository : LessonRepository {
     var syncCalls = 0
     var syncFailure: Throwable? = null
-    var lastCategory: String? = "<not called>"
+    var lastSubject: String? = "<not called>"
     var lastQuery: String = "<not called>"
     var pagingRequests = 0
 
-    /** Ordered by story count the way the DAO returns it, so chip order is verifiable. */
-    val categories = MutableStateFlow(listOf("Fiction", "Science", "History", "Essays"))
+    /** Ordered by lesson count the way the DAO returns it, so chip order is verifiable. */
+    val subjects = MutableStateFlow(listOf("Biyoloji", "Kimya", "Tarih", "Coğrafya"))
 
-    override fun pagedStories(category: String?, query: String): Flow<PagingData<Story>> {
+    override fun pagedLessons(subject: String?, query: String): Flow<PagingData<Lesson>> {
         pagingRequests++
-        lastCategory = category
+        lastSubject = subject
         lastQuery = query
         return flowOf(PagingData.from(emptyList()))
     }
 
-    override fun categories(): Flow<List<String>> = categories
+    override fun subjects(): Flow<List<String>> = subjects
 
-    override fun story(id: Long): Flow<Story?> = flowOf(null)
+    override fun lesson(id: Long): Flow<Lesson?> = flowOf(null)
 
-    override fun storyContent(id: Long): Flow<StoryContent?> = flowOf(null)
+    override fun lessonContent(id: Long): Flow<LessonContent?> = flowOf(null)
 
     override suspend fun refreshContent(id: Long) = Unit
 
@@ -62,7 +62,7 @@ private class RecordingStoryRepository : StoryRepository {
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
-    private val repository = RecordingStoryRepository()
+    private val repository = RecordingLessonRepository()
 
     @Before
     fun setUp() {
@@ -75,7 +75,7 @@ class HomeViewModelTest {
     }
 
     private suspend fun HomeViewModel.collectOnce() {
-        pagedStories.take(1).collect {}
+        pagedLessons.take(1).collect {}
     }
 
     /**
@@ -84,9 +84,9 @@ class HomeViewModelTest {
      * plain JVM test.
      */
     private fun homeViewModel() = HomeViewModel(
-        getCategories = GetCategoriesUseCase(repository),
-        getPagedStories = GetPagedStoriesUseCase(repository),
-        syncStories = SyncStoriesUseCase(repository),
+        getSubjects = GetSubjectsUseCase(repository),
+        getPagedLessons = GetPagedLessonsUseCase(repository),
+        syncLessons = SyncLessonsUseCase(repository),
     )
 
     @Test
@@ -106,12 +106,12 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `unfiltered state requests no category and empty query`() = runTest {
+    fun `unfiltered state requests no subject and empty query`() = runTest {
         val viewModel = homeViewModel()
 
         viewModel.collectOnce()
 
-        assertNull(repository.lastCategory)
+        assertNull(repository.lastSubject)
         assertEquals("", repository.lastQuery)
         assertFalse(viewModel.state.value.isFiltering)
     }
@@ -120,106 +120,106 @@ class HomeViewModelTest {
     fun `query change is forwarded trimmed and marks isFiltering`() = runTest {
         val viewModel = homeViewModel()
 
-        viewModel.onIntent(HomeIntent.QueryChanged("  lighthouse  "))
+        viewModel.onIntent(HomeIntent.QueryChanged("  hücre  "))
         viewModel.collectOnce()
 
-        assertEquals("lighthouse", repository.lastQuery)
+        assertEquals("hücre", repository.lastQuery)
         assertTrue(viewModel.state.value.isFiltering)
     }
 
     @Test
-    fun `category selection is forwarded and selects the matching chip`() = runTest {
+    fun `subject selection is forwarded and selects the matching chip`() = runTest {
         val viewModel = homeViewModel()
 
-        viewModel.onIntent(HomeIntent.CategorySelected("Science"))
+        viewModel.onIntent(HomeIntent.SubjectSelected("Kimya"))
         viewModel.collectOnce()
 
-        assertEquals("Science", repository.lastCategory)
+        assertEquals("Kimya", repository.lastSubject)
         assertTrue(viewModel.state.value.isFiltering)
-        assertTrue(viewModel.state.value.chips.first { it.category == "Science" }.isSelected)
+        assertTrue(viewModel.state.value.chips.first { it.subject == "Kimya" }.isSelected)
     }
 
     @Test
-    fun `chips are the database categories in order, behind an All chip`() = runTest {
+    fun `chips are the database subjects in order, behind an All chip`() = runTest {
         val viewModel = homeViewModel()
 
         assertEquals(
-            listOf(null, "Fiction", "Science", "History", "Essays"),
-            viewModel.state.value.chips.map { it.category },
+            listOf(null, "Biyoloji", "Kimya", "Tarih", "Coğrafya"),
+            viewModel.state.value.chips.map { it.subject },
         )
         assertTrue(viewModel.state.value.chips.first().isSelected)
     }
 
     @Test
-    fun `a new category reaching the database shows up as a chip`() = runTest {
+    fun `a new subject reaching the database shows up as a chip`() = runTest {
         val viewModel = homeViewModel()
 
-        repository.categories.value = listOf("Fiction", "Science", "History", "Essays", "Poetry")
+        repository.subjects.value = listOf("Biyoloji", "Kimya", "Tarih", "Coğrafya", "Fizik")
 
-        assertEquals("Poetry", viewModel.state.value.chips.last().category)
+        assertEquals("Fizik", viewModel.state.value.chips.last().subject)
     }
 
     @Test
-    fun `a category list update does not re-request the pager`() = runTest {
+    fun `a subject list update does not re-request the pager`() = runTest {
         val viewModel = homeViewModel()
         viewModel.collectOnce()
         val requestsBefore = repository.pagingRequests
 
-        repository.categories.value = listOf("Fiction", "Science", "History", "Essays", "Poetry")
+        repository.subjects.value = listOf("Biyoloji", "Kimya", "Tarih", "Coğrafya", "Fizik")
         viewModel.collectOnce()
 
         assertEquals(requestsBefore, repository.pagingRequests)
     }
 
     @Test
-    fun `picking a suggestion drops the failed query and browses that category`() = runTest {
+    fun `picking a suggestion drops the failed query and browses that subject`() = runTest {
         val viewModel = homeViewModel()
         viewModel.onIntent(HomeIntent.QueryChanged("quantum lullabies"))
 
-        viewModel.onIntent(HomeIntent.SuggestionSelected("Science"))
+        viewModel.onIntent(HomeIntent.SuggestionSelected("Kimya"))
         viewModel.collectOnce()
 
         assertEquals("", repository.lastQuery)
-        assertEquals("Science", repository.lastCategory)
+        assertEquals("Kimya", repository.lastSubject)
         assertEquals("", viewModel.state.value.query)
-        assertTrue(viewModel.state.value.chips.first { it.category == "Science" }.isSelected)
+        assertTrue(viewModel.state.value.chips.first { it.subject == "Kimya" }.isSelected)
     }
 
     @Test
-    fun `selecting a category from the filter row keeps the query`() = runTest {
+    fun `selecting a subject from the filter row keeps the query`() = runTest {
         val viewModel = homeViewModel()
-        viewModel.onIntent(HomeIntent.QueryChanged("bread"))
+        viewModel.onIntent(HomeIntent.QueryChanged("hücre"))
 
-        viewModel.onIntent(HomeIntent.CategorySelected("Science"))
+        viewModel.onIntent(HomeIntent.SubjectSelected("Kimya"))
         viewModel.collectOnce()
 
-        assertEquals("bread", repository.lastQuery)
-        assertEquals("Science", repository.lastCategory)
+        assertEquals("hücre", repository.lastQuery)
+        assertEquals("Kimya", repository.lastSubject)
     }
 
     @Test
-    fun `suggestions are the three fullest categories`() = runTest {
+    fun `suggestions are the three fullest subjects`() = runTest {
         val viewModel = homeViewModel()
 
         assertEquals(
-            listOf("Fiction", "Science", "History"),
-            viewModel.state.value.suggestions.map { it.category },
+            listOf("Biyoloji", "Kimya", "Tarih"),
+            viewModel.state.value.suggestions.map { it.subject },
         )
     }
 
     @Test
-    fun `clearing resets query and category back to All`() = runTest {
+    fun `clearing resets query and subject back to All`() = runTest {
         val viewModel = homeViewModel()
-        viewModel.onIntent(HomeIntent.CategorySelected("Science"))
-        viewModel.onIntent(HomeIntent.QueryChanged("bread"))
+        viewModel.onIntent(HomeIntent.SubjectSelected("Kimya"))
+        viewModel.onIntent(HomeIntent.QueryChanged("hücre"))
 
         viewModel.onIntent(HomeIntent.QueryCleared)
         viewModel.collectOnce()
 
-        assertNull(repository.lastCategory)
+        assertNull(repository.lastSubject)
         assertEquals("", repository.lastQuery)
         assertEquals("", viewModel.state.value.query)
         assertFalse(viewModel.state.value.isFiltering)
-        assertTrue(viewModel.state.value.chips.first { it.category == null }.isSelected)
+        assertTrue(viewModel.state.value.chips.first { it.subject == null }.isSelected)
     }
 }

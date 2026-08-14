@@ -42,7 +42,7 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import com.example.nativeminds.designsystem.icons.NativeMindsIcons
-import com.example.nativeminds.designsystem.icons.StoryCoverAssets
+import com.example.nativeminds.designsystem.icons.SubjectImageAssets
 import com.example.nativeminds.designsystem.preview.PreviewSurface
 import com.example.nativeminds.designsystem.preview.ThemePreviews
 import com.example.nativeminds.designsystem.theme.NativeMindsTheme
@@ -50,16 +50,16 @@ import com.example.nativeminds.designsystem.theme.Pill
 import com.example.nativeminds.feature.reader.R
 import com.example.nativeminds.feature.reader.ui.NarrationHighlight
 import com.example.nativeminds.feature.reader.ui.model.ReaderBodyUiModel
-import com.example.nativeminds.feature.reader.ui.model.ReaderStoryUiModel
+import com.example.nativeminds.feature.reader.ui.model.ReaderLessonUiModel
 import com.example.nativeminds.feature.reader.ui.preview.PreviewFullBody
-import com.example.nativeminds.feature.reader.ui.preview.PreviewFreeStory
-import com.example.nativeminds.feature.reader.ui.preview.PreviewPremiumStory
+import com.example.nativeminds.feature.reader.ui.preview.PreviewFreeLesson
+import com.example.nativeminds.feature.reader.ui.preview.PreviewPremiumLesson
 import com.example.nativeminds.feature.reader.ui.preview.PreviewTruncatedBody
 
 /**
- * The story itself.
+ * The lesson itself.
  *
- * A `LazyColumn` of paragraphs rather than one long `Text`: a full-length story stays smooth to
+ * A `LazyColumn` of paragraphs rather than one long `Text`: a full-length lesson stays smooth to
  * scroll, and the list restores its position across a configuration change with nothing to save by
  * hand. The header and the closing note are items in the same list so they scroll with the text
  * instead of pinning to the top.
@@ -70,7 +70,7 @@ import com.example.nativeminds.feature.reader.ui.preview.PreviewTruncatedBody
  */
 @Composable
 fun ReaderBody(
-    story: ReaderStoryUiModel,
+    lesson: ReaderLessonUiModel,
     body: ReaderBodyUiModel,
     listState: LazyListState,
     contentPadding: PaddingValues,
@@ -84,7 +84,7 @@ fun ReaderBody(
         verticalArrangement = Arrangement.spacedBy(NativeMindsTheme.spacing.lg),
     ) {
         item(key = "header") {
-            StoryHeader(story = story, showCover = !body.isTruncated)
+            LessonHeader(lesson = lesson, showCover = !body.isTruncated)
         }
 
         itemsIndexed(
@@ -100,26 +100,26 @@ fun ReaderBody(
 
         if (!body.isTruncated) {
             item(key = "closing") {
-                ClosingNote(category = story.category)
+                ClosingNote(subject = lesson.subject)
             }
         }
     }
 }
 
 @Composable
-private fun StoryHeader(story: ReaderStoryUiModel, showCover: Boolean) {
+private fun LessonHeader(lesson: ReaderLessonUiModel, showCover: Boolean) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(NativeMindsTheme.spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (story.isPremium) {
+            if (lesson.isPremium) {
                 PremiumChip()
             }
             Text(
-                text = stringResource(R.string.reader_kicker, story.category, story.minutes)
+                text = stringResource(R.string.reader_kicker, lesson.subject, lesson.minutes)
                     .uppercase(),
-                style = NativeMindsTheme.typography.storyCategory,
+                style = NativeMindsTheme.typography.lessonSubject,
                 color = MaterialTheme.colorScheme.secondary,
             )
         }
@@ -127,7 +127,7 @@ private fun StoryHeader(story: ReaderStoryUiModel, showCover: Boolean) {
         Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.md))
 
         Text(
-            text = story.title,
+            text = lesson.title,
             style = NativeMindsTheme.typography.readerTitle,
             color = MaterialTheme.colorScheme.onBackground,
         )
@@ -135,7 +135,7 @@ private fun StoryHeader(story: ReaderStoryUiModel, showCover: Boolean) {
         Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.sm))
 
         Text(
-            text = stringResource(R.string.reader_by_author, story.author),
+            text = stringResource(R.string.reader_by_author, lesson.author),
             style = NativeMindsTheme.typography.readerAuthor,
             color = NativeMindsTheme.colors.textMuted,
         )
@@ -143,7 +143,7 @@ private fun StoryHeader(story: ReaderStoryUiModel, showCover: Boolean) {
         if (showCover) {
             Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.lg))
             Image(
-                painter = painterResource(StoryCoverAssets.resolve(story.image)),
+                painter = painterResource(SubjectImageAssets.resolve(lesson.image)),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -324,7 +324,7 @@ private fun TextLayoutResult.narrationMarks(
 internal fun paragraphItemIndex(paragraphIndex: Int): Int = paragraphIndex + 1
 
 @Composable
-private fun ClosingNote(category: String) {
+private fun ClosingNote(subject: String) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Box(
             modifier = Modifier
@@ -337,7 +337,7 @@ private fun ClosingNote(category: String) {
         Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.lg))
 
         Text(
-            text = stringResource(R.string.reader_closing_note, category),
+            text = stringResource(R.string.reader_closing_note, subject),
             style = NativeMindsTheme.typography.readerClosingNote,
             color = NativeMindsTheme.colors.textMuted,
         )
@@ -349,7 +349,7 @@ private fun ClosingNote(category: String) {
 private fun ReaderBodyFullPreview() {
     PreviewSurface {
         ReaderBody(
-            story = PreviewFreeStory,
+            lesson = PreviewFreeLesson,
             body = PreviewFullBody,
             listState = rememberLazyListState(),
             contentPadding = PaddingValues(0.dp),
@@ -366,7 +366,7 @@ private fun ReaderBodyNarratingPreview() {
 
     PreviewSurface {
         ReaderBody(
-            story = PreviewFreeStory,
+            lesson = PreviewFreeLesson,
             body = PreviewFullBody,
             listState = rememberLazyListState(),
             contentPadding = PaddingValues(0.dp),
@@ -380,7 +380,7 @@ private fun ReaderBodyNarratingPreview() {
 private fun ReaderBodyTruncatedPreview() {
     PreviewSurface {
         ReaderBody(
-            story = PreviewPremiumStory,
+            lesson = PreviewPremiumLesson,
             body = PreviewTruncatedBody,
             listState = rememberLazyListState(),
             contentPadding = PaddingValues(0.dp),

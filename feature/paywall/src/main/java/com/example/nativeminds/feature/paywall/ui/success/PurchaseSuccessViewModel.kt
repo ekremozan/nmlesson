@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.example.nativeminds.domain.repository.StoryRepository
+import com.example.nativeminds.domain.repository.LessonRepository
 import com.example.nativeminds.feature.paywall.navigation.PurchaseSuccessRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -17,13 +17,13 @@ import kotlinx.coroutines.flow.onEach
 @HiltViewModel
 class PurchaseSuccessViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    storyRepository: StoryRepository,
+    lessonRepository: LessonRepository,
 ) : ViewModel() {
     private val route = savedStateHandle.toRoute<PurchaseSuccessRoute>()
 
     private val _state = MutableStateFlow(
         PurchaseSuccessUiState(
-            storyId = route.storyId,
+            lessonId = route.lessonId,
             progressPercent = route.progressPercent,
             plan = route.plan,
         ),
@@ -32,8 +32,8 @@ class PurchaseSuccessViewModel @Inject constructor(
     val state: StateFlow<PurchaseSuccessUiState> = _state.asStateFlow()
 
     init {
-        storyRepository.story(route.storyId)
-            .onEach { onIntent(PurchaseSuccessIntent.StoryChanged(it)) }
+        lessonRepository.lesson(route.lessonId)
+            .onEach { onIntent(PurchaseSuccessIntent.LessonChanged(it)) }
             .launchIn(viewModelScope)
     }
 

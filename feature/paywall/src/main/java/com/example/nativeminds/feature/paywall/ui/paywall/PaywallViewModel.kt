@@ -22,7 +22,7 @@ class PaywallViewModel @Inject constructor(
     private val route = savedStateHandle.toRoute<PaywallRoute>()
 
     private val _state = MutableStateFlow(
-        PaywallUiState(storyId = route.storyId, progressPercent = route.progressPercent),
+        PaywallUiState(lessonId = route.lessonId, progressPercent = route.progressPercent),
     )
 
     val state: StateFlow<PaywallUiState> = _state.asStateFlow()

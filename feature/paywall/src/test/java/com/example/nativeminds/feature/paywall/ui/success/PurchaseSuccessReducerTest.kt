@@ -1,44 +1,44 @@
 package com.example.nativeminds.feature.paywall.ui.success
 
 import com.example.nativeminds.feature.paywall.ui.paywall.PurchasePlan
-import com.example.nativeminds.model.Story
+import com.example.nativeminds.model.Lesson
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
-private val story = Story(
+private val lesson = Lesson(
     id = 3,
-    category = "History",
-    title = "The Cartographer of Missing Islands",
-    teaser = "One page he never sent.",
+    subject = "Tarih",
+    title = "İstanbul'un Fethi ve Sonuçları",
+    teaser = "Bir çağın kapanıp diğerinin açılması.",
     minutes = 8,
     hasAudio = false,
     isLocked = true,
-    image = "cover_03",
+    image = "subject_history",
 )
 
 private fun initialState() =
-    PurchaseSuccessUiState(storyId = story.id, progressPercent = 30, plan = PurchasePlan.YEARLY)
+    PurchaseSuccessUiState(lessonId = lesson.id, progressPercent = 30, plan = PurchasePlan.YEARLY)
 
 class PurchaseSuccessReducerTest {
     @Test
-    fun startsWithNoStoryLoaded() {
-        assertNull(initialState().story)
+    fun startsWithNoLessonLoaded() {
+        assertNull(initialState().lesson)
     }
 
     @Test
-    fun storyArrivingFillsTheResumeCard() {
-        val state = initialState().reduce(PurchaseSuccessIntent.StoryChanged(story))
+    fun lessonArrivingFillsTheResumeCard() {
+        val state = initialState().reduce(PurchaseSuccessIntent.LessonChanged(lesson))
 
-        assertEquals(story, state.story)
+        assertEquals(lesson, state.lesson)
     }
 
     @Test
-    fun theStoryDisappearingClearsTheResumeCard() {
-        val withStory = initialState().reduce(PurchaseSuccessIntent.StoryChanged(story))
+    fun theLessonDisappearingClearsTheResumeCard() {
+        val withLesson = initialState().reduce(PurchaseSuccessIntent.LessonChanged(lesson))
 
-        val state = withStory.reduce(PurchaseSuccessIntent.StoryChanged(null))
+        val state = withLesson.reduce(PurchaseSuccessIntent.LessonChanged(null))
 
-        assertNull(state.story)
+        assertNull(state.lesson)
     }
 }

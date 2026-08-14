@@ -5,12 +5,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
-import com.example.nativeminds.domain.usecase.GetCategoriesUseCase
-import com.example.nativeminds.domain.usecase.GetPagedStoriesUseCase
-import com.example.nativeminds.domain.usecase.SyncStoriesUseCase
+import com.example.nativeminds.domain.usecase.GetPagedLessonsUseCase
+import com.example.nativeminds.domain.usecase.GetSubjectsUseCase
+import com.example.nativeminds.domain.usecase.SyncLessonsUseCase
 import com.example.nativeminds.feature.home.ui.mapper.toUiModel
 import com.example.nativeminds.feature.home.ui.model.GreetingPeriod
-import com.example.nativeminds.feature.home.ui.model.StoryUiModel
+import com.example.nativeminds.feature.home.ui.model.LessonUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
 import javax.inject.Inject
@@ -31,14 +31,14 @@ import kotlinx.coroutines.launch
 
 private const val USER_NAME = "Ozan"
 
-private data class FilterParams(val category: String?, val query: String)
+private data class FilterParams(val subject: String?, val query: String)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    getCategories: GetCategoriesUseCase,
-    getPagedStories: GetPagedStoriesUseCase,
-    private val syncStories: SyncStoriesUseCase,
+    getSubjects: GetSubjectsUseCase,
+    getPagedLessons: GetPagedLessonsUseCase,
+    private val syncLessons: SyncLessonsUseCase,
 ) : ViewModel() {
     private val _state = MutableStateFlow(
         HomeUiState(greeting = greetingForNow(), userName = USER_NAME),
@@ -50,20 +50,20 @@ class HomeViewModel @Inject constructor(
 
     val effects: Flow<HomeEffect> = effectChannel.receiveAsFlow()
 
-    val pagedStories: Flow<PagingData<StoryUiModel>> = _state
-        .map { FilterParams(it.selectedCategory, it.query.trim()) }
+    val pagedLessons: Flow<PagingData<LessonUiModel>> = _state
+        .map { FilterParams(it.selectedSubject, it.query.trim()) }
         .distinctUntilChanged()
-        .flatMapLatest { params -> getPagedStories(params.category, params.query) }
+        .flatMapLatest { params -> getPagedLessons(params.subject, params.query) }
         .map { pagingData -> pagingData.map { it.toUiModel() } }
         .cachedIn(viewModelScope)
 
     init {
-        getCategories()
-            .onEach { onIntent(HomeIntent.CategoriesLoaded(it)) }
+        getSubjects()
+            .onEach { onIntent(HomeIntent.SubjectsLoaded(it)) }
             .launchIn(viewModelScope)
 
         viewModelScope.launch {
-            runCatching { syncStories() }
+            runCatching { syncLessons() }
                 .onFailure { effectChannel.send(HomeEffect.ShowSyncError) }
         }
     }

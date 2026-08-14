@@ -8,7 +8,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.SimpleBasePlayer
 import com.example.nativeminds.domain.model.NarrationState
-import com.example.nativeminds.domain.narration.StoryNarrator
+import com.example.nativeminds.domain.narration.LessonNarrator
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CoroutineScope
@@ -24,7 +24,7 @@ private val AVAILABLE_COMMANDS = Player.Commands.Builder()
     .build()
 
 /**
- * Exposes [StoryNarrator] as a [SimpleBasePlayer] so [NarrationSessionService] can host it behind
+ * Exposes [LessonNarrator] as a [SimpleBasePlayer] so [NarrationSessionService] can host it behind
  * a [androidx.media3.session.MediaSession] — the system media notification, its play/pause
  * action, and audio-focus handling all come from that adaptation rather than hand-written
  * notification code.
@@ -34,7 +34,7 @@ private val AVAILABLE_COMMANDS = Player.Commands.Builder()
  * actually resumes at.
  */
 internal class NarrationPlayer(
-    private val narrator: StoryNarrator,
+    private val narrator: LessonNarrator,
     private val notificationTitle: String,
 ) : SimpleBasePlayer(Looper.getMainLooper()) {
 
@@ -56,7 +56,7 @@ internal class NarrationPlayer(
 
     override fun getState(): State {
         val narration = narrator.state.value
-        val storyId = narration.activeStoryIdOrNull()
+        val lessonId = narration.activeLessonIdOrNull()
             ?: return State.Builder()
                 .setAvailableCommands(AVAILABLE_COMMANDS)
                 .setPlaybackState(Player.STATE_IDLE)
@@ -71,10 +71,10 @@ internal class NarrationPlayer(
             )
             .setPlaylist(
                 listOf(
-                    MediaItemData.Builder(storyId)
+                    MediaItemData.Builder(lessonId)
                         .setMediaItem(
                             MediaItem.Builder()
-                                .setMediaId(storyId.toString())
+                                .setMediaId(lessonId.toString())
                                 .setMediaMetadata(
                                     MediaMetadata.Builder().setTitle(notificationTitle).build(),
                                 )
@@ -106,7 +106,7 @@ internal class NarrationPlayer(
      * Narration outlives this player: the session is a control surface over the app-scoped
      * narrator, never its owner. Once released, commands media3 issues while tearing the service
      * down MUST NOT reach the narrator — a `stop()` arriving from that teardown would end
-     * narration the reader had merely paused, and the next tap would start the story over.
+     * narration the reader had merely paused, and the next tap would start the lesson over.
      */
     override fun handleRelease(): ListenableFuture<*> {
         released = true
@@ -115,20 +115,20 @@ internal class NarrationPlayer(
 }
 
 private data class SessionView(
-    val storyId: Long?,
+    val lessonId: Long?,
     val isPlaying: Boolean,
     val sentenceIndex: Int,
 )
 
 private fun NarrationState.sessionView(): SessionView = SessionView(
-    storyId = activeStoryIdOrNull(),
+    lessonId = activeLessonIdOrNull(),
     isPlaying = this is NarrationState.Playing,
     sentenceIndex = sentenceIndexOrZero(),
 )
 
-private fun NarrationState.activeStoryIdOrNull(): Long? = when (this) {
-    is NarrationState.Playing -> storyId
-    is NarrationState.Paused -> storyId
+private fun NarrationState.activeLessonIdOrNull(): Long? = when (this) {
+    is NarrationState.Playing -> lessonId
+    is NarrationState.Paused -> lessonId
     else -> null
 }
 

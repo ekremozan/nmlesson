@@ -3,8 +3,8 @@ package com.example.nativeminds.di
 import android.content.Context
 import androidx.room.Room
 import com.example.nativeminds.database.NativeMindsDatabase
-import com.example.nativeminds.database.StoryContentDao
-import com.example.nativeminds.database.StoryDao
+import com.example.nativeminds.database.LessonContentDao
+import com.example.nativeminds.database.LessonDao
 import com.example.nativeminds.database.di.DatabaseModule
 import dagger.Module
 import dagger.Provides
@@ -30,9 +30,9 @@ object TestDatabaseModule {
             .build()
 
     @Provides
-    fun storyDao(database: NativeMindsDatabase): StoryDao = database.storyDao()
+    fun lessonDao(database: NativeMindsDatabase): LessonDao = database.lessonDao()
 
     @Provides
-    fun storyContentDao(database: NativeMindsDatabase): StoryContentDao =
-        database.storyContentDao()
+    fun lessonContentDao(database: NativeMindsDatabase): LessonContentDao =
+        database.lessonContentDao()
 }

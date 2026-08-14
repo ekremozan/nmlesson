@@ -67,4 +67,36 @@ class MigrationTest {
             assertEquals("", cursor.getString(1))
         }
     }
+
+    /**
+     * The catalog's shape changed (100 short-fiction rows keyed by `category` -> 40 lesson rows
+     * keyed by `subject`), so this migration renames tables/columns and clears existing rows
+     * rather than trying to map old fiction rows onto subjects — the next launch reseeds the new
+     * catalog via [com.example.nativeminds.data.RoomLessonRepository]'s `count() == 0` check.
+     */
+    @Test
+    fun migratingFromThreeToFourRenamesToLessonsAndClearsRows() {
+        helper.createDatabase(TEST_DATABASE, 1).use { database ->
+            database.execSQL(
+                """
+                INSERT INTO stories (id, category, title, teaser, minutes, hasAudio, isLocked)
+                VALUES (1, 'Fiction', 'The Lighthouse Keeper''s Last Letter', 'One page he never sent.', 6, 1, 0)
+                """.trimIndent(),
+            )
+        }
+        helper.runMigrationsAndValidate(TEST_DATABASE, 2, true, MIGRATION_1_2)
+        helper.runMigrationsAndValidate(TEST_DATABASE, 3, true, MIGRATION_2_3)
+
+        val migrated = helper.runMigrationsAndValidate(TEST_DATABASE, 4, true, MIGRATION_3_4)
+
+        migrated.query("SELECT COUNT(*) FROM lessons").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+        migrated.query("SELECT COUNT(*) FROM lesson_content").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+        migrated.query("SELECT subject FROM lessons").close()
+    }
 }

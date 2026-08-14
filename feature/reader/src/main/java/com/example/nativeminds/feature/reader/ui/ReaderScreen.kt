@@ -56,7 +56,7 @@ private const val PERCENT = 100
 @Composable
 fun ReaderScreen(
     onBack: () -> Unit,
-    onUnlockRequested: (storyId: Long, progressPercent: Int) -> Unit,
+    onUnlockRequested: (lessonId: Long, progressPercent: Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ReaderViewModel = hiltViewModel(),
 ) {
@@ -78,7 +78,7 @@ fun ReaderScreen(
         snackbarHostState = snackbarHostState,
         onIntent = viewModel::onIntent,
         onBack = onBack,
-        onUnlockRequested = { onUnlockRequested(state.storyId, state.progressPercent) },
+        onUnlockRequested = { onUnlockRequested(state.lessonId, state.progressPercent) },
         modifier = modifier,
     )
 }
@@ -109,7 +109,7 @@ fun ReaderScreenContent(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             ReaderTopBar(
-                title = state.readyContent?.story?.title.orEmpty(),
+                title = state.readyContent?.lesson?.title.orEmpty(),
                 onBack = onBack,
             )
 
@@ -124,7 +124,7 @@ fun ReaderScreenContent(
 
                 is ReaderContentUiState.Ready -> Box(modifier = Modifier.fillMaxSize()) {
                     ReaderBody(
-                        story = content.story,
+                        lesson = content.lesson,
                         body = content.body,
                         listState = listState,
                         contentPadding = PaddingValues(
@@ -159,7 +159,7 @@ fun ReaderScreenContent(
 /**
  * Turns scrolling into a single intent per whole percent.
  *
- * Progress is measured against what can still be scrolled, not against the item count: a story
+ * Progress is measured against what can still be scrolled, not against the item count: a lesson
  * whose whole text already fits on screen is finished, and one that has not been scrolled at all
  * is at zero however many paragraphs happen to be visible.
  *
@@ -216,7 +216,7 @@ private fun LoadingBody() {
 }
 
 /**
- * The gradient that dissolves a restricted story into the page.
+ * The gradient that dissolves a restricted lesson into the page.
  *
  * It is decoration over text that was never delivered, not a mask over text that was — the
  * withheld paragraphs are not in the composition at all.
@@ -240,7 +240,7 @@ private fun BoxScope.BodyFade() {
 }
 
 /**
- * What sits above the bottom edge: the listen pill while the story is readable, or the control that
+ * What sits above the bottom edge: the listen pill while the lesson is readable, or the control that
  * brings the unlock sheet back once it has been pushed away.
  */
 @Composable
@@ -287,7 +287,7 @@ private fun ReaderFooter(
             ListenPill(
                 progress = state.listenPillProgress,
                 remainingMinutes = remainingMinutes(
-                    totalMinutes = content.story.minutes,
+                    totalMinutes = content.lesson.minutes,
                     progress = state.listenPillProgress,
                 ),
                 status = state.listenPillStatus,

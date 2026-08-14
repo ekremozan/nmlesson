@@ -12,7 +12,7 @@ fun PaywallUiState.reduce(intent: PaywallIntent): PaywallReduction = when (inten
 
     PaywallIntent.PurchaseClicked -> PaywallReduction(
         this,
-        listOf(PaywallEffect.Purchased(storyId, progressPercent, selectedPlan)),
+        listOf(PaywallEffect.Purchased(lessonId, progressPercent, selectedPlan)),
     )
 
     PaywallIntent.RestorePurchasesClicked -> PaywallReduction(

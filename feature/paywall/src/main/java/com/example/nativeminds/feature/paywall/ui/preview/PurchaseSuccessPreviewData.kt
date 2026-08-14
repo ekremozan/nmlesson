@@ -3,17 +3,17 @@ package com.example.nativeminds.feature.paywall.ui.preview
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.example.nativeminds.feature.paywall.ui.paywall.PurchasePlan
 import com.example.nativeminds.feature.paywall.ui.success.PurchaseSuccessUiState
-import com.example.nativeminds.model.Story
+import com.example.nativeminds.model.Lesson
 
-val PreviewResumeStory = Story(
+val PreviewResumeLesson = Lesson(
     id = 3,
-    category = "History",
-    title = "The Cartographer of Missing Islands",
-    teaser = "One page he never sent.",
+    subject = "Tarih",
+    title = "İstanbul'un Fethi ve Sonuçları",
+    teaser = "Bir çağın kapanıp diğerinin açılması.",
     minutes = 8,
     hasAudio = false,
     isLocked = true,
-    image = "cover_03",
+    image = "subject_history",
 )
 
 data class PurchaseSuccessPreviewCase(val label: String, val state: PurchaseSuccessUiState)
@@ -21,18 +21,18 @@ data class PurchaseSuccessPreviewCase(val label: String, val state: PurchaseSucc
 class PurchaseSuccessPreviewCases : PreviewParameterProvider<PurchaseSuccessPreviewCase> {
     override val values = sequenceOf(
         PurchaseSuccessPreviewCase(
-            label = "Story loaded",
+            label = "Lesson loaded",
             state = PurchaseSuccessUiState(
-                storyId = PreviewResumeStory.id,
+                lessonId = PreviewResumeLesson.id,
                 progressPercent = 30,
                 plan = PurchasePlan.YEARLY,
-                story = PreviewResumeStory,
+                lesson = PreviewResumeLesson,
             ),
         ),
         PurchaseSuccessPreviewCase(
             label = "Loading",
             state = PurchaseSuccessUiState(
-                storyId = PreviewResumeStory.id,
+                lessonId = PreviewResumeLesson.id,
                 progressPercent = 30,
                 plan = PurchasePlan.MONTHLY,
             ),

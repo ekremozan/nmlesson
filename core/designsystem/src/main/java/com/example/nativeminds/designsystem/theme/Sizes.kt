@@ -20,16 +20,16 @@ data class NativeMindsSizes(
     val iconButton: Dp = 40.dp,
     /** Height of the reader's top bar, which is shorter than a Material app bar. */
     val readerTopBar: Dp = 52.dp,
-    /** Cover art placeholder above a story's first paragraph. */
+    /** Cover art placeholder above a lesson's first paragraph. */
     val readerCover: Dp = 150.dp,
-    /** Inset of the hairline rule that closes a story, measured from each side. */
+    /** Inset of the hairline rule that closes a lesson, measured from each side. */
     val readerClosingRuleInset: Dp = 60.dp,
     /** How far the narration highlight is grown past the word it marks, on every side. */
     val narrationHighlightPadding: Dp = 3.dp,
     /** Corner radius of that highlight, measured on its grown outer edge. */
     val narrationHighlightRadius: Dp = 8.dp,
     /**
-     * Height of the gradient that dissolves a restricted story into the page.
+     * Height of the gradient that dissolves a restricted lesson into the page.
      *
      * Tall on purpose: the text has to become unreadable well before it stops being drawn, or the
      * withheld part reads as a rendering bug rather than a boundary.

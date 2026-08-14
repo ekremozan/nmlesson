@@ -20,22 +20,22 @@ class ReaderReducerTest {
         )
 
         val content = reduction.state.content as ReaderContentUiState.Ready
-        assertEquals(unlockedStory.title, content.story.title)
-        assertEquals(storyContent.paragraphs, content.body.paragraphs)
+        assertEquals(unlockedLesson.title, content.lesson.title)
+        assertEquals(lessonContent.paragraphs, content.body.paragraphs)
         assertFalse(content.body.isTruncated)
         assertTrue(reduction.effects.isEmpty())
     }
 
     @Test
-    fun anUnavailableStoryReplacesTheBody() {
+    fun anUnavailableLessonReplacesTheBody() {
         val reduction = initialState().reduce(
             ReaderIntent.DetailChanged(
-                ReaderDetail.Unavailable(UnavailableReason.STORY_MISSING),
+                ReaderDetail.Unavailable(UnavailableReason.LESSON_MISSING),
             ),
         )
 
         assertEquals(
-            ReaderContentUiState.Unavailable(UnavailableReason.STORY_MISSING),
+            ReaderContentUiState.Unavailable(UnavailableReason.LESSON_MISSING),
             reduction.state.content,
         )
     }
@@ -99,7 +99,7 @@ class ReaderReducerTest {
         val reduction = ready.reduce(ReaderIntent.ListenClicked)
 
         assertEquals(
-            listOf(ReaderEffect.StartNarration(storyContent.paragraphs)),
+            listOf(ReaderEffect.StartNarration(lessonContent.paragraphs)),
             reduction.effects,
         )
     }
@@ -107,7 +107,7 @@ class ReaderReducerTest {
     @Test
     fun listeningWhilePlayingPauses() {
         val playing = readyStateNarrating(
-            NarrationState.Playing(unlockedStory.id, sentenceIndex = 2, totalSentences = 5),
+            NarrationState.Playing(unlockedLesson.id, sentenceIndex = 2, totalSentences = 5),
         )
 
         val reduction = playing.reduce(ReaderIntent.ListenClicked)
@@ -118,7 +118,7 @@ class ReaderReducerTest {
     @Test
     fun listeningWhilePausedResumes() {
         val paused = readyStateNarrating(
-            NarrationState.Paused(unlockedStory.id, sentenceIndex = 2, totalSentences = 5),
+            NarrationState.Paused(unlockedLesson.id, sentenceIndex = 2, totalSentences = 5),
         )
 
         val reduction = paused.reduce(ReaderIntent.ListenClicked)
@@ -129,7 +129,7 @@ class ReaderReducerTest {
     @Test
     fun listeningWhenNarrationIsUnavailableShowsTheMessage() {
         val unavailable = readyStateNarrating(
-            NarrationState.Unavailable(unlockedStory.id, NarrationUnavailableReason.ENGINE_MISSING),
+            NarrationState.Unavailable(unlockedLesson.id, NarrationUnavailableReason.ENGINE_MISSING),
         )
 
         val reduction = unavailable.reduce(ReaderIntent.ListenClicked)
@@ -145,14 +145,14 @@ class ReaderReducerTest {
 
         val playing = ready.reduce(
             ReaderIntent.NarrationStateChanged(
-                NarrationState.Playing(unlockedStory.id, sentenceIndex = 0, totalSentences = 3),
+                NarrationState.Playing(unlockedLesson.id, sentenceIndex = 0, totalSentences = 3),
             ),
         ).state
         assertEquals(ListenPillStatus.PLAYING, playing.listenPillStatus)
 
         val paused = playing.reduce(
             ReaderIntent.NarrationStateChanged(
-                NarrationState.Paused(unlockedStory.id, sentenceIndex = 0, totalSentences = 3),
+                NarrationState.Paused(unlockedLesson.id, sentenceIndex = 0, totalSentences = 3),
             ),
         ).state
         assertEquals(ListenPillStatus.PAUSED, paused.listenPillStatus)
@@ -162,7 +162,7 @@ class ReaderReducerTest {
     fun theSpokenWordIsResolvedToCharactersOfItsParagraph() {
         val state = readyStateNarrating(
             NarrationState.Playing(
-                unlockedStory.id,
+                unlockedLesson.id,
                 sentenceIndex = 1,
                 totalSentences = 3,
                 spokenRange = SpokenRange(0, 6),
@@ -178,7 +178,7 @@ class ReaderReducerTest {
     @Test
     fun withoutAWordRangeNothingIsHighlighted() {
         val state = readyStateNarrating(
-            NarrationState.Playing(unlockedStory.id, sentenceIndex = 2, totalSentences = 3),
+            NarrationState.Playing(unlockedLesson.id, sentenceIndex = 2, totalSentences = 3),
         )
 
         assertNull(state.narrationHighlight)
@@ -188,7 +188,7 @@ class ReaderReducerTest {
     fun aRangeReachingPastTheSentenceStopsAtItsEnd() {
         val state = readyStateNarrating(
             NarrationState.Playing(
-                unlockedStory.id,
+                unlockedLesson.id,
                 sentenceIndex = 0,
                 totalSentences = 3,
                 spokenRange = SpokenRange(0, 99),
@@ -202,10 +202,10 @@ class ReaderReducerTest {
     }
 
     @Test
-    fun aPausedStoryKeepsItsHighlight() {
+    fun aPausedLessonKeepsItsHighlight() {
         val state = readyStateNarrating(
             NarrationState.Paused(
-                unlockedStory.id,
+                unlockedLesson.id,
                 sentenceIndex = 1,
                 totalSentences = 3,
                 spokenRange = SpokenRange(0, 6),
@@ -227,7 +227,7 @@ class ReaderReducerTest {
     fun aPositionPastTheDeliveredTextHighlightsNothing() {
         val state = readyStateNarrating(
             NarrationState.Playing(
-                unlockedStory.id,
+                unlockedLesson.id,
                 sentenceIndex = 9,
                 totalSentences = 12,
                 spokenRange = SpokenRange(0, 3),
@@ -241,7 +241,7 @@ class ReaderReducerTest {
     fun listeningProgressCountsTheWordsSpokenSoFar() {
         val state = readyStateNarrating(
             NarrationState.Playing(
-                unlockedStory.id,
+                unlockedLesson.id,
                 sentenceIndex = 1,
                 totalSentences = 3,
                 spokenRange = SpokenRange(0, 7),
@@ -263,7 +263,7 @@ class ReaderReducerTest {
     fun listeningProgressReachesOneOnTheFinalWord() {
         val state = readyStateNarrating(
             NarrationState.Playing(
-                unlockedStory.id,
+                unlockedLesson.id,
                 sentenceIndex = 2,
                 totalSentences = 3,
                 spokenRange = SpokenRange(0, 6),
@@ -298,7 +298,7 @@ class ReaderReducerTest {
         val listening = scrolled.reduce(
             ReaderIntent.NarrationStateChanged(
                 NarrationState.Playing(
-                    unlockedStory.id,
+                    unlockedLesson.id,
                     sentenceIndex = 1,
                     totalSentences = 3,
                     spokenRange = SpokenRange(0, 7),
@@ -310,10 +310,10 @@ class ReaderReducerTest {
     }
 
     @Test
-    fun aPausedStoryStillCountsAsListening() {
+    fun aPausedLessonStillCountsAsListening() {
         val paused = readyStateNarrating(
             NarrationState.Paused(
-                unlockedStory.id,
+                unlockedLesson.id,
                 sentenceIndex = 1,
                 totalSentences = 3,
                 spokenRange = SpokenRange(0, 7),

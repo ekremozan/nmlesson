@@ -41,7 +41,7 @@ data class NativeMindsColors(
      * itself is visible before any decoration is drawn on it.
      */
     val heroBand: Color,
-    /** Opacity applied to the cover of a story the current user cannot open. */
+    /** Opacity applied to the cover of a lesson the current user cannot open. */
     val lockedCoverAlpha: Float,
     /** Pill background of the "Premium" badge that sits on top of a locked cover. */
     val premiumBadgeBackground: Color,

@@ -11,7 +11,7 @@ import org.junit.rules.RuleChain
 
 /**
  * End-to-end proof that the Hilt graph actually resolves at runtime: launching [MainActivity]
- * forces Hilt to build `HomeViewModel` → use cases → `StoryRepository` → `StoryDao` (in-memory,
+ * forces Hilt to build `HomeViewModel` → use cases → `LessonRepository` → `LessonDao` (in-memory,
  * see `TestDatabaseModule`) → seed content on screen. A missing binding fails the build, but a
  * misconfigured `@AndroidEntryPoint` or entry point only shows up here.
  */
@@ -25,8 +25,8 @@ class HomeGraphTest {
     val rule: RuleChain = RuleChain.outerRule(hiltRule).around(composeRule)
 
     @Test
-    fun homeScreenRendersSeededStoriesThroughTheInjectedGraph() {
-        val firstSeededTitle = "The Lighthouse Keeper's Last Letter"
+    fun homeScreenRendersSeededLessonsThroughTheInjectedGraph() {
+        val firstSeededTitle = "Hücre Yapısı ve Organeller"
 
         composeRule.waitUntil(timeoutMillis = 5_000) {
             composeRule.onAllNodesWithTextCount(firstSeededTitle) > 0

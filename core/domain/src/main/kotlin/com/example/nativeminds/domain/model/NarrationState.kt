@@ -13,10 +13,10 @@ package com.example.nativeminds.domain.model
 data class SpokenRange(val start: Int, val end: Int)
 
 /**
- * What a [com.example.nativeminds.domain.narration.StoryNarrator] is doing right now.
+ * What a [com.example.nativeminds.domain.narration.LessonNarrator] is doing right now.
  *
  * [Playing] and [Paused] both carry the sentence position because that is the unit narration can
- * actually resume at — a [StoryNarrator] speaks one sentence per utterance, so "resume" means
+ * actually resume at — a [LessonNarrator] speaks one sentence per utterance, so "resume" means
  * "re-speak from this index". [SpokenRange] is finer than that on purpose: it is precise enough to
  * follow along with a highlight, but it is never what a resume seeks to, because the engine can
  * only be asked to speak text, not to seek within it.
@@ -25,32 +25,32 @@ sealed interface NarrationState {
     data object Idle : NarrationState
 
     data class Playing(
-        val storyId: Long,
+        val lessonId: Long,
         val sentenceIndex: Int,
         val totalSentences: Int,
         val spokenRange: SpokenRange? = null,
     ) : NarrationState
 
     data class Paused(
-        val storyId: Long,
+        val lessonId: Long,
         val sentenceIndex: Int,
         val totalSentences: Int,
         val spokenRange: SpokenRange? = null,
     ) : NarrationState
 
-    data class Unavailable(val storyId: Long, val reason: NarrationUnavailableReason) :
+    data class Unavailable(val lessonId: Long, val reason: NarrationUnavailableReason) :
         NarrationState
 }
 
 /**
- * Scopes a narrator-wide state to one screen's story: a [Playing]/[Paused]/[Unavailable] that
- * belongs to a *different* story reads as [NarrationState.Idle] here, so opening story B's
- * detail screen while story A is still narrating in the background never makes B's control show
+ * Scopes a narrator-wide state to one screen's lesson: a [Playing]/[Paused]/[Unavailable] that
+ * belongs to a *different* lesson reads as [NarrationState.Idle] here, so opening lesson B's
+ * detail screen while lesson A is still narrating in the background never makes B's control show
  * a Pause/Resume affordance for audio it doesn't own.
  */
-fun NarrationState.forStory(storyId: Long): NarrationState = when (this) {
-    is NarrationState.Playing -> if (this.storyId == storyId) this else NarrationState.Idle
-    is NarrationState.Paused -> if (this.storyId == storyId) this else NarrationState.Idle
-    is NarrationState.Unavailable -> if (this.storyId == storyId) this else NarrationState.Idle
+fun NarrationState.forLesson(lessonId: Long): NarrationState = when (this) {
+    is NarrationState.Playing -> if (this.lessonId == lessonId) this else NarrationState.Idle
+    is NarrationState.Paused -> if (this.lessonId == lessonId) this else NarrationState.Idle
+    is NarrationState.Unavailable -> if (this.lessonId == lessonId) this else NarrationState.Idle
     NarrationState.Idle -> NarrationState.Idle
 }

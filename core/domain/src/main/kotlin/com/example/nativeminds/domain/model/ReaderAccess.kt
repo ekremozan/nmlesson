@@ -1,26 +1,26 @@
 package com.example.nativeminds.domain.model
 
-import com.example.nativeminds.model.Story
-import com.example.nativeminds.model.StoryContent
+import com.example.nativeminds.model.Lesson
+import com.example.nativeminds.model.LessonContent
 
 /**
- * What a given reader is allowed to see of a given story.
+ * What a given reader is allowed to see of a given lesson.
  *
  * A sealed hierarchy rather than a flag beside the content, because the restricted case must not
  * be able to carry the text it is withholding. [Preview] simply has nowhere to put the rest of the
- * story, so no screen can render it by mistake and no accessibility service can read it aloud.
+ * lesson, so no screen can render it by mistake and no accessibility service can read it aloud.
  */
 sealed interface ReaderAccess {
-    val story: Story
+    val lesson: Lesson
 
     val author: String
 
     val paragraphs: List<String>
 
-    /** The whole story: unlocked content, or premium content with an entitlement. */
+    /** The whole lesson: unlocked content, or premium content with an entitlement. */
     data class Full(
-        override val story: Story,
-        val content: StoryContent,
+        override val lesson: Lesson,
+        val content: LessonContent,
     ) : ReaderAccess {
         override val author: String get() = content.author
 
@@ -34,7 +34,7 @@ sealed interface ReaderAccess {
      * screen and the number the rule used cannot drift apart.
      */
     data class Preview(
-        override val story: Story,
+        override val lesson: Lesson,
         override val author: String,
         override val paragraphs: List<String>,
         val freeSharePercent: Int,

@@ -117,7 +117,7 @@ private val DarkColorScheme = darkColorScheme(
  * The app theme.
  *
  * Dynamic color is deliberately **off**. The product's identity is the paper-and-terracotta
- * palette — the serif reading voice and the warm ground are what make it feel like a story app,
+ * palette — the serif reading voice and the warm ground are what make it feel like a lesson app,
  * and letting the wallpaper repaint that would trade the brand for a personalization win the
  * content does not benefit from. (An app whose value is its own atmosphere is exactly the case
  * where Material advises against dynamic color.)
@@ -152,7 +152,7 @@ fun NativeMindsTheme(
  * ```
  * color = MaterialTheme.colorScheme.primary          // fills
  * color = NativeMindsTheme.colors.accentText         // accent text and icons
- * style = NativeMindsTheme.typography.storyTitle
+ * style = NativeMindsTheme.typography.lessonTitle
  * ```
  */
 object NativeMindsTheme {

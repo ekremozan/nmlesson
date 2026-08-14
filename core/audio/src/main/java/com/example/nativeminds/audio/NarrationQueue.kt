@@ -6,19 +6,19 @@ import com.example.nativeminds.domain.model.SpokenRange
 import com.example.nativeminds.domain.narration.sentenceTexts
 
 /**
- * Where narration has got to in a story, and what the speech engine should be given next.
+ * Where narration has got to in a lesson, and what the speech engine should be given next.
  *
  * Pure and Android-free on purpose, the same reasoning the feature reducers follow: "pause here,
  * resume from exactly here" is the rule this whole feature is judged on, and here it is provable
  * in a plain JVM test instead of only on a device with a working speech engine.
  *
- * The whole story is handed to the engine at once ([Utterance] per sentence) rather than one
+ * The whole lesson is handed to the engine at once ([Utterance] per sentence) rather than one
  * sentence at a time. Feeding the next sentence only after the previous one reports completion
  * made playback depend on a callback some engines never deliver — narration would fall silent
  * after the first sentence with the position frozen at zero, so pausing and resuming replayed the
  * opening line and looked exactly like starting over. Progress is therefore tracked from
  * [onUtteranceStarted] and [onRangeStart], which fire as speech happens, and completion is only
- * consulted to notice the story has ended.
+ * consulted to notice the lesson has ended.
  *
  * Not thread-safe by design — [TextToSpeechNarrator] confines every call to the main thread, which
  * is what stops a speech-engine callback (delivered on a binder thread) from racing a tap.
@@ -31,7 +31,7 @@ internal class NarrationQueue(private val reportsWordRanges: Boolean = true) {
         private set
 
     private var sentences: List<String> = emptyList()
-    private var storyId: Long = 0
+    private var lessonId: Long = 0
     private var sentenceIndex: Int = 0
 
     /** How far into [sentenceIndex] speech has actually reached, in characters. */
@@ -54,15 +54,15 @@ internal class NarrationQueue(private val reportsWordRanges: Boolean = true) {
      * Bumped by every transition and embedded in each [Utterance.id].
      *
      * A callback carrying a stale token belongs to speech that pausing, stopping, or starting
-     * another story has already superseded — including the completion the platform reports for the
+     * another lesson has already superseded — including the completion the platform reports for the
      * utterance a pause interrupted, which would otherwise move the reader past the words they
      * expect to come back to.
      */
     private var token: Int = 0
 
-    fun start(storyId: Long, paragraphs: List<String>): List<Utterance> {
+    fun start(lessonId: Long, paragraphs: List<String>): List<Utterance> {
         token++
-        this.storyId = storyId
+        this.lessonId = lessonId
         sentences = paragraphs.sentenceTexts()
         sentenceIndex = 0
         offsetInSentence = 0
@@ -72,7 +72,7 @@ internal class NarrationQueue(private val reportsWordRanges: Boolean = true) {
             return emptyList()
         }
         spokenRange = wholeSentenceRangeOrNull()
-        state = NarrationState.Playing(storyId, 0, sentences.size, spokenRange)
+        state = NarrationState.Playing(lessonId, 0, sentences.size, spokenRange)
         return utterancesFrom(fromIndex = 0, offset = 0)
     }
 
@@ -80,14 +80,14 @@ internal class NarrationQueue(private val reportsWordRanges: Boolean = true) {
     fun pause(): Boolean {
         if (state !is NarrationState.Playing) return false
         token++
-        state = NarrationState.Paused(storyId, sentenceIndex, sentences.size, spokenRange)
+        state = NarrationState.Paused(lessonId, sentenceIndex, sentences.size, spokenRange)
         return true
     }
 
     fun resume(): List<Utterance> {
         if (state !is NarrationState.Paused) return emptyList()
         token++
-        state = NarrationState.Playing(storyId, sentenceIndex, sentences.size, spokenRange)
+        state = NarrationState.Playing(lessonId, sentenceIndex, sentences.size, spokenRange)
         return utterancesFrom(sentenceIndex, offsetInSentence)
     }
 
@@ -100,11 +100,11 @@ internal class NarrationQueue(private val reportsWordRanges: Boolean = true) {
         state = NarrationState.Idle
     }
 
-    fun markUnavailable(storyId: Long, reason: NarrationUnavailableReason) {
+    fun markUnavailable(lessonId: Long, reason: NarrationUnavailableReason) {
         token++
         sentences = emptyList()
         spokenRange = null
-        state = NarrationState.Unavailable(storyId, reason)
+        state = NarrationState.Unavailable(lessonId, reason)
     }
 
     /** The engine has begun a sentence — the position that survives a pause. */
@@ -114,7 +114,7 @@ internal class NarrationQueue(private val reportsWordRanges: Boolean = true) {
         sentenceIndex = started.sentenceIndex
         offsetInSentence = started.offset
         spokenRange = wholeSentenceRangeOrNull()
-        state = NarrationState.Playing(storyId, sentenceIndex, sentences.size, spokenRange)
+        state = NarrationState.Playing(lessonId, sentenceIndex, sentences.size, spokenRange)
     }
 
     /**
@@ -128,7 +128,7 @@ internal class NarrationQueue(private val reportsWordRanges: Boolean = true) {
         if (speaking.token != token || state !is NarrationState.Playing) return
         offsetInSentence = speaking.offset + start
         spokenRange = SpokenRange(offsetInSentence, speaking.offset + end)
-        state = NarrationState.Playing(storyId, sentenceIndex, sentences.size, spokenRange)
+        state = NarrationState.Playing(lessonId, sentenceIndex, sentences.size, spokenRange)
     }
 
     /** Narration is over once the engine finishes the final sentence (FR-009). */
@@ -156,15 +156,15 @@ internal class NarrationQueue(private val reportsWordRanges: Boolean = true) {
             val from = if (position == 0) offset.coerceIn(0, sentence.length) else 0
             Utterance(
                 text = sentence.substring(from),
-                id = encodeUtteranceId(token, storyId, index, from),
+                id = encodeUtteranceId(token, lessonId, index, from),
             )
         }
 }
 
 private data class UtteranceId(val token: Int, val sentenceIndex: Int, val offset: Int)
 
-private fun encodeUtteranceId(token: Int, storyId: Long, sentenceIndex: Int, offset: Int): String =
-    "$token:$storyId:$sentenceIndex:$offset"
+private fun encodeUtteranceId(token: Int, lessonId: Long, sentenceIndex: Int, offset: Int): String =
+    "$token:$lessonId:$sentenceIndex:$offset"
 
 private fun decodeUtteranceId(raw: String?): UtteranceId? {
     val parts = raw?.split(":") ?: return null

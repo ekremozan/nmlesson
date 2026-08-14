@@ -3,12 +3,12 @@ package com.example.nativeminds.feature.home.ui
 import com.example.nativeminds.feature.home.ui.model.ChipUiModel
 import com.example.nativeminds.feature.home.ui.model.GreetingPeriod
 
-/** How many category chips the empty state has room for. */
+/** How many subject chips the empty state has room for. */
 private const val SUGGESTION_COUNT = 3
 
 /**
- * The chrome [HomeScreen] needs around the story list — the list itself comes from
- * [HomeViewModel.pagedStories] via `collectAsLazyPagingItems()`, since paged content doesn't fit
+ * The chrome [HomeScreen] needs around the lesson list — the list itself comes from
+ * [HomeViewModel.pagedLessons] via `collectAsLazyPagingItems()`, since paged content doesn't fit
  * a plain state snapshot.
  *
  * Carries data, not display strings: chrome text (greeting, section heading, counts) resolves to
@@ -18,19 +18,19 @@ data class HomeUiState(
     val greeting: GreetingPeriod = GreetingPeriod.MORNING,
     val userName: String = "",
     val query: String = "",
-    val selectedCategory: String? = null,
-    val categories: List<String> = emptyList(),
+    val selectedSubject: String? = null,
+    val subjects: List<String> = emptyList(),
 ) {
     val chips: List<ChipUiModel>
-        get() = (listOf(null) + categories).map { category ->
-            ChipUiModel(category = category, isSelected = category == selectedCategory)
+        get() = (listOf(null) + subjects).map { subject ->
+            ChipUiModel(subject = subject, isSelected = subject == selectedSubject)
         }
 
     val suggestions: List<ChipUiModel>
-        get() = categories.take(SUGGESTION_COUNT).map { ChipUiModel(it) }
+        get() = subjects.take(SUGGESTION_COUNT).map { ChipUiModel(it) }
 
     val isFiltering: Boolean
-        get() = query.isNotEmpty() || selectedCategory != null
+        get() = query.isNotEmpty() || selectedSubject != null
 }
 
 sealed interface HomeIntent {
@@ -38,11 +38,11 @@ sealed interface HomeIntent {
 
     data object QueryCleared : HomeIntent
 
-    data class CategorySelected(val category: String?) : HomeIntent
+    data class SubjectSelected(val subject: String?) : HomeIntent
 
-    data class SuggestionSelected(val category: String?) : HomeIntent
+    data class SuggestionSelected(val subject: String?) : HomeIntent
 
-    data class CategoriesLoaded(val categories: List<String>) : HomeIntent
+    data class SubjectsLoaded(val subjects: List<String>) : HomeIntent
 }
 
 sealed interface HomeEffect {

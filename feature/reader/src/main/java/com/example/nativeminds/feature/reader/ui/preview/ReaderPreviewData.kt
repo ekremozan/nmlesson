@@ -5,11 +5,11 @@ import com.example.nativeminds.domain.model.NarrationState
 import com.example.nativeminds.domain.model.SpokenRange
 import com.example.nativeminds.domain.model.UnavailableReason
 import com.example.nativeminds.domain.narration.sentenceWordTotals
-import com.example.nativeminds.domain.narration.toStorySentences
+import com.example.nativeminds.domain.narration.toLessonSentences
 import com.example.nativeminds.feature.reader.ui.ReaderContentUiState
 import com.example.nativeminds.feature.reader.ui.ReaderUiState
 import com.example.nativeminds.feature.reader.ui.model.ReaderBodyUiModel
-import com.example.nativeminds.feature.reader.ui.model.ReaderStoryUiModel
+import com.example.nativeminds.feature.reader.ui.model.ReaderLessonUiModel
 
 /**
  * Fixtures for every reader preview.
@@ -18,26 +18,26 @@ import com.example.nativeminds.feature.reader.ui.model.ReaderStoryUiModel
  * dependencies at all, and tying it to real data would make it fail for reasons that have nothing
  * to do with the composable being previewed.
  */
-val PreviewFreeStory = ReaderStoryUiModel(
+val PreviewFreeLesson = ReaderLessonUiModel(
     id = 1,
-    category = "Fiction",
-    title = "The Lighthouse Keeper's Last Letter",
-    author = "Marguerite Halloran",
+    subject = "Biyoloji",
+    title = "Hücre Yapısı ve Organeller",
+    author = "Dr. Elif Kaya",
     minutes = 6,
     hasAudio = true,
     isPremium = false,
-    image = "cover_01",
+    image = "subject_biology",
 )
 
-val PreviewPremiumStory = ReaderStoryUiModel(
+val PreviewPremiumLesson = ReaderLessonUiModel(
     id = 3,
-    category = "History",
-    title = "The Cartographer of Missing Islands",
-    author = "Tomás Ferreiro",
+    subject = "Tarih",
+    title = "İstanbul'un Fethi ve Sonuçları",
+    author = "Doç. Dr. Mehmet Aydın",
     minutes = 8,
     hasAudio = false,
     isPremium = true,
-    image = "cover_03",
+    image = "subject_history",
 )
 
 private val PreviewFullParagraphs = listOf(
@@ -48,7 +48,7 @@ private val PreviewFullParagraphs = listOf(
 
 val PreviewFullBody = ReaderBodyUiModel(
     paragraphs = PreviewFullParagraphs,
-    sentences = PreviewFullParagraphs.toStorySentences(),
+    sentences = PreviewFullParagraphs.toLessonSentences(),
     wordTotals = PreviewFullParagraphs.sentenceWordTotals(),
     isTruncated = false,
     freeSharePercent = 100,
@@ -61,7 +61,7 @@ private val PreviewTruncatedParagraphs = listOf(
 
 val PreviewTruncatedBody = ReaderBodyUiModel(
     paragraphs = PreviewTruncatedParagraphs,
-    sentences = PreviewTruncatedParagraphs.toStorySentences(),
+    sentences = PreviewTruncatedParagraphs.toLessonSentences(),
     wordTotals = PreviewTruncatedParagraphs.sentenceWordTotals(),
     isTruncated = true,
     freeSharePercent = 30,
@@ -89,19 +89,19 @@ class ReaderPreviewCases : PreviewParameterProvider<ReaderPreviewCase> {
         ReaderPreviewCase(
             label = "Full access",
             state = ReaderUiState(
-                storyId = PreviewFreeStory.id,
-                content = ReaderContentUiState.Ready(PreviewFreeStory, PreviewFullBody),
+                lessonId = PreviewFreeLesson.id,
+                content = ReaderContentUiState.Ready(PreviewFreeLesson, PreviewFullBody),
                 progressPercent = 34,
             ),
         ),
         ReaderPreviewCase(
             label = "Listening",
             state = ReaderUiState(
-                storyId = PreviewFreeStory.id,
-                content = ReaderContentUiState.Ready(PreviewFreeStory, PreviewFullBody),
+                lessonId = PreviewFreeLesson.id,
+                content = ReaderContentUiState.Ready(PreviewFreeLesson, PreviewFullBody),
                 progressPercent = 34,
                 narration = NarrationState.Playing(
-                    storyId = PreviewFreeStory.id,
+                    lessonId = PreviewFreeLesson.id,
                     sentenceIndex = 4,
                     totalSentences = 12,
                     spokenRange = spokenWordRange(sentenceIndex = 4, word = "weather"),
@@ -111,11 +111,11 @@ class ReaderPreviewCases : PreviewParameterProvider<ReaderPreviewCase> {
         ReaderPreviewCase(
             label = "Listening without word ranges",
             state = ReaderUiState(
-                storyId = PreviewFreeStory.id,
-                content = ReaderContentUiState.Ready(PreviewFreeStory, PreviewFullBody),
+                lessonId = PreviewFreeLesson.id,
+                content = ReaderContentUiState.Ready(PreviewFreeLesson, PreviewFullBody),
                 progressPercent = 34,
                 narration = NarrationState.Playing(
-                    storyId = PreviewFreeStory.id,
+                    lessonId = PreviewFreeLesson.id,
                     sentenceIndex = 4,
                     totalSentences = 12,
                 ),
@@ -124,26 +124,26 @@ class ReaderPreviewCases : PreviewParameterProvider<ReaderPreviewCase> {
         ReaderPreviewCase(
             label = "Restricted",
             state = ReaderUiState(
-                storyId = PreviewPremiumStory.id,
-                content = ReaderContentUiState.Ready(PreviewPremiumStory, PreviewTruncatedBody),
+                lessonId = PreviewPremiumLesson.id,
+                content = ReaderContentUiState.Ready(PreviewPremiumLesson, PreviewTruncatedBody),
             ),
         ),
         ReaderPreviewCase(
             label = "Loading",
-            state = ReaderUiState(storyId = PreviewFreeStory.id),
+            state = ReaderUiState(lessonId = PreviewFreeLesson.id),
         ),
         ReaderPreviewCase(
             label = "Offline",
             state = ReaderUiState(
-                storyId = PreviewFreeStory.id,
+                lessonId = PreviewFreeLesson.id,
                 content = ReaderContentUiState.Unavailable(UnavailableReason.OFFLINE),
             ),
         ),
         ReaderPreviewCase(
-            label = "Story missing",
+            label = "Lesson missing",
             state = ReaderUiState(
-                storyId = PreviewFreeStory.id,
-                content = ReaderContentUiState.Unavailable(UnavailableReason.STORY_MISSING),
+                lessonId = PreviewFreeLesson.id,
+                content = ReaderContentUiState.Unavailable(UnavailableReason.LESSON_MISSING),
             ),
         ),
     )

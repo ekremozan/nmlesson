@@ -4,9 +4,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.example.nativeminds.domain.narration.StoryNarrator
+import com.example.nativeminds.domain.narration.LessonNarrator
 import com.example.nativeminds.domain.usecase.ObserveNarrationUseCase
-import com.example.nativeminds.domain.usecase.ObserveStoryDetailUseCase
+import com.example.nativeminds.domain.usecase.ObserveLessonDetailUseCase
 import com.example.nativeminds.feature.reader.navigation.ReaderRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -27,19 +27,19 @@ import kotlinx.coroutines.flow.receiveAsFlow
  * What the content flow is keyed on. A retry changes [retryToken], which changes the key, which
  * re-subscribes — so retry is a pure state transition rather than an imperative reload call.
  */
-private data class LoadKey(val storyId: Long, val retryToken: Int)
+private data class LoadKey(val lessonId: Long, val retryToken: Int)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ReaderViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    observeStoryDetail: ObserveStoryDetailUseCase,
+    observeLessonDetail: ObserveLessonDetailUseCase,
     observeNarration: ObserveNarrationUseCase,
-    private val storyNarrator: StoryNarrator,
+    private val lessonNarrator: LessonNarrator,
 ) : ViewModel() {
-    private val storyId = savedStateHandle.toRoute<ReaderRoute>().storyId
+    private val lessonId = savedStateHandle.toRoute<ReaderRoute>().lessonId
 
-    private val _state = MutableStateFlow(ReaderUiState(storyId = storyId))
+    private val _state = MutableStateFlow(ReaderUiState(lessonId = lessonId))
 
     val state: StateFlow<ReaderUiState> = _state.asStateFlow()
 
@@ -49,20 +49,20 @@ class ReaderViewModel @Inject constructor(
 
     init {
         _state
-            .map { LoadKey(it.storyId, it.retryToken) }
+            .map { LoadKey(it.lessonId, it.retryToken) }
             .distinctUntilChanged()
-            .flatMapLatest { key -> observeStoryDetail(key.storyId) }
+            .flatMapLatest { key -> observeLessonDetail(key.lessonId) }
             .onEach { onIntent(ReaderIntent.DetailChanged(it)) }
             .launchIn(viewModelScope)
 
-        observeNarration(storyId)
+        observeNarration(lessonId)
             .onEach { onIntent(ReaderIntent.NarrationStateChanged(it)) }
             .launchIn(viewModelScope)
     }
 
     /**
      * The reducer decides what the next state is, which effects the intent raised, and — for the
-     * three narration effects — which [StoryNarrator] call they mean; this only carries that
+     * three narration effects — which [LessonNarrator] call they mean; this only carries that
      * decision out. [ReaderEffect.ShowAudioUnavailable] is the one effect meant for the screen, so
      * it is the one forwarded to [effectChannel] instead of acted on here.
      */
@@ -71,9 +71,9 @@ class ReaderViewModel @Inject constructor(
         _state.value = reduction.state
         reduction.effects.forEach { effect ->
             when (effect) {
-                is ReaderEffect.StartNarration -> storyNarrator.start(storyId, effect.paragraphs)
-                ReaderEffect.PauseNarration -> storyNarrator.pause()
-                ReaderEffect.ResumeNarration -> storyNarrator.resume()
+                is ReaderEffect.StartNarration -> lessonNarrator.start(lessonId, effect.paragraphs)
+                ReaderEffect.PauseNarration -> lessonNarrator.pause()
+                ReaderEffect.ResumeNarration -> lessonNarrator.resume()
                 ReaderEffect.ShowAudioUnavailable ->
                     effectChannel.trySend(ReaderUiEffect.ShowAudioUnavailable)
             }
@@ -86,6 +86,6 @@ class ReaderViewModel @Inject constructor(
      * the lock screen or another app; only popping the destination off the back stack does.
      */
     override fun onCleared() {
-        storyNarrator.stop()
+        lessonNarrator.stop()
     }
 }

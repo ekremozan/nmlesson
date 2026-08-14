@@ -5,15 +5,15 @@ import androidx.lifecycle.ViewModelStore
 import androidx.paging.PagingData
 import com.example.nativeminds.domain.model.NarrationState
 import com.example.nativeminds.domain.model.ReaderDetail
-import com.example.nativeminds.domain.narration.StoryNarrator
+import com.example.nativeminds.domain.narration.LessonNarrator
 import com.example.nativeminds.domain.observability.ErrorReporter
 import com.example.nativeminds.domain.repository.EntitlementRepository
-import com.example.nativeminds.domain.repository.StoryRepository
+import com.example.nativeminds.domain.repository.LessonRepository
 import com.example.nativeminds.domain.usecase.ObserveNarrationUseCase
-import com.example.nativeminds.domain.usecase.ObserveStoryDetailUseCase
-import com.example.nativeminds.domain.usecase.RefreshStoryContentUseCase
-import com.example.nativeminds.model.Story
-import com.example.nativeminds.model.StoryContent
+import com.example.nativeminds.domain.usecase.ObserveLessonDetailUseCase
+import com.example.nativeminds.domain.usecase.RefreshLessonContentUseCase
+import com.example.nativeminds.model.Lesson
+import com.example.nativeminds.model.LessonContent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -37,23 +37,23 @@ import org.robolectric.annotation.Config
 
 private const val ROBOLECTRIC_SDK = 36
 
-private class TestStoryRepository : StoryRepository {
-    val storyFlow = MutableStateFlow<Story?>(unlockedStory)
-    val contentFlow = MutableStateFlow<StoryContent?>(storyContent)
+private class TestLessonRepository : LessonRepository {
+    val lessonFlow = MutableStateFlow<Lesson?>(unlockedLesson)
+    val contentFlow = MutableStateFlow<LessonContent?>(lessonContent)
     var subscriptions = 0
         private set
 
-    override fun pagedStories(category: String?, query: String): Flow<PagingData<Story>> =
+    override fun pagedLessons(subject: String?, query: String): Flow<PagingData<Lesson>> =
         emptyFlow()
 
-    override fun categories(): Flow<List<String>> = emptyFlow()
+    override fun subjects(): Flow<List<String>> = emptyFlow()
 
-    override fun story(id: Long): Flow<Story?> {
+    override fun lesson(id: Long): Flow<Lesson?> {
         subscriptions++
-        return storyFlow
+        return lessonFlow
     }
 
-    override fun storyContent(id: Long): Flow<StoryContent?> = contentFlow
+    override fun lessonContent(id: Long): Flow<LessonContent?> = contentFlow
 
     override suspend fun refreshContent(id: Long) = Unit
 
@@ -74,23 +74,23 @@ private class SilentErrorReporter : ErrorReporter {
     override fun report(throwable: Throwable, context: String) = Unit
 }
 
-private class TestStoryNarrator : StoryNarrator {
+private class TestLessonNarrator : LessonNarrator {
     private val _state = MutableStateFlow<NarrationState>(NarrationState.Idle)
     override val state: StateFlow<NarrationState> = _state.asStateFlow()
 
     var startedWith: Pair<Long, List<String>>? = null
         private set
 
-    override fun start(storyId: Long, paragraphs: List<String>) {
-        startedWith = storyId to paragraphs
-        _state.value = NarrationState.Playing(storyId, sentenceIndex = 0, paragraphs.size)
+    override fun start(lessonId: Long, paragraphs: List<String>) {
+        startedWith = lessonId to paragraphs
+        _state.value = NarrationState.Playing(lessonId, sentenceIndex = 0, paragraphs.size)
     }
 
     override fun pause() {
         val current = _state.value
         if (current is NarrationState.Playing) {
             _state.value =
-                NarrationState.Paused(current.storyId, current.sentenceIndex, current.totalSentences)
+                NarrationState.Paused(current.lessonId, current.sentenceIndex, current.totalSentences)
         }
     }
 
@@ -98,7 +98,7 @@ private class TestStoryNarrator : StoryNarrator {
         val current = _state.value
         if (current is NarrationState.Paused) {
             _state.value =
-                NarrationState.Playing(current.storyId, current.sentenceIndex, current.totalSentences)
+                NarrationState.Playing(current.lessonId, current.sentenceIndex, current.totalSentences)
         }
     }
 
@@ -133,33 +133,33 @@ class ReaderViewModelTest {
     }
 
     private fun viewModel(
-        repository: StoryRepository,
+        repository: LessonRepository,
         entitlements: EntitlementRepository = TestEntitlementRepository(),
-        narrator: StoryNarrator = TestStoryNarrator(),
+        narrator: LessonNarrator = TestLessonNarrator(),
     ) = ReaderViewModel(
-        savedStateHandle = SavedStateHandle(mapOf("storyId" to unlockedStory.id)),
-        observeStoryDetail = ObserveStoryDetailUseCase(
-            storyRepository = repository,
+        savedStateHandle = SavedStateHandle(mapOf("lessonId" to unlockedLesson.id)),
+        observeLessonDetail = ObserveLessonDetailUseCase(
+            lessonRepository = repository,
             entitlementRepository = entitlements,
-            refreshStoryContent = RefreshStoryContentUseCase(repository, SilentErrorReporter()),
+            refreshLessonContent = RefreshLessonContentUseCase(repository, SilentErrorReporter()),
         ),
         observeNarration = ObserveNarrationUseCase(narrator),
-        storyNarrator = narrator,
+        lessonNarrator = narrator,
     )
 
     @Test
     fun contentFromTheDomainLayerReachesStateThroughTheSameDoorAsUserActions() = runTest {
-        val repository = TestStoryRepository()
+        val repository = TestLessonRepository()
 
         val state = viewModel(repository).state.first { it.content is ReaderContentUiState.Ready }
 
         val ready = state.content as ReaderContentUiState.Ready
-        assertEquals(unlockedStory.title, ready.story.title)
+        assertEquals(unlockedLesson.title, ready.lesson.title)
     }
 
     @Test
     fun retryResubscribesTheContentStreamExactlyOnce() = runTest {
-        val repository = TestStoryRepository()
+        val repository = TestLessonRepository()
         val viewModel = viewModel(repository)
         viewModel.state.first { it.content is ReaderContentUiState.Ready }
         val before = repository.subscriptions
@@ -172,19 +172,19 @@ class ReaderViewModelTest {
 
     @Test
     fun listenClickedFromIdleStartsNarrationDirectlyRatherThanThroughTheEffectChannel() = runTest {
-        val narrator = TestStoryNarrator()
-        val viewModel = viewModel(TestStoryRepository(), narrator = narrator)
+        val narrator = TestLessonNarrator()
+        val viewModel = viewModel(TestLessonRepository(), narrator = narrator)
         viewModel.state.first { it.content is ReaderContentUiState.Ready }
 
         viewModel.onIntent(ReaderIntent.ListenClicked)
 
-        assertEquals(unlockedStory.id to storyContent.paragraphs, narrator.startedWith)
+        assertEquals(unlockedLesson.id to lessonContent.paragraphs, narrator.startedWith)
     }
 
     @Test
     fun narrationFromTheNarratorFoldsBackIntoState() = runTest {
-        val narrator = TestStoryNarrator()
-        val viewModel = viewModel(TestStoryRepository(), narrator = narrator)
+        val narrator = TestLessonNarrator()
+        val viewModel = viewModel(TestLessonRepository(), narrator = narrator)
         viewModel.state.first { it.content is ReaderContentUiState.Ready }
 
         viewModel.onIntent(ReaderIntent.ListenClicked)
@@ -195,8 +195,8 @@ class ReaderViewModelTest {
 
     @Test
     fun clearingTheViewModelStopsNarration() = runTest {
-        val narrator = TestStoryNarrator()
-        val viewModel = viewModel(TestStoryRepository(), narrator = narrator)
+        val narrator = TestLessonNarrator()
+        val viewModel = viewModel(TestLessonRepository(), narrator = narrator)
         viewModel.state.first { it.content is ReaderContentUiState.Ready }
         viewModel.onIntent(ReaderIntent.ListenClicked)
 
@@ -209,8 +209,8 @@ class ReaderViewModelTest {
 
     @Test
     fun aMissingDetailSurfacesAsAnUnavailableScreen() = runTest {
-        val repository = TestStoryRepository()
-        repository.storyFlow.value = null
+        val repository = TestLessonRepository()
+        repository.lessonFlow.value = null
 
         val state = viewModel(repository)
             .state
@@ -221,7 +221,7 @@ class ReaderViewModelTest {
 
     @Test
     fun loadingIsWhatTheScreenStartsFrom() = runTest {
-        val repository = TestStoryRepository()
+        val repository = TestLessonRepository()
         repository.contentFlow.value = null
 
         val state = viewModel(repository).state.first()

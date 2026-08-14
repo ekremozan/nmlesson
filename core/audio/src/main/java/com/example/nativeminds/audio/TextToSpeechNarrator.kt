@@ -12,7 +12,7 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import com.example.nativeminds.domain.model.NarrationState
 import com.example.nativeminds.domain.model.NarrationUnavailableReason
-import com.example.nativeminds.domain.narration.StoryNarrator
+import com.example.nativeminds.domain.narration.LessonNarrator
 import com.example.nativeminds.domain.observability.ErrorReporter
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 private const val ERROR_CONTEXT = "TextToSpeechNarrator"
 
 /**
- * [StoryNarrator] backed by the platform [TextToSpeech] engine, speaking one sentence per utterance
+ * [LessonNarrator] backed by the platform [TextToSpeech] engine, speaking one sentence per utterance
  * so pausing has a real point to resume from. Where that point is lives in [NarrationQueue]; this
  * class only carries the queue's decisions out to the engine, the audio focus, and the media
  * session service.
@@ -40,7 +40,7 @@ private const val ERROR_CONTEXT = "TextToSpeechNarrator"
 class TextToSpeechNarrator @Inject constructor(
     @ApplicationContext private val context: Context,
     private val errorReporter: ErrorReporter,
-) : StoryNarrator {
+) : LessonNarrator {
     private val _state = MutableStateFlow<NarrationState>(NarrationState.Idle)
     override val state: StateFlow<NarrationState> = _state.asStateFlow()
 
@@ -121,10 +121,10 @@ class TextToSpeechNarrator @Inject constructor(
         )
     }
 
-    override fun start(storyId: Long, paragraphs: List<String>) {
+    override fun start(lessonId: Long, paragraphs: List<String>) {
         onMainThread {
             if (!engineReady) {
-                pendingStart = { start(storyId, paragraphs) }
+                pendingStart = { start(lessonId, paragraphs) }
                 return@onMainThread
             }
             if (engine.isLanguageAvailable(Locale.getDefault()) < TextToSpeech.LANG_AVAILABLE) {
@@ -132,13 +132,13 @@ class TextToSpeechNarrator @Inject constructor(
                     IllegalStateException("No TTS voice installed for ${Locale.getDefault()}"),
                     ERROR_CONTEXT,
                 )
-                queue.markUnavailable(storyId, NarrationUnavailableReason.LANGUAGE_UNSUPPORTED)
+                queue.markUnavailable(lessonId, NarrationUnavailableReason.LANGUAGE_UNSUPPORTED)
                 publish()
                 return@onMainThread
             }
             requestAudioFocus()
             startSessionService()
-            enqueue(queue.start(storyId, paragraphs))
+            enqueue(queue.start(lessonId, paragraphs))
         }
     }
 
@@ -172,7 +172,7 @@ class TextToSpeechNarrator @Inject constructor(
     }
 
     /**
-     * Hands the rest of the story to the engine in one go, so playback continues on the engine's
+     * Hands the rest of the lesson to the engine in one go, so playback continues on the engine's
      * own queue rather than waiting for this app to be told each sentence has finished.
      *
      * The first utterance flushes whatever the engine was holding — that is what makes a resume

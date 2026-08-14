@@ -3,13 +3,13 @@ package com.example.nativeminds.data.di
 import com.example.nativeminds.data.AndroidNetworkMonitor
 import com.example.nativeminds.data.MockEntitlementRepository
 import com.example.nativeminds.data.NetworkMonitor
-import com.example.nativeminds.data.RoomStoryRepository
+import com.example.nativeminds.data.RoomLessonRepository
 import com.example.nativeminds.data.observability.LogcatErrorReporter
-import com.example.nativeminds.data.remote.FakeRemoteStoryDataSource
-import com.example.nativeminds.data.remote.RemoteStoryDataSource
+import com.example.nativeminds.data.remote.FakeRemoteLessonDataSource
+import com.example.nativeminds.data.remote.RemoteLessonDataSource
 import com.example.nativeminds.domain.observability.ErrorReporter
 import com.example.nativeminds.domain.repository.EntitlementRepository
-import com.example.nativeminds.domain.repository.StoryRepository
+import com.example.nativeminds.domain.repository.LessonRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -28,7 +28,7 @@ import javax.inject.Singleton
 abstract class DataModule {
     @Binds
     @Singleton
-    abstract fun storyRepository(impl: RoomStoryRepository): StoryRepository
+    abstract fun lessonRepository(impl: RoomLessonRepository): LessonRepository
 
     /**
      * Scoped, unlike the other bindings here: the mock holds the entitlement in memory, so a
@@ -41,7 +41,7 @@ abstract class DataModule {
 
     /** Unscoped: it is stateless, so a new instance per injection point costs nothing. */
     @Binds
-    abstract fun remoteStoryDataSource(impl: FakeRemoteStoryDataSource): RemoteStoryDataSource
+    abstract fun remoteLessonDataSource(impl: FakeRemoteLessonDataSource): RemoteLessonDataSource
 
     @Binds
     abstract fun errorReporter(impl: LogcatErrorReporter): ErrorReporter

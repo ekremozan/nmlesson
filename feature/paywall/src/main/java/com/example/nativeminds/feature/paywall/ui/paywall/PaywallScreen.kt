@@ -60,7 +60,7 @@ import com.example.nativeminds.feature.paywall.ui.preview.PaywallPreviewCases
 @Composable
 fun PaywallScreen(
     onClose: () -> Unit,
-    onPurchased: (storyId: Long, progressPercent: Int, plan: PurchasePlan) -> Unit,
+    onPurchased: (lessonId: Long, progressPercent: Int, plan: PurchasePlan) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PaywallViewModel = hiltViewModel(),
 ) {
@@ -73,7 +73,7 @@ fun PaywallScreen(
         viewModel.effects.flowWithLifecycle(lifecycle).collect { effect ->
             when (effect) {
                 is PaywallEffect.Purchased ->
-                    onPurchased(effect.storyId, effect.progressPercent, effect.plan)
+                    onPurchased(effect.lessonId, effect.progressPercent, effect.plan)
 
                 PaywallEffect.ShowNoPurchaseFound ->
                     snackbarHostState.showSnackbar(noPurchaseFoundMessage)
@@ -454,7 +454,7 @@ private fun BenefitRow(
             )
             Text(
                 text = stringResource(bodyRes),
-                style = NativeMindsTheme.typography.storyTeaser,
+                style = NativeMindsTheme.typography.lessonTeaser,
                 color = NativeMindsTheme.colors.textMuted,
             )
         }
@@ -497,7 +497,7 @@ private fun PlanCard(
         ) {
             Text(
                 text = stringResource(labelRes),
-                style = NativeMindsTheme.typography.storyMeta,
+                style = NativeMindsTheme.typography.lessonMeta,
                 color = NativeMindsTheme.colors.textMuted,
             )
             Text(

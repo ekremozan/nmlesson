@@ -7,7 +7,7 @@ import com.example.nativeminds.domain.model.UnavailableReason
 import com.example.nativeminds.domain.narration.wordCount
 import com.example.nativeminds.feature.reader.ui.model.ListenPillStatus
 import com.example.nativeminds.feature.reader.ui.model.ReaderBodyUiModel
-import com.example.nativeminds.feature.reader.ui.model.ReaderStoryUiModel
+import com.example.nativeminds.feature.reader.ui.model.ReaderLessonUiModel
 
 /**
  * Everything the reader screen can be showing.
@@ -19,7 +19,7 @@ sealed interface ReaderContentUiState {
     data object Loading : ReaderContentUiState
 
     data class Ready(
-        val story: ReaderStoryUiModel,
+        val lesson: ReaderLessonUiModel,
         val body: ReaderBodyUiModel,
     ) : ReaderContentUiState
 
@@ -31,7 +31,7 @@ sealed interface ReaderContentUiState {
  * computed property rather than a field the reducer has to keep in step.
  */
 data class ReaderUiState(
-    val storyId: Long,
+    val lessonId: Long,
     val content: ReaderContentUiState = ReaderContentUiState.Loading,
     val progressPercent: Int = 0,
     /**
@@ -42,7 +42,7 @@ data class ReaderUiState(
      */
     val retryToken: Int = 0,
     /**
-     * This screen visit's narration, scoped to [storyId] by
+     * This screen visit's narration, scoped to [lessonId] by
      * [com.example.nativeminds.domain.usecase.ObserveNarrationUseCase] before it ever reaches the
      * reducer — always [NarrationState.Idle] for a freshly created screen, which is what makes
      * leaving and returning to the reader reset playback without any reducer code of its own.
@@ -86,7 +86,7 @@ data class ReaderUiState(
         }
 
     /**
-     * How far narration has spoken through the story, as a fraction of its words.
+     * How far narration has spoken through the lesson, as a fraction of its words.
      *
      * Words rather than sentences because sentences vary wildly in length — a bar stepping by one
      * twelfth per sentence lurches, while a word is small enough that the bar moves with the voice.
@@ -116,8 +116,8 @@ data class ReaderUiState(
     /**
      * What the pill's bar shows: the voice while there is one, the scroll otherwise.
      *
-     * The bar answers "how far through this story am I", and which way the reader is getting
-     * through it is exactly what narration being live tells us. A paused story still counts as
+     * The bar answers "how far through this lesson am I", and which way the reader is getting
+     * through it is exactly what narration being live tells us. A paused lesson still counts as
      * listening — the reader is coming back to where the voice stopped, not to where the page
      * happens to be scrolled.
      */
@@ -182,7 +182,7 @@ sealed interface ReaderEffect {
     /**
      * The three narration actions below are not one-shot UI events like [ShowAudioUnavailable] —
      * the ViewModel executes them directly against
-     * [com.example.nativeminds.domain.narration.StoryNarrator] instead of forwarding them to the
+     * [com.example.nativeminds.domain.narration.LessonNarrator] instead of forwarding them to the
      * screen. They still come back from the reducer rather than being decided in the ViewModel,
      * because *which* action [ReaderIntent.ListenClicked] means depends on the current
      * [ReaderUiState.narration] — a decision, and the reducer is the only place allowed to make

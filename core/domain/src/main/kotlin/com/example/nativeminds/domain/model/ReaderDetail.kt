@@ -13,7 +13,7 @@ sealed interface ReaderDetail {
     data class Unavailable(val reason: UnavailableReason) : ReaderDetail
 }
 
-/** Why a story cannot be shown — each maps to its own message and its own recovery. */
+/** Why a lesson cannot be shown — each maps to its own message and its own recovery. */
 enum class UnavailableReason {
     /** The text has never been stored and there is no network to fetch it with. */
     OFFLINE,
@@ -21,6 +21,6 @@ enum class UnavailableReason {
     /** A fetch was attempted and failed for some other reason. */
     ERROR,
 
-    /** The story itself is gone — deleted by a sync between the list and the tap. */
-    STORY_MISSING,
+    /** The lesson itself is gone — deleted by a sync between the list and the tap. */
+    LESSON_MISSING,
 }

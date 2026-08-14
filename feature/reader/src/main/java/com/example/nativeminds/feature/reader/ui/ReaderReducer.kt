@@ -3,7 +3,7 @@ package com.example.nativeminds.feature.reader.ui
 import com.example.nativeminds.domain.model.NarrationState
 import com.example.nativeminds.domain.model.ReaderDetail
 import com.example.nativeminds.feature.reader.ui.mapper.toBodyUiModel
-import com.example.nativeminds.feature.reader.ui.mapper.toStoryUiModel
+import com.example.nativeminds.feature.reader.ui.mapper.toLessonUiModel
 
 private const val MIN_PROGRESS = 0
 private const val MAX_PROGRESS = 100
@@ -55,7 +55,7 @@ private fun ReaderUiState.reduceDetail(detail: ReaderDetail): Reduction = when (
     is ReaderDetail.Available -> {
         val body = detail.access.toBodyUiModel()
         Reduction(
-            copy(content = ReaderContentUiState.Ready(detail.access.toStoryUiModel(), body)),
+            copy(content = ReaderContentUiState.Ready(detail.access.toLessonUiModel(), body)),
         )
     }
 }

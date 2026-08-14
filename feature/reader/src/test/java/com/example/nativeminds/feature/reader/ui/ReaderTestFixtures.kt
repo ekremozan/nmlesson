@@ -1,40 +1,40 @@
 package com.example.nativeminds.feature.reader.ui
 
 import com.example.nativeminds.domain.model.ReaderAccess
-import com.example.nativeminds.model.Story
-import com.example.nativeminds.model.StoryContent
+import com.example.nativeminds.model.Lesson
+import com.example.nativeminds.model.LessonContent
 
-internal val unlockedStory = Story(
+internal val unlockedLesson = Lesson(
     id = 1,
-    category = "Fiction",
-    title = "The Lighthouse Keeper's Last Letter",
-    teaser = "One page he never sent.",
+    subject = "Biyoloji",
+    title = "Hücre Yapısı ve Organeller",
+    teaser = "Zarın içindeki küçük fabrika.",
     minutes = 6,
     hasAudio = true,
     isLocked = false,
-    image = "cover_01",
+    image = "subject_biology",
 )
 
-internal val lockedStory = unlockedStory.copy(
+internal val lockedLesson = unlockedLesson.copy(
     id = 3,
-    category = "History",
-    title = "The Cartographer of Missing Islands",
+    subject = "Tarih",
+    title = "İstanbul'un Fethi ve Sonuçları",
     isLocked = true,
 )
 
-internal val storyContent = StoryContent(
-    storyId = unlockedStory.id,
-    author = "Marguerite Halloran",
+internal val lessonContent = LessonContent(
+    lessonId = unlockedLesson.id,
+    author = "Dr. Elif Kaya",
     paragraphs = listOf("First.", "Second.", "Third."),
 )
 
-internal val fullAccess = ReaderAccess.Full(unlockedStory, storyContent)
+internal val fullAccess = ReaderAccess.Full(unlockedLesson, lessonContent)
 
 internal val previewAccess = ReaderAccess.Preview(
-    story = lockedStory,
-    author = "Tomás Ferreiro",
+    lesson = lockedLesson,
+    author = "Doç. Dr. Mehmet Aydın",
     paragraphs = listOf("First."),
     freeSharePercent = 30,
 )
 
-internal fun initialState() = ReaderUiState(storyId = unlockedStory.id)
+internal fun initialState() = ReaderUiState(lessonId = unlockedLesson.id)

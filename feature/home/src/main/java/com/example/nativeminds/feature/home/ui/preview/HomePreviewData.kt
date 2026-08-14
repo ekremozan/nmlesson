@@ -4,7 +4,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.example.nativeminds.feature.home.ui.HomeUiState
 import com.example.nativeminds.feature.home.ui.model.ChipUiModel
 import com.example.nativeminds.feature.home.ui.model.GreetingPeriod
-import com.example.nativeminds.feature.home.ui.model.StoryUiModel
+import com.example.nativeminds.feature.home.ui.model.LessonUiModel
 
 /**
  * Fixtures shared by every `@Preview` in this feature.
@@ -13,46 +13,46 @@ import com.example.nativeminds.feature.home.ui.model.StoryUiModel
  * static — they never reach the database or a ViewModel.
  */
 
-internal val PreviewCategories = listOf("Fiction", "History", "Science", "Essays")
+internal val PreviewSubjects = listOf("Biyoloji", "Tarih", "Coğrafya", "Kimya")
 
-internal val PreviewChips = (listOf(null) + PreviewCategories)
-    .mapIndexed { index, category -> ChipUiModel(category = category, isSelected = index == 0) }
+internal val PreviewChips = (listOf(null) + PreviewSubjects)
+    .mapIndexed { index, subject -> ChipUiModel(subject = subject, isSelected = index == 0) }
 
-internal val PreviewSuggestions = PreviewCategories.take(3).map { ChipUiModel(it) }
+internal val PreviewSuggestions = PreviewSubjects.take(3).map { ChipUiModel(it) }
 
-internal val PreviewStory = StoryUiModel(
+internal val PreviewLesson = LessonUiModel(
     id = 1,
-    category = "Fiction",
-    title = "The Lighthouse Keeper's Last Letter",
-    teaser = "Forty years of weather notes, and one page he never sent.",
+    subject = "Biyoloji",
+    title = "Hücre Yapısı ve Organeller",
+    teaser = "Zarın içindeki küçük fabrika.",
     minutesLabel = "6 min",
     hasAudio = true,
     isLocked = false,
-    image = "cover_01",
+    image = "subject_biology",
 )
 
-internal val PreviewLockedStory = StoryUiModel(
+internal val PreviewLockedLesson = LessonUiModel(
     id = 3,
-    category = "History",
-    title = "The Cartographer of Missing Islands",
-    teaser = "For a century, the map showed land that was never there.",
+    subject = "Tarih",
+    title = "İstanbul'un Fethi ve Sonuçları",
+    teaser = "Bir çağın kapanıp diğerinin açılması.",
     minutesLabel = "8 min",
     hasAudio = false,
     isLocked = true,
-    image = "cover_03",
+    image = "subject_history",
 )
 
-internal val PreviewStories = listOf(
-    PreviewStory,
-    StoryUiModel(2, "Science", "Why Bread Rises", "A single-celled organism, quietly doing all the work.", "4 min", hasAudio = true, isLocked = false, image = "cover_02"),
-    PreviewLockedStory,
-    StoryUiModel(4, "Essays", "On Walking Slowly", "What a city gives back when you stop trying to cross it.", "5 min", hasAudio = true, isLocked = false, image = "cover_04"),
+internal val PreviewLessons = listOf(
+    PreviewLesson,
+    LessonUiModel(2, "Kimya", "Maddenin Yapısı ve Atom Modelleri", "Her şeyin en küçük yapı taşı.", "4 min", hasAudio = true, isLocked = false, image = "subject_chemistry"),
+    PreviewLockedLesson,
+    LessonUiModel(4, "Coğrafya", "Türkiye'nin Coğrafi Konumu", "Üç kıtanın kesiştiği noktada bir ülke.", "5 min", hasAudio = true, isLocked = false, image = "subject_geography"),
 )
 
-/** One row of the home screen's preview matrix: a state and the stories the pager returns for it. */
+/** One row of the home screen's preview matrix: a state and the lessons the pager returns for it. */
 internal data class HomePreviewCase(
     val state: HomeUiState,
-    val stories: List<StoryUiModel>,
+    val lessons: List<LessonUiModel>,
 )
 
 /** Content states of the home screen. The theme axis comes from `@ScreenThemePreviews`. */
@@ -62,18 +62,18 @@ internal class HomePreviewCases : PreviewParameterProvider<HomePreviewCase> {
             state = HomeUiState(
                 greeting = GreetingPeriod.MORNING,
                 userName = "Ozan",
-                categories = PreviewCategories,
+                subjects = PreviewSubjects,
             ),
-            stories = PreviewStories,
+            lessons = PreviewLessons,
         ),
         HomePreviewCase(
             state = HomeUiState(
                 greeting = GreetingPeriod.MORNING,
                 userName = "Ozan",
                 query = "quantum lullabies",
-                categories = PreviewCategories,
+                subjects = PreviewSubjects,
             ),
-            stories = emptyList(),
+            lessons = emptyList(),
         ),
     )
 }

@@ -15,9 +15,9 @@ import com.example.nativeminds.designsystem.R
  * The design system uses three voices:
  *
  * - **Display** (Caprasimo) — the warm, chunky brand voice. Greetings, empty states, hero titles.
- * - **Reading** (Newsreader) — the editorial voice. Story titles, teasers, and body copy in the
+ * - **Reading** (Newsreader) — the editorial voice. Lesson titles, teasers, and body copy in the
  *   reader. A serif here is a product decision, not decoration: it is what makes a wall of text
- *   feel like a story rather than a settings screen.
+ *   feel like a lesson rather than a settings screen.
  * - **UI** (Figtree) — the interface voice. Labels, chips, meta rows, navigation.
  *
  * The three families are declared once here, so a change of typeface is a change in one place.
@@ -147,9 +147,9 @@ internal val NativeMindsMaterialTypography = Typography(
 /**
  * Product-specific text styles, named for the role they play rather than for a size step.
  *
- * These exist because the Material scale cannot express "the story teaser" or "the premium badge"
+ * These exist because the Material scale cannot express "the lesson teaser" or "the premium badge"
  * — and naming them here is what stops those specs from being retyped, slightly differently, in
- * every screen that shows a story.
+ * every screen that shows a lesson.
  */
 @Immutable
 data class NativeMindsTypography(
@@ -159,20 +159,20 @@ data class NativeMindsTypography(
     val greetingName: TextStyle,
     /** Text inside the search field. */
     val searchInput: TextStyle,
-    /** Category filter chips. */
+    /** Subject filter chips. */
     val chip: TextStyle,
     /** "FOR YOU" / "RESULTS" — uppercase applied at the call site, not baked into the string. */
     val sectionHeading: TextStyle,
-    /** "6 stories" opposite the section heading. */
+    /** "6 lessons" opposite the section heading. */
     val sectionCount: TextStyle,
-    /** Category kicker on a story card. */
-    val storyCategory: TextStyle,
-    /** Story title on a card — editorial voice, clamps to two lines. */
-    val storyTitle: TextStyle,
+    /** Subject kicker on a lesson card. */
+    val lessonSubject: TextStyle,
+    /** Lesson title on a card — editorial voice, clamps to two lines. */
+    val lessonTitle: TextStyle,
     /** One-line teaser under the title. */
-    val storyTeaser: TextStyle,
+    val lessonTeaser: TextStyle,
     /** "6 min" and the audio affordance next to it. */
-    val storyMeta: TextStyle,
+    val lessonMeta: TextStyle,
     /** The "PREMIUM" pill on a locked cover. */
     val premiumBadge: TextStyle,
     /** Bottom navigation labels. */
@@ -181,24 +181,24 @@ data class NativeMindsTypography(
     val emptyTitle: TextStyle,
     /** Empty-state explanation. */
     val emptyBody: TextStyle,
-    /** Long-form story body in the reader. */
+    /** Long-form lesson body in the reader. */
     val readingBody: TextStyle,
-    /** The story's own title at the head of the reader — larger than any card ever shows it. */
+    /** The lesson's own title at the head of the reader — larger than any card ever shows it. */
     val readerTitle: TextStyle,
     /** "by Marguerite Halloran" under the reader's title. */
     val readerAuthor: TextStyle,
-    /** The story title repeated, small and muted, in the reader's top bar. */
+    /** The lesson title repeated, small and muted, in the reader's top bar. */
     val readerTopBarTitle: TextStyle,
     /**
-     * The oversized initial that opens a story.
+     * The oversized initial that opens a lesson.
      *
      * Its line height is deliberately smaller than its font size — that negative leading is what
      * lets the glyph sink into the paragraph instead of pushing the first line down.
      */
     val readerDropCap: TextStyle,
-    /** "Next in Fiction — …" closing the story. */
+    /** "Next in Fiction — …" closing the lesson. */
     val readerClosingNote: TextStyle,
-    /** "Unlock every story" headline on the paywall. */
+    /** "Unlock every lesson" headline on the paywall. */
     val unlockTitle: TextStyle,
     /** The sentence under it, describing what premium unlocks. */
     val unlockBody: TextStyle,
@@ -246,25 +246,25 @@ internal val NativeMindsTextStyles = NativeMindsTypography(
         fontWeight = FontWeight.Medium,
         fontSize = 12.5.sp,
     ),
-    storyCategory = TextStyle(
+    lessonSubject = TextStyle(
         fontFamily = UiFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         letterSpacing = 0.06.em,
     ),
-    storyTitle = TextStyle(
+    lessonTitle = TextStyle(
         fontFamily = ReadingFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 17.5.sp,
         lineHeight = 21.7.sp,
         letterSpacing = (-0.005).em,
     ),
-    storyTeaser = TextStyle(
+    lessonTeaser = TextStyle(
         fontFamily = ReadingFontFamily,
         fontSize = 13.5.sp,
         lineHeight = 18.2.sp,
     ),
-    storyMeta = TextStyle(
+    lessonMeta = TextStyle(
         fontFamily = UiFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 12.5.sp,

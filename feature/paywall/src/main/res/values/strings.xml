@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="paywall_close">Close</string>
-    <string name="paywall_headline">Unlock every story</string>
-    <string name="paywall_body">Four hundred short stories, all of them narrated. New ones every Thursday.</string>
+    <string name="paywall_headline">Unlock every lesson</string>
+    <string name="paywall_body">Four hundred short lessons, all of them narrated. New ones every Thursday.</string>
 
-    <string name="paywall_benefit_unlimited_title">Unlimited stories</string>
+    <string name="paywall_benefit_unlimited_title">Unlimited lessons</string>
     <string name="paywall_benefit_unlimited_body">The whole library, no daily limit</string>
     <string name="paywall_benefit_audio_title">Full audio narration</string>
     <string name="paywall_benefit_audio_body">Read by professional voices</string>
-    <string name="paywall_benefit_ai_title">Ask AI about any story</string>
+    <string name="paywall_benefit_ai_title">Ask AI about any lesson</string>
     <string name="paywall_benefit_ai_body">Context, themes, what to read next</string>
     <string name="paywall_benefit_offline_title">Offline listening</string>
     <string name="paywall_benefit_offline_body">Download for the commute</string>
@@ -36,9 +36,9 @@
     <string name="paywall_success_plan_monthly">$4.99/month</string>
     <string name="paywall_success_plan_yearly">$34.99/year</string>
 
-    <string name="paywall_success_recap_library">400+ stories, all of them</string>
+    <string name="paywall_success_recap_library">400+ lessons, all of them</string>
     <string name="paywall_success_recap_audio">Narration and offline listening</string>
-    <string name="paywall_success_recap_ai">Ask AI available on every story</string>
+    <string name="paywall_success_recap_ai">Ask AI available on every lesson</string>
 
     <string name="paywall_success_resume_label">Where you left off</string>
     <string name="paywall_success_resume_progress">%1$d%% read · %2$d min left</string>

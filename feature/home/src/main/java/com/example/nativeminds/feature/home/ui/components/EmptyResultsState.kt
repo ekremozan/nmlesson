@@ -30,10 +30,10 @@ import com.example.nativeminds.feature.home.ui.preview.PreviewSuggestions
 
 /**
  * The "no results" branch of Home — search field stays live above this (see [HomeScreen]), and a
- * tapped suggestion re-filters by that category rather than navigating anywhere (design `1a`).
+ * tapped suggestion re-filters by that subject rather than navigating anywhere (design `1a`).
  *
  * [onSuggestionSelected] is deliberately not the filter row's handler: a suggestion means "show me
- * this category instead", so it also clears the query that found nothing.
+ * this subject instead", so it also clears the query that found nothing.
  */
 @Composable
 fun EmptyResultsState(
@@ -80,7 +80,7 @@ fun EmptyResultsState(
             modifier = Modifier.padding(top = 6.dp),
         ) {
             suggestions.forEach { suggestion ->
-                CategoryChip(chip = suggestion, onClick = { onSuggestionSelected(suggestion.category) })
+                SubjectChip(chip = suggestion, onClick = { onSuggestionSelected(suggestion.subject) })
             }
         }
 

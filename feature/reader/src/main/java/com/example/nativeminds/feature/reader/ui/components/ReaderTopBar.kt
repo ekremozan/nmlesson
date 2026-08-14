@@ -28,7 +28,7 @@ import com.example.nativeminds.designsystem.theme.NativeMindsTheme
 import com.example.nativeminds.feature.reader.R
 
 /**
- * The reader's chrome: back, and the story's title repeated small and muted.
+ * The reader's chrome: back, and the lesson's title repeated small and muted.
  *
  * The design also puts an overflow control on the right. It is left out rather than drawn inert —
  * everything behind it (font size, theme) belongs to a later feature, and a button that answers a
@@ -36,7 +36,7 @@ import com.example.nativeminds.feature.reader.R
  * keeps the title optically centred until the control exists.
  *
  * The title truncates rather than wrapping — the bar is a fixed height and a two-line title here
- * would push the story itself down the page.
+ * would push the lesson itself down the page.
  */
 @Composable
 fun ReaderTopBar(

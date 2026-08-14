@@ -17,10 +17,10 @@ private fun NarrationQueue.speakThrough(utterances: List<NarrationQueue.Utteranc
 
 class NarrationQueueTest {
     @Test
-    fun `starting hands the whole story to the engine in order`() {
+    fun `starting hands the whole lesson to the engine in order`() {
         val queue = NarrationQueue()
 
-        val utterances = queue.start(storyId = 7, paragraphs = PARAGRAPHS)
+        val utterances = queue.start(lessonId = 7, paragraphs = PARAGRAPHS)
 
         assertEquals(SENTENCES, utterances.map { it.text })
         assertEquals(NarrationState.Playing(7, sentenceIndex = 0, totalSentences = 5), queue.state)
@@ -29,7 +29,7 @@ class NarrationQueueTest {
     @Test
     fun `the position follows what the engine reports it is speaking`() {
         val queue = NarrationQueue()
-        val utterances = queue.start(storyId = 7, paragraphs = PARAGRAPHS)
+        val utterances = queue.start(lessonId = 7, paragraphs = PARAGRAPHS)
 
         queue.speakThrough(utterances, upTo = 2)
 
@@ -39,7 +39,7 @@ class NarrationQueueTest {
     @Test
     fun `resuming continues from the paused sentence rather than the beginning`() {
         val queue = NarrationQueue()
-        val utterances = queue.start(storyId = 7, paragraphs = PARAGRAPHS)
+        val utterances = queue.start(lessonId = 7, paragraphs = PARAGRAPHS)
         queue.speakThrough(utterances, upTo = 2)
 
         assertTrue(queue.pause())
@@ -54,7 +54,7 @@ class NarrationQueueTest {
     @Test
     fun `resuming picks up mid-sentence from where speech actually reached`() {
         val queue = NarrationQueue()
-        val utterances = queue.start(storyId = 7, paragraphs = listOf("Hello there friend."))
+        val utterances = queue.start(lessonId = 7, paragraphs = listOf("Hello there friend."))
         queue.onUtteranceStarted(utterances[0].id)
 
         queue.onRangeStart(utterances[0].id, start = 6, end = 11)
@@ -66,7 +66,7 @@ class NarrationQueueTest {
     @Test
     fun `a resumed sentence keeps reporting its position against the whole sentence`() {
         val queue = NarrationQueue()
-        val utterances = queue.start(storyId = 7, paragraphs = listOf("Hello there friend."))
+        val utterances = queue.start(lessonId = 7, paragraphs = listOf("Hello there friend."))
         queue.onUtteranceStarted(utterances[0].id)
         queue.onRangeStart(utterances[0].id, start = 6, end = 11)
         queue.pause()
@@ -82,7 +82,7 @@ class NarrationQueueTest {
     @Test
     fun `the reported range is published so a reader can follow the words`() {
         val queue = NarrationQueue()
-        val utterances = queue.start(storyId = 7, paragraphs = listOf("Hello there friend."))
+        val utterances = queue.start(lessonId = 7, paragraphs = listOf("Hello there friend."))
         queue.onUtteranceStarted(utterances[0].id)
 
         queue.onRangeStart(utterances[0].id, start = 6, end = 11)
@@ -93,7 +93,7 @@ class NarrationQueueTest {
     @Test
     fun `a resumed utterance reports its range against the whole sentence`() {
         val queue = NarrationQueue()
-        val utterances = queue.start(storyId = 7, paragraphs = listOf("Hello there friend."))
+        val utterances = queue.start(lessonId = 7, paragraphs = listOf("Hello there friend."))
         queue.onUtteranceStarted(utterances[0].id)
         queue.onRangeStart(utterances[0].id, start = 6, end = 11)
         queue.pause()
@@ -109,7 +109,7 @@ class NarrationQueueTest {
     fun `a device that cannot report words marks the whole sentence instead`() {
         val queue = NarrationQueue(reportsWordRanges = false)
 
-        val utterances = queue.start(storyId = 7, paragraphs = PARAGRAPHS)
+        val utterances = queue.start(lessonId = 7, paragraphs = PARAGRAPHS)
 
         assertEquals(SpokenRange(0, 4), (queue.state as NarrationState.Playing).spokenRange)
 
@@ -121,7 +121,7 @@ class NarrationQueueTest {
     @Test
     fun `a new sentence clears the range until the engine reports one`() {
         val queue = NarrationQueue()
-        val utterances = queue.start(storyId = 7, paragraphs = PARAGRAPHS)
+        val utterances = queue.start(lessonId = 7, paragraphs = PARAGRAPHS)
         queue.onUtteranceStarted(utterances[0].id)
         queue.onRangeStart(utterances[0].id, start = 0, end = 3)
 
@@ -133,7 +133,7 @@ class NarrationQueueTest {
     @Test
     fun `pausing keeps the range so the highlight stays where speech stopped`() {
         val queue = NarrationQueue()
-        val utterances = queue.start(storyId = 7, paragraphs = listOf("Hello there friend."))
+        val utterances = queue.start(lessonId = 7, paragraphs = listOf("Hello there friend."))
         queue.onUtteranceStarted(utterances[0].id)
         queue.onRangeStart(utterances[0].id, start = 6, end = 11)
 
@@ -145,7 +145,7 @@ class NarrationQueueTest {
     @Test
     fun `callbacks from the speech a pause abandoned are ignored`() {
         val queue = NarrationQueue()
-        val utterances = queue.start(storyId = 7, paragraphs = PARAGRAPHS)
+        val utterances = queue.start(lessonId = 7, paragraphs = PARAGRAPHS)
         queue.speakThrough(utterances, upTo = 1)
         queue.pause()
 
@@ -160,7 +160,7 @@ class NarrationQueueTest {
     @Test
     fun `pausing twice is a no-op that keeps the position`() {
         val queue = NarrationQueue()
-        val utterances = queue.start(storyId = 7, paragraphs = PARAGRAPHS)
+        val utterances = queue.start(lessonId = 7, paragraphs = PARAGRAPHS)
         queue.speakThrough(utterances, upTo = 1)
         queue.pause()
 
@@ -179,7 +179,7 @@ class NarrationQueueTest {
     @Test
     fun `finishing the final sentence returns to idle`() {
         val queue = NarrationQueue()
-        val utterances = queue.start(storyId = 7, paragraphs = PARAGRAPHS)
+        val utterances = queue.start(lessonId = 7, paragraphs = PARAGRAPHS)
         queue.speakThrough(utterances, upTo = 4)
 
         queue.onUtteranceFinished(utterances[3].id)
@@ -192,30 +192,30 @@ class NarrationQueueTest {
     @Test
     fun `stopping discards the position so the next start begins again`() {
         val queue = NarrationQueue()
-        val utterances = queue.start(storyId = 7, paragraphs = PARAGRAPHS)
+        val utterances = queue.start(lessonId = 7, paragraphs = PARAGRAPHS)
         queue.speakThrough(utterances, upTo = 2)
         queue.pause()
 
         queue.stop()
         assertEquals(NarrationState.Idle, queue.state)
 
-        assertEquals(SENTENCES, queue.start(storyId = 7, paragraphs = PARAGRAPHS).map { it.text })
+        assertEquals(SENTENCES, queue.start(lessonId = 7, paragraphs = PARAGRAPHS).map { it.text })
     }
 
     @Test
-    fun `starting another story abandons the previous position`() {
+    fun `starting another lesson abandons the previous position`() {
         val queue = NarrationQueue()
-        val first = queue.start(storyId = 7, paragraphs = PARAGRAPHS)
+        val first = queue.start(lessonId = 7, paragraphs = PARAGRAPHS)
         queue.speakThrough(first, upTo = 2)
 
-        queue.start(storyId = 9, paragraphs = listOf("Other story."))
+        queue.start(lessonId = 9, paragraphs = listOf("Other lesson."))
         queue.onUtteranceStarted(first[4].id)
 
         assertEquals(NarrationState.Playing(9, sentenceIndex = 0, totalSentences = 1), queue.state)
     }
 
     @Test
-    fun `an empty story goes straight back to idle`() {
+    fun `an empty lesson goes straight back to idle`() {
         val queue = NarrationQueue()
 
         assertEquals(emptyList<NarrationQueue.Utterance>(), queue.start(7, listOf("   ")))

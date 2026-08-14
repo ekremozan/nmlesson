@@ -1,19 +1,19 @@
 package com.example.nativeminds.domain.usecase
 
-/** How much of a premium story a reader without an entitlement gets to read. */
+/** How much of a premium lesson a reader without an entitlement gets to read. */
 const val FREE_SHARE_PERCENT = 30
 
 private const val PERCENT = 100
 
 /**
- * The opening share of a story, cut on a paragraph boundary.
+ * The opening share of a lesson, cut on a paragraph boundary.
  *
  * Whole paragraphs rather than an exact character count: the fade has to land on a natural break,
- * and a cut mid-word reads as a bug rather than as a boundary. The consequence is that a story
+ * and a cut mid-word reads as a bug rather than as a boundary. The consequence is that a lesson
  * whose first paragraph is longer than the share gives away a little more — bounded by one
  * paragraph, and the better trade.
  *
- * Never returns everything: a restricted story that returned its whole body would silently stop
+ * Never returns everything: a restricted lesson that returned its whole body would silently stop
  * being restricted.
  */
 fun freePreview(paragraphs: List<String>, sharePercent: Int = FREE_SHARE_PERCENT): List<String> {

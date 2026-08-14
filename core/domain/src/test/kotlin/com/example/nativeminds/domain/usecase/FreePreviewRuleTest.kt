@@ -26,7 +26,7 @@ class FreePreviewRuleTest {
     }
 
     @Test
-    fun aRestrictedStoryNeverGivesAwayAllOfItself() {
+    fun aRestrictedLessonNeverGivesAwayAllOfItself() {
         val preview = freePreview(evenParagraphs, sharePercent = 99)
 
         assertNotEquals(evenParagraphs, preview)
@@ -34,14 +34,14 @@ class FreePreviewRuleTest {
     }
 
     @Test
-    fun aSingleParagraphStoryStillShowsSomething() {
-        val paragraphs = listOf("The whole story, in one breath.")
+    fun aSingleParagraphLessonStillShowsSomething() {
+        val paragraphs = listOf("The whole lesson, in one breath.")
 
         assertEquals(paragraphs, freePreview(paragraphs, sharePercent = 30))
     }
 
     @Test
-    fun anEmptyStoryStaysEmpty() {
+    fun anEmptyLessonStaysEmpty() {
         assertEquals(emptyList<String>(), freePreview(emptyList(), sharePercent = 30))
     }
 
@@ -50,5 +50,15 @@ class FreePreviewRuleTest {
         val paragraphs = listOf("x".repeat(900), "y".repeat(100))
 
         assertEquals(listOf(paragraphs[0]), freePreview(paragraphs, sharePercent = 5))
+    }
+
+    @Test
+    fun aLongLessonWithManySmallParagraphsCutsWellShortOfTheEnd() {
+        val paragraphs = List(40) { "x".repeat(120) }
+
+        val preview = freePreview(paragraphs, sharePercent = FREE_SHARE_PERCENT)
+
+        assertEquals(paragraphs.take(preview.size), preview)
+        assertTrue(preview.size in 8..16)
     }
 }

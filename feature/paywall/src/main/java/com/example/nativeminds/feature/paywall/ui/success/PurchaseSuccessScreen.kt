@@ -47,7 +47,7 @@ private const val PERCENT = 100
 
 @Composable
 fun PurchaseSuccessScreen(
-    onContinueReading: (storyId: Long) -> Unit,
+    onContinueReading: (lessonId: Long) -> Unit,
     onExploreLibrary: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PurchaseSuccessViewModel = hiltViewModel(),
@@ -56,7 +56,7 @@ fun PurchaseSuccessScreen(
 
     PurchaseSuccessScreenContent(
         state = state,
-        onContinueReading = { onContinueReading(state.storyId) },
+        onContinueReading = { onContinueReading(state.lessonId) },
         onExploreLibrary = onExploreLibrary,
         modifier = modifier,
     )
@@ -146,8 +146,8 @@ fun PurchaseSuccessScreenContent(
 
             Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.md))
 
-            val story = state.story
-            if (story != null) {
+            val lesson = state.lesson
+            if (lesson != null) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -164,7 +164,7 @@ fun PurchaseSuccessScreenContent(
                             color = NativeMindsTheme.colors.premiumChipContent,
                         )
                         Text(
-                            text = story.title,
+                            text = lesson.title,
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
@@ -172,7 +172,7 @@ fun PurchaseSuccessScreenContent(
                             text = stringResource(
                                 R.string.paywall_success_resume_progress,
                                 state.progressPercent,
-                                remainingMinutes(story.minutes, state.progressPercent),
+                                remainingMinutes(lesson.minutes, state.progressPercent),
                             ),
                             style = NativeMindsTheme.typography.progressLabel,
                             color = NativeMindsTheme.colors.premiumChipContent,

@@ -4,31 +4,27 @@
     <string name="home_greeting_afternoon">Good afternoon</string>
     <string name="home_greeting_evening">Good evening</string>
 
-    <string name="home_search_placeholder">Search stories, authors, themes</string>
+    <string name="home_search_placeholder">Search lessons, subjects, topics</string>
     <string name="home_search_clear_cd">Clear search</string>
     <string name="home_avatar_cd">Account</string>
 
-    <!-- The unfiltered category chip. Not a category in the data — see ChipUiModel. -->
-    <string name="category_all">All</string>
+    <!-- The unfiltered subject chip. Not a subject in the data — see ChipUiModel. -->
+    <string name="subject_all">All</string>
 
     <string name="home_heading_for_you">For you</string>
     <string name="home_heading_results">Results</string>
 
-    <plurals name="home_story_count">
-        <item quantity="one">%d story</item>
-        <item quantity="other">%d stories</item>
+    <plurals name="home_lesson_count">
+        <item quantity="one">%d lesson</item>
+        <item quantity="other">%d lessons</item>
     </plurals>
 
     <string name="home_audio_cd">Available as audio</string>
     <string name="home_premium_badge">Premium</string>
 
     <string name="home_empty_title">Nothing here yet</string>
-    <string name="home_empty_body">We couldn\'t find a story for “%1$s”. Try a shorter word, or browse a category below.</string>
+    <string name="home_empty_body">We couldn\'t find a lesson for “%1$s”. Try a shorter word, or browse a subject below.</string>
     <string name="home_clear_search">Clear search</string>
 
-    <string name="home_sync_error">Couldn\'t refresh stories. Showing what\'s saved.</string>
-
-    <string name="home_nav_home">Home</string>
-    <string name="home_nav_library">Library</string>
-    <string name="home_nav_ask_ai">Ask AI</string>
+    <string name="home_sync_error">Couldn\'t refresh lessons. Showing what\'s saved.</string>
 </resources>

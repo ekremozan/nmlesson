@@ -11,12 +11,12 @@ class PaywallPreviewCases : PreviewParameterProvider<PaywallPreviewCase> {
     override val values = sequenceOf(
         PaywallPreviewCase(
             label = "Monthly selected",
-            state = PaywallUiState(storyId = 3, progressPercent = 30),
+            state = PaywallUiState(lessonId = 3, progressPercent = 30),
         ),
         PaywallPreviewCase(
             label = "Yearly selected",
             state = PaywallUiState(
-                storyId = 3,
+                lessonId = 3,
                 progressPercent = 30,
                 selectedPlan = PurchasePlan.YEARLY,
             ),

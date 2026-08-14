@@ -44,27 +44,24 @@ import com.example.nativeminds.designsystem.preview.ScreenThemePreviews
 import com.example.nativeminds.designsystem.preview.ThemePreviews
 import com.example.nativeminds.designsystem.theme.NativeMindsTheme
 import com.example.nativeminds.feature.home.R
-import com.example.nativeminds.feature.home.ui.components.CategoryChipRow
 import com.example.nativeminds.feature.home.ui.components.EmptyResultsState
-import com.example.nativeminds.feature.home.ui.components.HomeBottomNavBar
 import com.example.nativeminds.feature.home.ui.components.SearchField
-import com.example.nativeminds.feature.home.ui.components.StoryCard
+import com.example.nativeminds.feature.home.ui.components.LessonCard
+import com.example.nativeminds.feature.home.ui.components.SubjectChipRow
 import com.example.nativeminds.feature.home.ui.model.GreetingPeriod
-import com.example.nativeminds.feature.home.ui.model.StoryUiModel
+import com.example.nativeminds.feature.home.ui.model.LessonUiModel
 import com.example.nativeminds.feature.home.ui.preview.HomePreviewCase
 import com.example.nativeminds.feature.home.ui.preview.HomePreviewCases
 import kotlinx.coroutines.flow.flowOf
 
-private val BottomBarInset = 108.dp
-
 @Composable
 fun HomeScreen(
-    onStoryClick: (Long) -> Unit,
+    onLessonClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val stories = viewModel.pagedStories.collectAsLazyPagingItems()
+    val lessons = viewModel.pagedLessons.collectAsLazyPagingItems()
     val snackbarHostState = remember { SnackbarHostState() }
 
     val syncErrorMessage = stringResource(R.string.home_sync_error)
@@ -79,10 +76,10 @@ fun HomeScreen(
 
     HomeScreenContent(
         state = state,
-        stories = stories,
+        lessons = lessons,
         snackbarHostState = snackbarHostState,
         onIntent = viewModel::onIntent,
-        onStoryClick = onStoryClick,
+        onLessonClick = onLessonClick,
         modifier = modifier,
     )
 }
@@ -91,13 +88,13 @@ fun HomeScreen(
 @Composable
 fun HomeScreenContent(
     state: HomeUiState,
-    stories: LazyPagingItems<StoryUiModel>,
+    lessons: LazyPagingItems<LessonUiModel>,
     snackbarHostState: SnackbarHostState,
     onIntent: (HomeIntent) -> Unit,
-    onStoryClick: (Long) -> Unit,
+    onLessonClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val isEmpty = stories.itemCount == 0 && stories.loadState.refresh is LoadState.NotLoading
+    val isEmpty = lessons.itemCount == 0 && lessons.loadState.refresh is LoadState.NotLoading
 
     Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -113,9 +110,9 @@ fun HomeScreenContent(
                 )
             }
 
-            CategoryChipRow(
+            SubjectChipRow(
                 chips = state.chips,
-                onChipSelected = { onIntent(HomeIntent.CategorySelected(it)) },
+                onChipSelected = { onIntent(HomeIntent.SubjectSelected(it)) },
                 modifier = Modifier.padding(
                     top = NativeMindsTheme.spacing.lg,
                     start = NativeMindsTheme.spacing.screen,
@@ -144,7 +141,7 @@ fun HomeScreenContent(
                     color = NativeMindsTheme.colors.textMuted,
                 )
                 Text(
-                    text = pluralStringResource(R.plurals.home_story_count, stories.itemCount, stories.itemCount),
+                    text = pluralStringResource(R.plurals.home_lesson_count, lessons.itemCount, lessons.itemCount),
                     style = NativeMindsTheme.typography.sectionCount,
                     color = NativeMindsTheme.colors.textSubtle,
                 )
@@ -152,7 +149,7 @@ fun HomeScreenContent(
 
             LazyColumn(
                 modifier = Modifier.fillMaxWidth().weight(1f),
-                contentPadding = PaddingValues(bottom = BottomBarInset),
+                contentPadding = PaddingValues(bottom = NativeMindsTheme.spacing.screen),
             ) {
                 if (isEmpty) {
                     item {
@@ -164,11 +161,11 @@ fun HomeScreenContent(
                         )
                     }
                 } else {
-                    items(count = stories.itemCount, key = stories.itemKey { it.id }) { index ->
-                        val story = stories[index] ?: return@items
-                        StoryCard(
-                            story = story,
-                            onClick = { onStoryClick(story.id) },
+                    items(count = lessons.itemCount, key = lessons.itemKey { it.id }) { index ->
+                        val lesson = lessons[index] ?: return@items
+                        LessonCard(
+                            lesson = lesson,
+                            onClick = { onLessonClick(lesson.id) },
                             modifier = Modifier.padding(
                                 horizontal = NativeMindsTheme.spacing.screen,
                                 vertical = 7.dp,
@@ -183,10 +180,8 @@ fun HomeScreenContent(
             hostState = snackbarHostState,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = BottomBarInset),
+                .padding(bottom = NativeMindsTheme.spacing.screen),
         )
-
-        HomeBottomNavBar(modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
 
@@ -239,13 +234,13 @@ private fun HomeScreenContentPreview(
     @PreviewParameter(HomePreviewCases::class) case: HomePreviewCase,
 ) {
     NativeMindsTheme {
-        val stories = flowOf(PagingData.from(case.stories)).collectAsLazyPagingItems()
+        val lessons = flowOf(PagingData.from(case.lessons)).collectAsLazyPagingItems()
         HomeScreenContent(
             state = case.state,
-            stories = stories,
+            lessons = lessons,
             snackbarHostState = remember { SnackbarHostState() },
             onIntent = {},
-            onStoryClick = {},
+            onLessonClick = {},
         )
     }
 }
