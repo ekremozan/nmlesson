@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="paywall_close">Close</string>
+    <string name="paywall_headline">Unlock every story</string>
+    <string name="paywall_body">Four hundred short stories, all of them narrated. New ones every Thursday.</string>
+
+    <string name="paywall_benefit_unlimited_title">Unlimited stories</string>
+    <string name="paywall_benefit_unlimited_body">The whole library, no daily limit</string>
+    <string name="paywall_benefit_audio_title">Full audio narration</string>
+    <string name="paywall_benefit_audio_body">Read by professional voices</string>
+    <string name="paywall_benefit_ai_title">Ask AI about any story</string>
+    <string name="paywall_benefit_ai_body">Context, themes, what to read next</string>
+    <string name="paywall_benefit_offline_title">Offline listening</string>
+    <string name="paywall_benefit_offline_body">Download for the commute</string>
+
+    <string name="paywall_plan_monthly_label">Monthly</string>
+    <string name="paywall_plan_monthly_price">$4.99</string>
+    <string name="paywall_plan_monthly_period">per month</string>
+    <string name="paywall_plan_yearly_badge">Best value</string>
+    <string name="paywall_plan_yearly_label">Yearly</string>
+    <string name="paywall_plan_yearly_price">$34.99</string>
+    <string name="paywall_plan_yearly_terms">$2.92/mo · save 41%</string>
+
+    <string name="paywall_cta_label">Subscribe now</string>
+    <string name="paywall_cta_sub_monthly">$4.99 billed monthly · cancel anytime</string>
+    <string name="paywall_cta_sub_yearly">$34.99 billed yearly · cancel anytime</string>
+
+    <string name="paywall_restore_purchases">Restore purchases</string>
+    <string name="paywall_restore_purchases_result">No previous purchase was found.</string>
+    <string name="paywall_terms">Terms</string>
+    <string name="paywall_privacy">Privacy</string>
+
+    <string name="paywall_success_close">Close</string>
+    <string name="paywall_success_headline">You\'re premium now</string>
+    <string name="paywall_success_body">The whole library is unlocked. Your payment went through — %1$s</string>
+    <string name="paywall_success_plan_monthly">$4.99/month</string>
+    <string name="paywall_success_plan_yearly">$34.99/year</string>
+
+    <string name="paywall_success_recap_library">400+ stories, all of them</string>
+    <string name="paywall_success_recap_audio">Narration and offline listening</string>
+    <string name="paywall_success_recap_ai">Ask AI available on every story</string>
+
+    <string name="paywall_success_resume_label">Where you left off</string>
+    <string name="paywall_success_resume_progress">%1$d%% read · %2$d min left</string>
+
+    <string name="paywall_success_continue_reading">Continue reading</string>
+    <string name="paywall_success_explore_library">Explore the library</string>
+    <string name="paywall_success_receipt_note">A receipt was sent to your email. Manage your subscription from Settings.</string>
+</resources>
