@@ -46,6 +46,7 @@ dependencies {
     implementation(project(":feature:paywall"))
     implementation(project(":core:data"))
     implementation(project(":core:database"))
+    implementation(project(":core:audio"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
