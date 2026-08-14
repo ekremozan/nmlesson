@@ -31,6 +31,16 @@ data class NativeMindsColors(
     val textSubtle: Color,
     /** Ground for cover art placeholders and other image slots before they load. */
     val cover: Color,
+    /**
+     * Cover placeholder that sits in front of its neighbours — the middle card of the paywall's
+     * hero stack. A step deeper than [cover] so the overlap reads as depth rather than as a seam.
+     */
+    val coverRaised: Color,
+    /**
+     * Ground of a full-bleed hero band, which is tinted a step away from the page so the band
+     * itself is visible before any decoration is drawn on it.
+     */
+    val heroBand: Color,
     /** Opacity applied to the cover of a story the current user cannot open. */
     val lockedCoverAlpha: Float,
     /** Pill background of the "Premium" badge that sits on top of a locked cover. */
@@ -67,6 +77,8 @@ internal val LightNativeMindsColors = NativeMindsColors(
     textMuted = Ink.copy(alpha = 0.55f),
     textSubtle = Ink.copy(alpha = 0.45f),
     cover = Neutral300,
+    coverRaised = Neutral400,
+    heroBand = PaperSurface,
     lockedCoverAlpha = 0.55f,
     premiumBadgeBackground = PaperCard.copy(alpha = 0.94f),
     premiumBadgeContent = Accent700,
@@ -91,6 +103,8 @@ internal val DarkNativeMindsColors = NativeMindsColors(
     textMuted = Parchment.copy(alpha = 0.50f),
     textSubtle = Parchment.copy(alpha = 0.40f),
     cover = Color(0xFF453C33),
+    coverRaised = InkCoverRaised,
+    heroBand = InkSurface,
     lockedCoverAlpha = 0.55f,
     premiumBadgeBackground = InkGround.copy(alpha = 0.90f),
     premiumBadgeContent = AccentDark,

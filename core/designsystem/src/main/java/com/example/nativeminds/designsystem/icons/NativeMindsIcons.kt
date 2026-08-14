@@ -246,6 +246,21 @@ object NativeMindsIcons {
         }
     }
 
+    /** Download/offline glyph — arrow into a tray. */
+    @Composable
+    fun Download(tint: Color, modifier: Modifier = Modifier, size: Dp = 20.dp) {
+        StrokeCanvas(modifier, size) { s, stroke ->
+            drawLine(tint, Offset(12f * s, 4f * s), Offset(12f * s, 14f * s), stroke.width, stroke.cap)
+            val arrow = Path().apply {
+                moveTo(8f * s, 11f * s)
+                lineTo(12f * s, 15f * s)
+                lineTo(16f * s, 11f * s)
+            }
+            drawPath(arrow, tint, style = stroke)
+            drawLine(tint, Offset(4f * s, 18f * s), Offset(20f * s, 18f * s), stroke.width, stroke.cap)
+        }
+    }
+
     @Composable
     fun Close(tint: Color, modifier: Modifier = Modifier, size: Dp = 13.dp) {
         StrokeCanvas(modifier, size) { s, stroke ->
@@ -295,6 +310,7 @@ private fun NativeMindsIconsPreview() {
             NativeMindsIcons.MoreVertical(tint = tint, size = 24.dp)
             NativeMindsIcons.Play(tint = tint, size = 24.dp)
             NativeMindsIcons.Check(tint = tint, size = 24.dp)
+            NativeMindsIcons.Download(tint = tint, size = 24.dp)
         }
     }
 }

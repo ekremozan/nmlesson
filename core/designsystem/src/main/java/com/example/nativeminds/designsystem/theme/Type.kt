@@ -198,15 +198,15 @@ data class NativeMindsTypography(
     val readerDropCap: TextStyle,
     /** "Next in Fiction — …" closing the story. */
     val readerClosingNote: TextStyle,
-    /** "Unlock the full story" heading in the premium sheet. */
+    /** "Unlock every story" headline on the paywall. */
     val unlockTitle: TextStyle,
-    /** The sentence under it, explaining how much was free. */
+    /** The sentence under it, describing what premium unlocks. */
     val unlockBody: TextStyle,
-    /** One benefit line beside its check. */
+    /** One benefit line's title, on the paywall or the purchase-success recap. */
     val unlockBenefit: TextStyle,
     /** Label inside a primary call-to-action button. */
     val actionLabel: TextStyle,
-    /** Price and cancellation terms under the call to action. */
+    /** Restore purchases / Terms / Privacy row under the paywall's call to action. */
     val unlockTerms: TextStyle,
     /** Elapsed and remaining labels above the reading-progress bar. */
     val progressLabel: TextStyle,

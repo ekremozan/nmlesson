@@ -32,6 +32,9 @@ internal val InkGround = Color(0xFF1C1815)
 /** Raised surface and card ground on the ink ground. */
 internal val InkSurface = Color(0xFF272220)
 
+/** Cover placeholder that sits in front of its neighbours, dark theme. */
+internal val InkCoverRaised = Color(0xFF554A3E)
+
 /** Primary text on the ink ground. */
 internal val Parchment = Color(0xFFF3E9D9)
 

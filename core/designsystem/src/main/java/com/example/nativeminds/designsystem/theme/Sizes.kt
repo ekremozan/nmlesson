@@ -44,12 +44,19 @@ data class NativeMindsSizes(
     val listenPillAction: Dp = 44.dp,
     /** Track of the reading-progress bar. */
     val progressTrack: Dp = 5.dp,
-    /** Circular lock medallion that overhangs the top edge of the unlock sheet. */
-    val unlockMedallion: Dp = 48.dp,
-    /** Round check beside each benefit line in the unlock sheet. */
-    val benefitCheck: Dp = 22.dp,
     /** Primary call-to-action button. */
     val actionButton: Dp = 52.dp,
+    /** Round icon badge in front of a paywall/success benefit line. */
+    val benefitIcon: Dp = 42.dp,
+    /**
+     * Full-bleed hero band at the head of the paywall.
+     *
+     * Measured from the very top of the screen, status bar included — the band is meant to sit
+     * behind it, so this is not a below-the-inset height.
+     */
+    val paywallHero: Dp = 290.dp,
+    /** Gradient that dissolves the bottom of [paywallHero] into the page ground. */
+    val paywallHeroFade: Dp = 120.dp,
 )
 
 internal val LocalNativeMindsSizes = staticCompositionLocalOf { NativeMindsSizes() }

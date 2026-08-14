@@ -57,6 +57,8 @@ private fun ThemeSpecimen() {
         SpecimenSection("Brand roles") {
             SwatchRow("accentText", NativeMindsTheme.colors.accentText, MaterialTheme.colorScheme.background)
             SwatchRow("cover", NativeMindsTheme.colors.cover, MaterialTheme.colorScheme.onSurface)
+            SwatchRow("coverRaised", NativeMindsTheme.colors.coverRaised, MaterialTheme.colorScheme.onSurface)
+            SwatchRow("heroBand", NativeMindsTheme.colors.heroBand, MaterialTheme.colorScheme.onSurface)
             SwatchRow("premiumBadge", NativeMindsTheme.colors.premiumBadgeBackground, NativeMindsTheme.colors.premiumBadgeContent)
             SwatchRow("navInactive", NativeMindsTheme.colors.navInactive, MaterialTheme.colorScheme.background)
         }
