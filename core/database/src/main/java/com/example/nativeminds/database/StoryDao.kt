@@ -33,6 +33,10 @@ interface StoryDao {
     @Query("SELECT category FROM stories GROUP BY category ORDER BY COUNT(*) DESC, category ASC")
     fun categories(): Flow<List<String>>
 
+    /** Emits `null` when the row is gone — a story deleted by a sync while the reader is open. */
+    @Query("SELECT * FROM stories WHERE id = :id")
+    fun observeStory(id: Long): Flow<StoryEntity?>
+
     @Upsert
     suspend fun upsertAll(stories: List<StoryEntity>)
 

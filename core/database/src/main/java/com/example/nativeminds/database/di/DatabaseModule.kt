@@ -2,7 +2,9 @@ package com.example.nativeminds.database.di
 
 import android.content.Context
 import androidx.room.Room
+import com.example.nativeminds.database.MIGRATION_1_2
 import com.example.nativeminds.database.NativeMindsDatabase
+import com.example.nativeminds.database.StoryContentDao
 import com.example.nativeminds.database.StoryDao
 import dagger.Module
 import dagger.Provides
@@ -24,7 +26,9 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun nativeMindsDatabase(@ApplicationContext context: Context): NativeMindsDatabase =
-        Room.databaseBuilder(context, NativeMindsDatabase::class.java, DATABASE_NAME).build()
+        Room.databaseBuilder(context, NativeMindsDatabase::class.java, DATABASE_NAME)
+            .addMigrations(MIGRATION_1_2)
+            .build()
 
     /**
      * Not scoped: the DAO is a cheap accessor on the already-singleton database, so there is
@@ -32,4 +36,7 @@ object DatabaseModule {
      */
     @Provides
     fun storyDao(database: NativeMindsDatabase): StoryDao = database.storyDao()
+
+    @Provides
+    fun storyContentDao(database: NativeMindsDatabase): StoryContentDao = database.storyContentDao()
 }
