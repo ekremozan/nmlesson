@@ -6,4 +6,5 @@
       The Compose palette lives in ui/theme/Color.kt.
     -->
     <color name="nm_window_background">#F5EAD8</color>
+    <color name="ic_launcher_background">#474F77</color>
 </resources>
