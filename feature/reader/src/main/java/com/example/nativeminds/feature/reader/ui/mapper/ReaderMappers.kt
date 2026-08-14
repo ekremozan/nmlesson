@@ -12,6 +12,7 @@ fun ReaderAccess.toStoryUiModel(): ReaderStoryUiModel = ReaderStoryUiModel(
     minutes = story.minutes,
     hasAudio = story.hasAudio,
     isPremium = story.isLocked,
+    image = story.image,
 )
 
 fun ReaderAccess.toBodyUiModel(): ReaderBodyUiModel = ReaderBodyUiModel(

@@ -11,4 +11,5 @@ fun Story.toUiModel(): StoryUiModel = StoryUiModel(
     minutesLabel = "$minutes min",
     hasAudio = hasAudio,
     isLocked = isLocked,
+    image = image,
 )

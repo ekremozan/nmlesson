@@ -28,6 +28,7 @@ internal val PreviewStory = StoryUiModel(
     minutesLabel = "6 min",
     hasAudio = true,
     isLocked = false,
+    image = "cover_01",
 )
 
 internal val PreviewLockedStory = StoryUiModel(
@@ -38,13 +39,14 @@ internal val PreviewLockedStory = StoryUiModel(
     minutesLabel = "8 min",
     hasAudio = false,
     isLocked = true,
+    image = "cover_03",
 )
 
 internal val PreviewStories = listOf(
     PreviewStory,
-    StoryUiModel(2, "Science", "Why Bread Rises", "A single-celled organism, quietly doing all the work.", "4 min", hasAudio = true, isLocked = false),
+    StoryUiModel(2, "Science", "Why Bread Rises", "A single-celled organism, quietly doing all the work.", "4 min", hasAudio = true, isLocked = false, image = "cover_02"),
     PreviewLockedStory,
-    StoryUiModel(4, "Essays", "On Walking Slowly", "What a city gives back when you stop trying to cross it.", "5 min", hasAudio = true, isLocked = false),
+    StoryUiModel(4, "Essays", "On Walking Slowly", "What a city gives back when you stop trying to cross it.", "5 min", hasAudio = true, isLocked = false, image = "cover_04"),
 )
 
 /** One row of the home screen's preview matrix: a state and the stories the pager returns for it. */

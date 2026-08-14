@@ -12,4 +12,5 @@ data class ReaderStoryUiModel(
     val minutes: Int,
     val hasAudio: Boolean,
     val isPremium: Boolean,
+    val image: String,
 )

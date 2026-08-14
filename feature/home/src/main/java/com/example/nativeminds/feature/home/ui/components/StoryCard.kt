@@ -17,13 +17,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.Image
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.nativeminds.designsystem.icons.NativeMindsIcons
+import com.example.nativeminds.designsystem.icons.StoryCoverAssets
 import com.example.nativeminds.designsystem.preview.PreviewSurface
 import com.example.nativeminds.designsystem.preview.ThemePreviews
 import com.example.nativeminds.designsystem.theme.NativeMindsTheme
@@ -108,16 +112,16 @@ fun StoryCard(
 @Composable
 private fun StoryCover(story: StoryUiModel) {
     Box(modifier = Modifier.size(88.dp)) {
-        Box(
+        Image(
+            painter = painterResource(StoryCoverAssets.resolve(story.image)),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(88.dp)
                 .clip(MaterialTheme.shapes.medium)
                 .background(NativeMindsTheme.colors.cover)
                 .alpha(if (story.isLocked) NativeMindsTheme.colors.lockedCoverAlpha else 1f),
-            contentAlignment = Alignment.Center,
-        ) {
-            NativeMindsIcons.ImagePlaceholder(tint = MaterialTheme.colorScheme.onSurfaceVariant, size = 26.dp)
-        }
+        )
 
         if (story.isLocked) {
             Row(

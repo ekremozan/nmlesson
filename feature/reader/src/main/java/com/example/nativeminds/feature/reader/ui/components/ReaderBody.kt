@@ -1,5 +1,6 @@
 package com.example.nativeminds.feature.reader.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,12 +21,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.nativeminds.designsystem.icons.NativeMindsIcons
+import com.example.nativeminds.designsystem.icons.StoryCoverAssets
 import com.example.nativeminds.designsystem.preview.PreviewSurface
 import com.example.nativeminds.designsystem.preview.ThemePreviews
 import com.example.nativeminds.designsystem.theme.NativeMindsTheme
@@ -37,8 +41,6 @@ import com.example.nativeminds.feature.reader.ui.preview.PreviewFullBody
 import com.example.nativeminds.feature.reader.ui.preview.PreviewFreeStory
 import com.example.nativeminds.feature.reader.ui.preview.PreviewPremiumStory
 import com.example.nativeminds.feature.reader.ui.preview.PreviewTruncatedBody
-
-private const val COVER_GLYPH_SIZE_DP = 30
 
 /**
  * The story itself.
@@ -121,19 +123,16 @@ private fun StoryHeader(story: ReaderStoryUiModel, showCover: Boolean) {
 
         if (showCover) {
             Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.lg))
-            Box(
+            Image(
+                painter = painterResource(StoryCoverAssets.resolve(story.image)),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(NativeMindsTheme.sizes.readerCover)
                     .clip(MaterialTheme.shapes.medium)
                     .background(NativeMindsTheme.colors.cover),
-                contentAlignment = Alignment.Center,
-            ) {
-                NativeMindsIcons.ImagePlaceholder(
-                    tint = NativeMindsTheme.colors.textSubtle,
-                    size = COVER_GLYPH_SIZE_DP.dp,
-                )
-            }
+            )
         }
     }
 }

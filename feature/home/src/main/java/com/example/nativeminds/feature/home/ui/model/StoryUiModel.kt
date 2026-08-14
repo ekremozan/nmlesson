@@ -11,4 +11,5 @@ data class StoryUiModel(
     val minutesLabel: String,
     val hasAudio: Boolean,
     val isLocked: Boolean,
+    val image: String,
 )

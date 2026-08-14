@@ -22,6 +22,7 @@ val PreviewFreeStory = ReaderStoryUiModel(
     minutes = 6,
     hasAudio = true,
     isPremium = false,
+    image = "cover_01",
 )
 
 val PreviewPremiumStory = ReaderStoryUiModel(
@@ -32,6 +33,7 @@ val PreviewPremiumStory = ReaderStoryUiModel(
     minutes = 8,
     hasAudio = false,
     isPremium = true,
+    image = "cover_03",
 )
 
 val PreviewFullBody = ReaderBodyUiModel(
