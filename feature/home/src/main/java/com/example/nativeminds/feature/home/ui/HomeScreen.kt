@@ -61,7 +61,7 @@ import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun HomeScreen(
-    onLessonClick: (Long) -> Unit,
+    onLessonClick: (lessonId: Long, title: String, index: Int) -> Unit,
     onProfileClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
@@ -99,7 +99,7 @@ fun HomeScreenContent(
     lessons: LazyPagingItems<LessonUiModel>,
     snackbarHostState: SnackbarHostState,
     onIntent: (HomeIntent) -> Unit,
-    onLessonClick: (Long) -> Unit,
+    onLessonClick: (lessonId: Long, title: String, index: Int) -> Unit,
     onProfileClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -184,7 +184,7 @@ fun HomeScreenContent(
                             val lesson = lessons[index] ?: return@items
                             LessonCard(
                                 lesson = lesson,
-                                onClick = { onLessonClick(lesson.id) },
+                                onClick = { onLessonClick(lesson.id, lesson.title, index) },
                                 modifier = Modifier.padding(
                                     horizontal = NativeMindsTheme.spacing.screen,
                                     vertical = 7.dp,
@@ -263,7 +263,7 @@ private fun HomeScreenContentPreview(
             lessons = lessons,
             snackbarHostState = remember { SnackbarHostState() },
             onIntent = {},
-            onLessonClick = {},
+            onLessonClick = { _, _, _ -> },
             onProfileClick = {},
         )
     }

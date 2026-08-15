@@ -20,7 +20,10 @@ data object HomeRoute
  * reader or settings changes no home state, so routing them through the reducer would mean an
  * identity reduction and a branch in the ViewModel — the one shape the MVI rules exist to forbid.
  */
-fun NavGraphBuilder.homeScreen(onLessonClick: (Long) -> Unit, onProfileClick: () -> Unit) {
+fun NavGraphBuilder.homeScreen(
+    onLessonClick: (lessonId: Long, title: String, index: Int) -> Unit,
+    onProfileClick: () -> Unit,
+) {
     composable<HomeRoute> {
         HomeScreen(
             onLessonClick = onLessonClick,
