@@ -1,6 +1,8 @@
 package com.example.nativeminds.feature.home.ui
 
 import androidx.paging.PagingData
+import com.example.nativeminds.domain.observability.AnalyticsEvent
+import com.example.nativeminds.domain.observability.AnalyticsReporter
 import com.example.nativeminds.domain.observability.ErrorReporter
 import com.example.nativeminds.domain.repository.LessonRepository
 import com.example.nativeminds.domain.usecase.GetPagedLessonsUseCase
@@ -19,6 +21,7 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -68,6 +71,14 @@ private class NoOpErrorReporter : ErrorReporter {
     override fun report(throwable: Throwable, context: String) = Unit
 }
 
+private class RecordingAnalyticsReporter : AnalyticsReporter {
+    val logged = mutableListOf<AnalyticsEvent>()
+
+    override fun log(event: AnalyticsEvent) {
+        logged += event
+    }
+}
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
     private val repository = RecordingLessonRepository()
@@ -91,10 +102,11 @@ class HomeViewModelTest {
      * constructor, so the test builds the use cases over a fake repository by hand and stays a
      * plain JVM test.
      */
-    private fun homeViewModel() = HomeViewModel(
+    private fun homeViewModel(analyticsReporter: AnalyticsReporter = RecordingAnalyticsReporter()) = HomeViewModel(
         getSubjects = GetSubjectsUseCase(repository),
         getPagedLessons = GetPagedLessonsUseCase(repository),
         syncLessons = SyncLessonsUseCase(repository, NoOpErrorReporter()),
+        analyticsReporter = analyticsReporter,
     )
 
     @Test
@@ -267,5 +279,44 @@ class HomeViewModelTest {
         assertEquals("", viewModel.state.value.query)
         assertFalse(viewModel.state.value.isFiltering)
         assertTrue(viewModel.state.value.chips.first { it.subject == null }.isSelected)
+    }
+
+    @Test
+    fun `typing a query logs LessonsFiltered only after the debounce settles`() = runTest {
+        val analyticsReporter = RecordingAnalyticsReporter()
+        val viewModel = homeViewModel(analyticsReporter)
+
+        viewModel.onIntent(HomeIntent.QueryChanged("h"))
+        viewModel.onIntent(HomeIntent.QueryChanged("hü"))
+        viewModel.onIntent(HomeIntent.QueryChanged("hücre"))
+        assertTrue(analyticsReporter.logged.isEmpty())
+
+        advanceTimeBy(700)
+
+        assertEquals(listOf(AnalyticsEvent.LessonsFiltered("hücre", null)), analyticsReporter.logged)
+    }
+
+    @Test
+    fun `selecting a subject logs LessonsFiltered with the subject`() = runTest {
+        val analyticsReporter = RecordingAnalyticsReporter()
+        val viewModel = homeViewModel(analyticsReporter)
+
+        viewModel.onIntent(HomeIntent.SubjectSelected("Kimya"))
+        advanceTimeBy(700)
+
+        assertEquals(listOf(AnalyticsEvent.LessonsFiltered(null, "Kimya")), analyticsReporter.logged)
+    }
+
+    @Test
+    fun `clearing the filter does not log an empty LessonsFiltered`() = runTest {
+        val analyticsReporter = RecordingAnalyticsReporter()
+        val viewModel = homeViewModel(analyticsReporter)
+        viewModel.onIntent(HomeIntent.QueryChanged("hücre"))
+        advanceTimeBy(700)
+
+        viewModel.onIntent(HomeIntent.QueryCleared)
+        advanceTimeBy(700)
+
+        assertEquals(listOf(AnalyticsEvent.LessonsFiltered("hücre", null)), analyticsReporter.logged)
     }
 }

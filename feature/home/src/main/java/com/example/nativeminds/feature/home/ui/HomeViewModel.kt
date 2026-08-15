@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
+import com.example.nativeminds.domain.observability.AnalyticsEvent
+import com.example.nativeminds.domain.observability.AnalyticsReporter
 import com.example.nativeminds.domain.usecase.GetPagedLessonsUseCase
 import com.example.nativeminds.domain.usecase.GetSubjectsUseCase
 import com.example.nativeminds.domain.usecase.SyncLessonsUseCase
@@ -15,12 +17,15 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -29,15 +34,17 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 
 private const val USER_NAME = "Ozan"
+private const val FILTER_ANALYTICS_DEBOUNCE_MS = 600L
 
 private data class FilterParams(val subject: String?, val query: String)
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     getSubjects: GetSubjectsUseCase,
     getPagedLessons: GetPagedLessonsUseCase,
     private val syncLessons: SyncLessonsUseCase,
+    private val analyticsReporter: AnalyticsReporter,
 ) : ViewModel() {
     private val _state = MutableStateFlow(
         HomeUiState(greeting = greetingForNow(), userName = USER_NAME),
@@ -65,6 +72,16 @@ class HomeViewModel @Inject constructor(
             .map { it.syncToken }
             .distinctUntilChanged()
             .onEach { syncLessons().onFailure { effectChannel.send(HomeEffect.ShowSyncError) } }
+            .launchIn(viewModelScope)
+
+        _state
+            .map { FilterParams(it.selectedSubject, it.query.trim()) }
+            .distinctUntilChanged()
+            .debounce(FILTER_ANALYTICS_DEBOUNCE_MS)
+            .filter { it.query.isNotEmpty() || it.subject != null }
+            .onEach { params ->
+                analyticsReporter.log(AnalyticsEvent.LessonsFiltered(params.query.ifEmpty { null }, params.subject))
+            }
             .launchIn(viewModelScope)
     }
 
