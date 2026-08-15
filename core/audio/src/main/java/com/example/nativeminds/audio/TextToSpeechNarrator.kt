@@ -115,8 +115,25 @@ class TextToSpeechNarrator @Inject constructor(
                     }
                 }
 
-                @Suppress("DEPRECATION")
+                @Deprecated("Deprecated in Java")
                 override fun onError(utteranceId: String?) = Unit
+
+                override fun onError(utteranceId: String?, errorCode: Int) {
+                    onMainThread {
+                        errorReporter.report(
+                            IllegalStateException(
+                                "TextToSpeech utterance failed: id=$utteranceId, errorCode=$errorCode",
+                            ),
+                            ERROR_CONTEXT,
+                        )
+                        queue.onUtteranceFinished(utteranceId)
+                        publish()
+                        if (queue.state == NarrationState.Idle) {
+                            abandonAudioFocus()
+                            stopSessionService()
+                        }
+                    }
+                }
             },
         )
     }
@@ -218,7 +235,7 @@ class TextToSpeechNarrator @Inject constructor(
 
     private fun requestAudioFocus() {
         if (audioFocusRequest != null) return
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
                 .setAudioAttributes(
                     AudioAttributes.Builder()
@@ -236,6 +253,12 @@ class TextToSpeechNarrator @Inject constructor(
                 onAudioFocusChange,
                 AudioManager.STREAM_MUSIC,
                 AudioManager.AUDIOFOCUS_GAIN,
+            )
+        }
+        if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            errorReporter.report(
+                IllegalStateException("Audio focus request denied: result=$result"),
+                ERROR_CONTEXT,
             )
         }
     }
