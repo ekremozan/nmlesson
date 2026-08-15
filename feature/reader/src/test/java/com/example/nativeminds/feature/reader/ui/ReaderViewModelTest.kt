@@ -6,7 +6,11 @@ import androidx.paging.PagingData
 import com.example.nativeminds.domain.model.NarrationState
 import com.example.nativeminds.domain.model.ReaderDetail
 import com.example.nativeminds.domain.narration.LessonNarrator
+import com.example.nativeminds.domain.observability.AccessLevel
+import com.example.nativeminds.domain.observability.AnalyticsEvent
+import com.example.nativeminds.domain.observability.AnalyticsReporter
 import com.example.nativeminds.domain.observability.ErrorReporter
+import com.example.nativeminds.domain.observability.ListenStopReason
 import com.example.nativeminds.domain.repository.EntitlementRepository
 import com.example.nativeminds.domain.repository.LessonRepository
 import com.example.nativeminds.domain.usecase.ObserveNarrationUseCase
@@ -74,6 +78,14 @@ private class SilentErrorReporter : ErrorReporter {
     override fun report(throwable: Throwable, context: String) = Unit
 }
 
+private class RecordingAnalyticsReporter : AnalyticsReporter {
+    val logged = mutableListOf<AnalyticsEvent>()
+
+    override fun log(event: AnalyticsEvent) {
+        logged += event
+    }
+}
+
 private class TestLessonNarrator : LessonNarrator {
     private val _state = MutableStateFlow<NarrationState>(NarrationState.Idle)
     override val state: StateFlow<NarrationState> = _state.asStateFlow()
@@ -103,6 +115,11 @@ private class TestLessonNarrator : LessonNarrator {
     }
 
     override fun stop() {
+        _state.value = NarrationState.Idle
+    }
+
+    /** Simulates the engine finishing the lesson on its own, without a `pause()` in between. */
+    fun completeNaturally() {
         _state.value = NarrationState.Idle
     }
 }
@@ -136,6 +153,7 @@ class ReaderViewModelTest {
         repository: LessonRepository,
         entitlements: EntitlementRepository = TestEntitlementRepository(),
         narrator: LessonNarrator = TestLessonNarrator(),
+        analyticsReporter: AnalyticsReporter = RecordingAnalyticsReporter(),
     ) = ReaderViewModel(
         savedStateHandle = SavedStateHandle(mapOf("lessonId" to unlockedLesson.id)),
         observeLessonDetail = ObserveLessonDetailUseCase(
@@ -145,6 +163,7 @@ class ReaderViewModelTest {
         ),
         observeNarration = ObserveNarrationUseCase(narrator),
         lessonNarrator = narrator,
+        analyticsReporter = analyticsReporter,
     )
 
     @Test
@@ -228,5 +247,84 @@ class ReaderViewModelTest {
 
         assertEquals(ReaderContentUiState.Loading, state.content)
         assertEquals(ReaderDetail.Loading, ReaderDetail.Loading)
+    }
+
+    @Test
+    fun contentBecomingReadyLogsContentViewedExactlyOnce() = runTest {
+        val repository = TestLessonRepository()
+        val analyticsReporter = RecordingAnalyticsReporter()
+        val viewModel = viewModel(repository, analyticsReporter = analyticsReporter)
+
+        viewModel.state.first { it.content is ReaderContentUiState.Ready }
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(
+            listOf(AnalyticsEvent.ContentViewed(unlockedLesson.id, AccessLevel.FULL)),
+            analyticsReporter.logged,
+        )
+    }
+
+    @Test
+    fun listenClickedLogsListenStarted() = runTest {
+        val analyticsReporter = RecordingAnalyticsReporter()
+        val viewModel = viewModel(TestLessonRepository(), analyticsReporter = analyticsReporter)
+        viewModel.state.first { it.content is ReaderContentUiState.Ready }
+
+        viewModel.onIntent(ReaderIntent.ListenClicked)
+
+        assertTrue(analyticsReporter.logged.contains(AnalyticsEvent.ListenStarted(unlockedLesson.id)))
+    }
+
+    @Test
+    fun listenClickedAgainWhilePlayingLogsListenStoppedWithPausedReason() = runTest {
+        val analyticsReporter = RecordingAnalyticsReporter()
+        val viewModel = viewModel(TestLessonRepository(), analyticsReporter = analyticsReporter)
+        viewModel.state.first { it.content is ReaderContentUiState.Ready }
+        viewModel.onIntent(ReaderIntent.ListenClicked)
+        viewModel.state.first { it.narration is NarrationState.Playing }
+
+        viewModel.onIntent(ReaderIntent.ListenClicked)
+
+        val stopped = analyticsReporter.logged.filterIsInstance<AnalyticsEvent.ListenStopped>().single()
+        assertEquals(unlockedLesson.id, stopped.lessonId)
+        assertEquals(ListenStopReason.PAUSED, stopped.reason)
+    }
+
+    @Test
+    fun narrationFinishingOnItsOwnLogsListenStoppedWithCompletedReason() = runTest {
+        val analyticsReporter = RecordingAnalyticsReporter()
+        val narrator = TestLessonNarrator()
+        val viewModel = viewModel(TestLessonRepository(), narrator = narrator, analyticsReporter = analyticsReporter)
+        viewModel.state.first { it.content is ReaderContentUiState.Ready }
+        viewModel.onIntent(ReaderIntent.ListenClicked)
+        viewModel.state.first { it.narration is NarrationState.Playing }
+
+        narrator.completeNaturally()
+        viewModel.state.first { it.narration is NarrationState.Idle }
+
+        val stopped = analyticsReporter.logged.filterIsInstance<AnalyticsEvent.ListenStopped>().single()
+        assertEquals(unlockedLesson.id, stopped.lessonId)
+        assertEquals(ListenStopReason.COMPLETED, stopped.reason)
+    }
+
+    @Test
+    fun pausingThenLeavingTheScreenLogsOnlyOnePausedStop() = runTest {
+        val analyticsReporter = RecordingAnalyticsReporter()
+        val narrator = TestLessonNarrator()
+        val viewModel = viewModel(TestLessonRepository(), narrator = narrator, analyticsReporter = analyticsReporter)
+        viewModel.state.first { it.content is ReaderContentUiState.Ready }
+        viewModel.onIntent(ReaderIntent.ListenClicked)
+        viewModel.state.first { it.narration is NarrationState.Playing }
+        viewModel.onIntent(ReaderIntent.ListenClicked)
+        viewModel.state.first { it.narration is NarrationState.Paused }
+
+        val store = ViewModelStore()
+        store.put("reader", viewModel)
+        store.clear()
+
+        assertEquals(
+            listOf(ListenStopReason.PAUSED),
+            analyticsReporter.logged.filterIsInstance<AnalyticsEvent.ListenStopped>().map { it.reason },
+        )
     }
 }
