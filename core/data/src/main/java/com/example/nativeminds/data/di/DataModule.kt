@@ -5,10 +5,8 @@ import com.example.nativeminds.data.MockEntitlementRepository
 import com.example.nativeminds.data.MockThemeRepository
 import com.example.nativeminds.data.NetworkMonitor
 import com.example.nativeminds.data.RoomLessonRepository
-import com.example.nativeminds.data.observability.LogcatErrorReporter
 import com.example.nativeminds.data.remote.RemoteLessonDataSource
 import com.example.nativeminds.data.remote.SupabaseRemoteLessonDataSource
-import com.example.nativeminds.domain.observability.ErrorReporter
 import com.example.nativeminds.domain.repository.EntitlementRepository
 import com.example.nativeminds.domain.repository.LessonRepository
 import com.example.nativeminds.domain.repository.ThemeRepository
@@ -49,9 +47,6 @@ abstract class DataModule {
     /** Unscoped: it is stateless, so a new instance per injection point costs nothing. */
     @Binds
     abstract fun remoteLessonDataSource(impl: SupabaseRemoteLessonDataSource): RemoteLessonDataSource
-
-    @Binds
-    abstract fun errorReporter(impl: LogcatErrorReporter): ErrorReporter
 
     @Binds
     abstract fun networkMonitor(impl: AndroidNetworkMonitor): NetworkMonitor
