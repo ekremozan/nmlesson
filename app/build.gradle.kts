@@ -52,6 +52,7 @@ dependencies {
     implementation(project(":core:database"))
     implementation(project(":core:audio"))
     implementation(project(":core:crashreporting"))
+    implementation(project(":core:analytics"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
