@@ -27,7 +27,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 private const val USER_NAME = "Ozan"
 
@@ -62,10 +61,11 @@ class HomeViewModel @Inject constructor(
             .onEach { onIntent(HomeIntent.SubjectsLoaded(it)) }
             .launchIn(viewModelScope)
 
-        viewModelScope.launch {
-            runCatching { syncLessons() }
-                .onFailure { effectChannel.send(HomeEffect.ShowSyncError) }
-        }
+        _state
+            .map { it.syncToken }
+            .distinctUntilChanged()
+            .onEach { syncLessons().onFailure { effectChannel.send(HomeEffect.ShowSyncError) } }
+            .launchIn(viewModelScope)
     }
 
     fun onIntent(intent: HomeIntent) = _state.update { it.reduce(intent) }

@@ -2,14 +2,14 @@ package com.example.nativeminds.data
 
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import com.example.nativeminds.data.local.DummyLessonContentSeed
-import com.example.nativeminds.data.local.DummyLessonSeed
+import com.example.nativeminds.data.mapper.toEntity
 import com.example.nativeminds.data.remote.RemoteLessonDataSource
 import com.example.nativeminds.database.NativeMindsDatabase
 import com.example.nativeminds.database.LessonEntity
 import com.example.nativeminds.domain.repository.OfflineException
 import com.example.nativeminds.model.Lesson
 import com.example.nativeminds.model.LessonContent
+import java.io.IOException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -26,30 +26,53 @@ import org.robolectric.annotation.Config
 
 private const val ROBOLECTRIC_SDK = 36
 
+private fun lesson(id: Long, title: String = "Lesson $id") = Lesson(
+    id = id,
+    subject = "Biyoloji",
+    title = title,
+    teaser = "Teaser $id",
+    minutes = 5,
+    hasAudio = true,
+    isLocked = false,
+    image = "subject_biology",
+)
+
+private fun content(lessonId: Long) = LessonContent(
+    lessonId = lessonId,
+    author = "Author",
+    paragraphs = listOf("Paragraph for $lessonId"),
+)
+
 private class SwitchableNetworkMonitor(var online: Boolean) : NetworkMonitor {
     override fun isOnline(): Boolean = online
 }
 
-private class CountingRemote : RemoteLessonDataSource {
+private class FakeRemote(
+    var lessons: List<Lesson> = listOf(lesson(1), lesson(2)),
+) : RemoteLessonDataSource {
     var lessonCalls = 0
         private set
     var contentCalls = 0
         private set
+    var lessonsFailure: Throwable? = null
+
+    private val content = mutableMapOf(1L to content(1), 2L to content(2))
 
     override suspend fun fetchLessons(): List<Lesson> {
         lessonCalls++
-        return DummyLessonSeed.lessons
+        lessonsFailure?.let { throw it }
+        return lessons
     }
 
     override suspend fun fetchContent(lessonId: Long): LessonContent {
         contentCalls++
-        return DummyLessonContentSeed.content.first { it.lessonId == lessonId }
+        return content.getValue(lessonId)
     }
 }
 
 /**
  * Runs against a real in-memory Room database rather than fake DAOs: the guarantees being checked
- * here — that reading never reaches the network, and that a seeded lesson always has its text — are
+ * here — that reading never reaches the network, and that a sync's replace is transactional — are
  * properties of the queries and the transaction, which a fake DAO would simply assert about itself.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -57,7 +80,7 @@ private class CountingRemote : RemoteLessonDataSource {
 class RoomLessonRepositoryTest {
     private lateinit var database: NativeMindsDatabase
     private val network = SwitchableNetworkMonitor(online = false)
-    private val remote = CountingRemote()
+    private val remote = FakeRemote()
     private lateinit var repository: RoomLessonRepository
 
     @Before
@@ -82,30 +105,89 @@ class RoomLessonRepositoryTest {
     }
 
     @Test
-    fun seedingWritesEveryLessonTogetherWithItsText() = runTest {
+    fun syncingWhileOfflineIsANoOp() = runTest {
         repository.syncIfNeeded()
 
-        val seeded = DummyLessonSeed.lessons.first()
-        assertEquals(seeded.title, repository.lesson(seeded.id).first()?.title)
-        val content = repository.lessonContent(seeded.id).first()
-        assertEquals(seeded.id, content?.lessonId)
-    }
-
-    @Test
-    fun readingALessonNeverReachesTheNetwork() = runTest {
-        repository.syncIfNeeded()
-        val callsAfterSeeding = remote.contentCalls
-
-        repository.lesson(1).first()
-        repository.lessonContent(1).first()
-
-        assertEquals(callsAfterSeeding, remote.contentCalls)
+        assertEquals(0, database.lessonDao().count())
         assertEquals(0, remote.lessonCalls)
     }
 
     @Test
-    fun refreshingContentWhileOfflineFailsLoudly() = runTest {
+    fun syncingOnlineWritesEveryRemoteLessonTogetherWithItsText() = runTest {
+        network.online = true
+
         repository.syncIfNeeded()
+
+        val first = remote.lessons.first()
+        assertEquals(first.title, repository.lesson(first.id).first()?.title)
+    }
+
+    @Test
+    fun anEditedLessonIsUpdatedOnTheNextSync() = runTest {
+        network.online = true
+        repository.syncIfNeeded()
+
+        remote.lessons = listOf(lesson(1, title = "Updated title"), lesson(2))
+        repository.syncIfNeeded()
+
+        assertEquals("Updated title", repository.lesson(1).first()?.title)
+    }
+
+    @Test
+    fun aLessonRemovedRemotelyDisappearsOnTheNextSync() = runTest {
+        network.online = true
+        repository.syncIfNeeded()
+
+        remote.lessons = listOf(lesson(1))
+        repository.syncIfNeeded()
+
+        assertNull(repository.lesson(2).first())
+        assertEquals(1, database.lessonDao().count())
+    }
+
+    @Test
+    fun aFailedSyncLeavesThePreviousCatalogUntouched() = runTest {
+        network.online = true
+        repository.syncIfNeeded()
+        val titleBefore = repository.lesson(1).first()?.title
+
+        remote.lessonsFailure = IOException("connection dropped")
+        assertThrows(IOException::class.java) {
+            runBlocking { repository.syncIfNeeded() }
+        }
+
+        assertEquals(titleBefore, repository.lesson(1).first()?.title)
+        assertEquals(2, database.lessonDao().count())
+    }
+
+    @Test
+    fun anEmptyRemoteCatalogFailsRatherThanClearingTheLocalOne() = runTest {
+        network.online = true
+        repository.syncIfNeeded()
+
+        remote.lessons = emptyList()
+        assertThrows(IOException::class.java) {
+            runBlocking { repository.syncIfNeeded() }
+        }
+
+        assertEquals(2, database.lessonDao().count())
+    }
+
+    @Test
+    fun readingALessonNeverReachesTheNetwork() = runTest {
+        network.online = true
+        repository.syncIfNeeded()
+        val callsAfterSync = remote.contentCalls
+
+        repository.lesson(1).first()
+        repository.lessonContent(1).first()
+
+        assertEquals(callsAfterSync, remote.contentCalls)
+    }
+
+    @Test
+    fun refreshingContentWhileOfflineFailsLoudly() = runTest {
+        database.lessonDao().upsertAll(remote.lessons.map { it.toEntity() })
 
         assertThrows(OfflineException::class.java) {
             runBlocking { repository.refreshContent(1) }
@@ -114,30 +196,27 @@ class RoomLessonRepositoryTest {
 
     @Test
     fun refreshingContentOnlineStoresItWhereReadingCanFindIt() = runTest {
-        val lesson = DummyLessonSeed.lessons.first()
+        val target = remote.lessons.first()
         database.lessonDao().upsertAll(
             listOf(
                 LessonEntity(
-                    id = lesson.id,
-                    subject = lesson.subject,
-                    title = lesson.title,
-                    teaser = lesson.teaser,
-                    minutes = lesson.minutes,
-                    hasAudio = lesson.hasAudio,
-                    isLocked = lesson.isLocked,
-                    image = lesson.image,
+                    id = target.id,
+                    subject = target.subject,
+                    title = target.title,
+                    teaser = target.teaser,
+                    minutes = target.minutes,
+                    hasAudio = target.hasAudio,
+                    isLocked = target.isLocked,
+                    image = target.image,
                 ),
             ),
         )
-        assertNull(repository.lessonContent(lesson.id).first())
+        assertNull(repository.lessonContent(target.id).first())
         network.online = true
 
-        repository.refreshContent(lesson.id)
+        repository.refreshContent(target.id)
 
-        val stored = repository.lessonContent(lesson.id).first()
-        assertEquals(
-            DummyLessonContentSeed.content.first { it.lessonId == lesson.id }.paragraphs,
-            stored?.paragraphs,
-        )
+        val stored = repository.lessonContent(target.id).first()
+        assertEquals(content(target.id).paragraphs, stored?.paragraphs)
     }
 }

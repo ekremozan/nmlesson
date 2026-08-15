@@ -40,6 +40,15 @@ interface LessonDao {
     @Upsert
     suspend fun upsertAll(lessons: List<LessonEntity>)
 
+    /**
+     * Removes every lesson whose id is not in [ids] — the other half of a sync's replace, paired
+     * with [upsertAll]. Cascades to that lesson's `lesson_content` row via the existing foreign
+     * key, but only for lessons actually gone from the remote catalog; lessons still present keep
+     * whatever content is already cached for them.
+     */
+    @Query("DELETE FROM lessons WHERE id NOT IN (:ids)")
+    suspend fun deleteMissing(ids: List<Long>)
+
     @Query("SELECT COUNT(*) FROM lessons")
     suspend fun count(): Int
 }

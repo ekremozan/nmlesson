@@ -75,5 +75,9 @@ internal class HomePreviewCases : PreviewParameterProvider<HomePreviewCase> {
             ),
             lessons = emptyList(),
         ),
+        HomePreviewCase(
+            state = HomeUiState(greeting = GreetingPeriod.MORNING, userName = "Ozan"),
+            lessons = emptyList(),
+        ),
     )
 }

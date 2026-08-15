@@ -2,6 +2,7 @@ package com.example.nativeminds.feature.home.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,10 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -26,6 +29,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
@@ -57,6 +62,7 @@ import kotlinx.coroutines.flow.flowOf
 @Composable
 fun HomeScreen(
     onLessonClick: (Long) -> Unit,
+    onProfileClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -80,11 +86,13 @@ fun HomeScreen(
         snackbarHostState = snackbarHostState,
         onIntent = viewModel::onIntent,
         onLessonClick = onLessonClick,
+        onProfileClick = onProfileClick,
         modifier = modifier,
     )
 }
 
 /** Stateless so it's directly usable from `@Preview`s and future tests. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenContent(
     state: HomeUiState,
@@ -92,85 +100,97 @@ fun HomeScreenContent(
     snackbarHostState: SnackbarHostState,
     onIntent: (HomeIntent) -> Unit,
     onLessonClick: (Long) -> Unit,
+    onProfileClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val isEmpty = lessons.itemCount == 0 && lessons.loadState.refresh is LoadState.NotLoading
 
     Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier.padding(horizontal = NativeMindsTheme.spacing.screen),
-                verticalArrangement = Arrangement.spacedBy(NativeMindsTheme.spacing.lg),
-            ) {
-                GreetingHeader(greeting = state.greeting, userName = state.userName)
-                SearchField(
-                    query = state.query,
-                    onQueryChange = { onIntent(HomeIntent.QueryChanged(it)) },
-                    onClear = { onIntent(HomeIntent.QueryCleared) },
-                )
-            }
+        PullToRefreshBox(
+            isRefreshing = lessons.loadState.refresh is LoadState.Loading,
+            onRefresh = { onIntent(HomeIntent.RefreshRequested) },
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier.padding(horizontal = NativeMindsTheme.spacing.screen),
+                    verticalArrangement = Arrangement.spacedBy(NativeMindsTheme.spacing.lg),
+                ) {
+                    GreetingHeader(
+                        greeting = state.greeting,
+                        userName = state.userName,
+                        onProfileClick = onProfileClick,
+                    )
+                    SearchField(
+                        query = state.query,
+                        onQueryChange = { onIntent(HomeIntent.QueryChanged(it)) },
+                        onClear = { onIntent(HomeIntent.QueryCleared) },
+                    )
+                }
 
-            SubjectChipRow(
-                chips = state.chips,
-                onChipSelected = { onIntent(HomeIntent.SubjectSelected(it)) },
-                modifier = Modifier.padding(
-                    top = NativeMindsTheme.spacing.lg,
-                    start = NativeMindsTheme.spacing.screen,
-                    end = NativeMindsTheme.spacing.screen,
-                ),
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
+                SubjectChipRow(
+                    chips = state.chips,
+                    onChipSelected = { onIntent(HomeIntent.SubjectSelected(it)) },
+                    modifier = Modifier.padding(
+                        top = NativeMindsTheme.spacing.lg,
                         start = NativeMindsTheme.spacing.screen,
                         end = NativeMindsTheme.spacing.screen,
-                        top = NativeMindsTheme.spacing.xl,
-                        bottom = NativeMindsTheme.spacing.md,
                     ),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(
-                    text = if (state.isFiltering) {
-                        stringResource(R.string.home_heading_results)
-                    } else {
-                        stringResource(R.string.home_heading_for_you)
-                    }.uppercase(),
-                    style = NativeMindsTheme.typography.sectionHeading,
-                    color = NativeMindsTheme.colors.textMuted,
                 )
-                Text(
-                    text = pluralStringResource(R.plurals.home_lesson_count, lessons.itemCount, lessons.itemCount),
-                    style = NativeMindsTheme.typography.sectionCount,
-                    color = NativeMindsTheme.colors.textSubtle,
-                )
-            }
 
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth().weight(1f),
-                contentPadding = PaddingValues(bottom = NativeMindsTheme.spacing.screen),
-            ) {
-                if (isEmpty) {
-                    item {
-                        EmptyResultsState(
-                            query = state.query,
-                            suggestions = state.suggestions,
-                            onSuggestionSelected = { onIntent(HomeIntent.SuggestionSelected(it)) },
-                            onClearSearch = { onIntent(HomeIntent.QueryCleared) },
-                        )
-                    }
-                } else {
-                    items(count = lessons.itemCount, key = lessons.itemKey { it.id }) { index ->
-                        val lesson = lessons[index] ?: return@items
-                        LessonCard(
-                            lesson = lesson,
-                            onClick = { onLessonClick(lesson.id) },
-                            modifier = Modifier.padding(
-                                horizontal = NativeMindsTheme.spacing.screen,
-                                vertical = 7.dp,
-                            ),
-                        )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = NativeMindsTheme.spacing.screen,
+                            end = NativeMindsTheme.spacing.screen,
+                            top = NativeMindsTheme.spacing.xl,
+                            bottom = NativeMindsTheme.spacing.md,
+                        ),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = if (state.isFiltering) {
+                            stringResource(R.string.home_heading_results)
+                        } else {
+                            stringResource(R.string.home_heading_for_you)
+                        }.uppercase(),
+                        style = NativeMindsTheme.typography.sectionHeading,
+                        color = NativeMindsTheme.colors.textMuted,
+                    )
+                    Text(
+                        text = pluralStringResource(R.plurals.home_lesson_count, lessons.itemCount, lessons.itemCount),
+                        style = NativeMindsTheme.typography.sectionCount,
+                        color = NativeMindsTheme.colors.textSubtle,
+                    )
+                }
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    contentPadding = PaddingValues(bottom = NativeMindsTheme.spacing.screen),
+                ) {
+                    if (isEmpty) {
+                        item {
+                            EmptyResultsState(
+                                isFiltering = state.isFiltering,
+                                query = state.query,
+                                suggestions = state.suggestions,
+                                onSuggestionSelected = { onIntent(HomeIntent.SuggestionSelected(it)) },
+                                onClearSearch = { onIntent(HomeIntent.QueryCleared) },
+                            )
+                        }
+                    } else {
+                        items(count = lessons.itemCount, key = lessons.itemKey { it.id }) { index ->
+                            val lesson = lessons[index] ?: return@items
+                            LessonCard(
+                                lesson = lesson,
+                                onClick = { onLessonClick(lesson.id) },
+                                modifier = Modifier.padding(
+                                    horizontal = NativeMindsTheme.spacing.screen,
+                                    vertical = 7.dp,
+                                ),
+                            )
+                        }
                     }
                 }
             }
@@ -186,7 +206,8 @@ fun HomeScreenContent(
 }
 
 @Composable
-private fun GreetingHeader(greeting: GreetingPeriod, userName: String) {
+private fun GreetingHeader(greeting: GreetingPeriod, userName: String, onProfileClick: () -> Unit) {
+    val profileContentDescription = stringResource(R.string.home_avatar_cd)
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Top,
@@ -210,7 +231,9 @@ private fun GreetingHeader(greeting: GreetingPeriod, userName: String) {
                 .size(44.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceContainer)
-                .border(1.dp, NativeMindsTheme.colors.cardBorder, CircleShape),
+                .border(1.dp, NativeMindsTheme.colors.cardBorder, CircleShape)
+                .clickable(onClick = onProfileClick)
+                .semantics { contentDescription = profileContentDescription },
             contentAlignment = Alignment.Center,
         ) {
             NativeMindsIcons.Person(tint = MaterialTheme.colorScheme.onSurfaceVariant, size = 20.dp)
@@ -241,6 +264,7 @@ private fun HomeScreenContentPreview(
             snackbarHostState = remember { SnackbarHostState() },
             onIntent = {},
             onLessonClick = {},
+            onProfileClick = {},
         )
     }
 }
@@ -255,7 +279,7 @@ private fun GreetingHeaderPreview() {
     PreviewSurface {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             GreetingPeriod.entries.forEach { period ->
-                GreetingHeader(greeting = period, userName = "Ozan")
+                GreetingHeader(greeting = period, userName = "Ozan", onProfileClick = {})
             }
         }
     }

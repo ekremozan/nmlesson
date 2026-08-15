@@ -24,6 +24,11 @@ class FakeLessonRepository(
 
     var refreshFailure: Throwable? = null
 
+    var syncCount = 0
+        private set
+
+    var syncFailure: Throwable? = null
+
     override fun pagedLessons(subject: String?, query: String): Flow<PagingData<Lesson>> =
         emptyFlow()
 
@@ -38,5 +43,8 @@ class FakeLessonRepository(
         refreshFailure?.let { throw it }
     }
 
-    override suspend fun syncIfNeeded() = Unit
+    override suspend fun syncIfNeeded() {
+        syncCount++
+        syncFailure?.let { throw it }
+    }
 }

@@ -20,6 +20,7 @@ data class HomeUiState(
     val query: String = "",
     val selectedSubject: String? = null,
     val subjects: List<String> = emptyList(),
+    val syncToken: Int = 0,
 ) {
     val chips: List<ChipUiModel>
         get() = (listOf(null) + subjects).map { subject ->
@@ -43,6 +44,9 @@ sealed interface HomeIntent {
     data class SuggestionSelected(val subject: String?) : HomeIntent
 
     data class SubjectsLoaded(val subjects: List<String>) : HomeIntent
+
+    /** Pull-to-refresh. The reduction only bumps [HomeUiState.syncToken]. */
+    data object RefreshRequested : HomeIntent
 }
 
 sealed interface HomeEffect {

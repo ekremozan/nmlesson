@@ -27,6 +27,7 @@ These are the acceptance criteria — every feature decision should trace back t
 
 - **Every architectural decision must be defensible.** The case evaluates reasoning, not just output. When making a non-obvious choice (library, pattern, data model), record it briefly in the README's "Key Decisions" section — what was chosen, why, what the trade-off is, and what would change at 10× scale.
 - **Known shortcuts must be logged.** If a corner is knowingly cut (mock billing, hardcoded content seed, skipped edge case), add it to the README's "Cut Corners / Assumptions" section immediately — don't leave it undocumented.
+- **All spec-kit artifacts are written in Turkish.** `spec.md`, `plan.md`, `research.md`, `tasks.md`, `data-model.md`, `quickstart.md`, `contracts/`, checklists, and any other file produced by the `speckit-*` skills are written in Turkish. Code, identifiers, and commit messages stay in English as usual.
 - **No `//` comments anywhere in the codebase** — not explanations, not rationale, not section
   banners. The code carries its own meaning through naming and structure; if something needs
   explaining, rename it, extract it, or put the rationale in the README's "Key Decisions" section.

@@ -45,8 +45,9 @@ interface LessonRepository {
     suspend fun refreshContent(id: Long)
 
     /**
-     * Seeds the local database on first run and, if online, refreshes it from the remote source.
-     * Safe to call every time the app starts — it's a no-op past the first run unless online.
+     * Replaces the local catalog with the remote source's current lessons when online; a no-op
+     * while offline, so cached content is never touched by a sync that cannot run. Safe to call
+     * every time the app starts.
      */
     suspend fun syncIfNeeded()
 }

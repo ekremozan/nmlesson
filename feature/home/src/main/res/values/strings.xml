@@ -26,5 +26,8 @@
     <string name="home_empty_body">We couldn\'t find a lesson for “%1$s”. Try a shorter word, or browse a subject below.</string>
     <string name="home_clear_search">Clear search</string>
 
+    <string name="home_never_synced_title">Connect to load lessons</string>
+    <string name="home_never_synced_body">This device hasn\'t downloaded any lessons yet. Connect to the internet and pull down to refresh.</string>
+
     <string name="home_sync_error">Couldn\'t refresh lessons. Showing what\'s saved.</string>
 </resources>

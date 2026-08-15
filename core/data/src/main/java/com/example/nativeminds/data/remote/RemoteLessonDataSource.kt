@@ -3,7 +3,7 @@ package com.example.nativeminds.data.remote
 import com.example.nativeminds.model.Lesson
 import com.example.nativeminds.model.LessonContent
 
-/** The future real API. [FakeRemoteLessonDataSource] is the only implementation until it exists. */
+/** The lesson catalog's remote source. [com.example.nativeminds.data.remote.SupabaseRemoteLessonDataSource] is the only implementation. */
 interface RemoteLessonDataSource {
     suspend fun fetchLessons(): List<Lesson>
 

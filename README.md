@@ -124,6 +124,20 @@ recompiling any feature. `:app` is the single place where contract meets impleme
 | Database migration `3→4` | `MIGRATION_3_4` renames `stories`→`lessons`, `story_content`→`lesson_content`, `category`→`subject`, then `DELETE FROM lessons`/`lesson_content` | The catalog's *shape* changed (100 rotated fiction rows → 40 authored subject/topic rows), not just column names — there is no sane row-by-row mapping from the old catalog to the new one. `RoomLessonRepository.syncIfNeeded()` already reseeds on `count() == 0`, so clearing is what makes the next launch clean rather than half-migrated | Anyone who had the pre-rename build installed loses their local seed data on upgrade — acceptable for a demo app with no production installs, logged here rather than left silent |
 | Image model | Kept a single `image: String` field on `Lesson`/`LessonEntity` (no new column), but it's now derived from `subject` at seed time — one of 4 fixed keys (`subject_biology` etc.), not an independently authored per-row value | Cheapest path to "one image per subject": no migration beyond the rename, no mapper changes beyond the seed. `SubjectImageAssets` (was `LessonCoverAssets`) shrank from a 10-key to a 4-key lookup | The field can in principle drift from `subject` since nothing enforces the derivation past the seed — a fully normalized version would compute the drawable key from `subject` in `SubjectImageAssets` directly and drop the column; revisit at 10× if lesson-level (not subject-level) art is ever wanted |
 | Premium gating pattern | Per-subject: first 3 of each subject's 10 topics ship `isLocked = false`, the rest `true` — same `isLocked` + `ReaderAccess`/`FreePreviewRule` mechanism as before, just a different seed distribution | Reuses the existing, already-tested gating path unchanged; only the seed data's `isLocked` assignment needed to change | Locked/free ratio (3-of-10) is a seed-time constant, not a rule — moving it (e.g. per-subject override) means editing each `*Lessons.kt` file by hand |
+| **Settings screen** | | | |
+| New `:feature:settings` module + `ThemeRepository` | Same shape as `EntitlementRepository`/`MockEntitlementRepository`: interface in `:core:domain`, in-memory `MutableStateFlow` impl bound in `:core:data`'s `DataModule` | The dark-theme toggle needed one source of truth reachable from both the settings screen (writer) and `MainActivity` (reader), and this is the pattern the codebase already uses for exactly that shape of problem | See Cut Corners — the value is not persisted |
+| Theme applied at the app root | `AppThemeViewModel` (in `:app`) collects `ThemeRepository.isDarkTheme()` and passes it into `NativeMindsTheme(darkTheme = …)` in `MainActivity`, replacing the `isSystemInDarkTheme()` default | `NativeMindsTheme` already took a `darkTheme` parameter — the toggle only needed a caller that reads it from somewhere other than the system setting | `MainActivity` now depends on a Hilt ViewModel outside any nav graph; `hiltViewModel()` resolves against the Activity's own `ViewModelStoreOwner`, which works but is a slightly unusual call site to spot in review |
+| Settings screen copy is Turkish | Strings match the Claude Design mockup (`settings_title` = "Ayarlar", etc.) verbatim, while every other screen's strings are English | The design source of truth for this screen was authored in Turkish; matching it verbatim was cheaper and more faithful than translating and re-checking layout | The app now has one Turkish screen among English ones — a real localization pass (see the `localization` skill pattern) should give every screen both languages together, not screen-by-screen |
+| Paywall entry point from Settings | `PaywallRoute(lessonId = -1L, progressPercent = 0)` — a sentinel lesson id, since Settings has no lesson context to hand off | `PurchaseSuccessContract.lesson: Lesson? = null` was already null-safe (`PurchaseSuccessScreen.kt`'s `if (lesson != null)`), so an unresolvable id degrades to "no continue-reading card" instead of crashing — verified on-device | A generic "not tied to a lesson" paywall entry (nullable `lessonId` on the route) would be the honest fix once a second non-lesson entry point exists |
+| Support/legal rows are visual only | "Bizi puanlayın", "Bize ulaşın", "Gizlilik politikası", "Kullanım koşulları" render with the design's icon/chevron but have no `onClick` | Explicitly out of scope for this pass — there is no store listing, support inbox, or legal copy to link to yet | Wiring them is additive: each becomes one `onClick` with no reducer/contract change |
+
+| **Remote lesson content (Supabase)** — full reasoning in [`specs/004-remote-lesson-content/research.md`](specs/004-remote-lesson-content/research.md), one line each below | | | |
+| Remote client library | `supabase-kt`'s `postgrest-kt` module over Ktor/OkHttp, pinned to 3.2.6/3.3.1 rather than latest (3.7.0/3.5.2) | Latest `supabase-kt` builds against Kotlin 2.4, which this project's Kotlin 2.2.10 compiler cannot read (`kotlin-stdlib` metadata version mismatch on first build attempt); 3.2.6 is the newest release still built against Kotlin 2.2.x | At 10× scale, bumping the project's own Kotlin version becomes the forcing function to also move to a current `supabase-kt`, rather than the other way around |
+| Sync strategy | `RoomLessonRepository.syncIfNeeded()` fetches the full remote `lessons` table and replaces the local catalog with `dao.upsertAll()` + `dao.deleteMissing(ids)` inside one `withTransaction`, on every online sync — not just the first run | A transaction either fully commits or fully rolls back, so "a failed sync leaves the previous catalog untouched" is true by construction rather than by an extra recovery path. `deleteMissing` (not delete-all-then-insert) avoids cascading away `lesson_content` rows for lessons that are still present, just unchanged | At ~40 rows, fetching everything every sync is free. At 10× scale (hundreds of lessons, frequent syncs) this becomes an incremental diff keyed on an `updated_at` watermark instead of a full fetch |
+| Lesson content stays lazily fetched | Only the `lessons` table (titles/teasers/metadata) is bulk-synced; `lesson_content` (the full body) is still fetched one lesson at a time via `fetchContent(id)`, exactly like the pre-Supabase design, now backed by the real `lesson_content` table instead of a dummy map | The existing `RemoteLessonDataSource.fetchContent` doc comment already argued this: "a list of cards has no use for six full lessons." Bulk-fetching every lesson body on every sync would be pure waste for a screen that only ever shows one lesson's text at a time | A lesson never opened while online has no cached body and is unreadable offline until it's opened once online — matches the existing reader's `OfflineException` fallback, not a new gap this feature introduces |
+| Secrets | `SUPABASE_URL`/`SUPABASE_ANON_KEY` read from git-ignored `local.properties` into `core:data`'s `BuildConfig`, mirrored by an `android.defaults.buildfeatures` opt-in in that one module | The anon key is meant to ship inside client apps (protected by Postgres RLS, not secrecy), but there's no reason to hardcode it in a source file that's trivially greppable in the repo when the existing `local.properties`/`sdk.dir` pattern was already there to reuse | Anyone building the app from a fresh clone must add these two lines themselves — documented in `specs/004-remote-lesson-content/quickstart.md`, not discoverable from Gradle alone |
+| Read-only access model | No end-user auth; the app reads with Supabase's public anon key, and RLS policies grant `select` only — no `insert`/`update`/`delete` from the client at all | The app has no login system and content is public read-only by design; a service-role key or write access from the client would be pure attack surface for zero benefit | Content is authored directly in Supabase's own SQL editor/table view; if a real editorial workflow is ever needed, that becomes an admin surface behind Supabase Auth, not a change to the read path |
+| `minSdk` 24 vs. `supabase-kt`'s Android 26 floor | Enabled `isCoreLibraryDesugaringEnabled` + `coreLibraryDesugaring(libs.android.desugar.jdk.libs)` in `core:data` and `app`, rather than raising `minSdk` | `supabase-kt`'s own README states a minimum of API 26 without desugaring; raising `minSdk` was not on the table (a project-wide constraint), so desugaring is the standard, narrowly-scoped fix | One more Gradle dependency; no behavior change for API 24–25 devices since desugaring only backfills library classes, not new OS capability |
 
 ## 🤖 How I Worked With AI
 
@@ -221,8 +235,15 @@ Reader feature (spec-driven pass, `specs/001-story-detail-reader/`):
 - **Crash/error reporting is logcat-only.** `LogcatErrorReporter` implements the real interface and
   every call site reports through it, but nothing leaves the device yet. Firebase is a separate
   build-and-account step.
-- **Story text is hand-seeded.** `DummyStoryContentSeed` stands in for a catalog, and
-  `FakeRemoteStoryDataSource.fetchContent` serves the same text back as if it were a fetch.
+- **Lesson content is no longer hand-seeded.** `DummyLessonSeed`/`DummyLessonContentSeed` and
+  `FakeRemoteLessonDataSource` are deleted; `RoomLessonRepository` now syncs the `lessons` table
+  from a real Supabase project via `SupabaseRemoteLessonDataSource`. The dummy catalog's content
+  was preserved as `supabase/seed.sql`, a one-time script that seeds the remote project with the
+  same 40 lessons the app used to ship hardcoded — see
+  [`specs/004-remote-lesson-content/quickstart.md`](specs/004-remote-lesson-content/quickstart.md).
+  **The actual Supabase project still needs to be created and seeded by hand** — that step needs a
+  Supabase account and cannot be done by an automated change; until then `syncIfNeeded()` will fail
+  against an unconfigured `SUPABASE_URL`/`SUPABASE_ANON_KEY`.
 - **The closing line says "Next in Fiction" without naming the next story.** The design names it;
   resolving an actual next story needs an ordering rule the app does not have yet.
 - `GetPagedStoriesUseCase` / `SyncStoriesUseCase` are currently pass-throughs to the repository.
@@ -234,11 +255,12 @@ Reader feature (spec-driven pass, `specs/001-story-detail-reader/`):
 - `:core:domain` depends on `com.google.dagger:dagger` (pure JVM) so its `@Inject` factories are
   generated locally. `javax.inject` alone would have been purer, at the cost of moving factory
   generation into `:app` and a compiler warning per class.
-- Sync failures now reach the user as a snackbar via `HomeEffect.ShowSyncError`; the repository no
-  longer swallows them. The offline-first contract is unchanged — the seeded or previously synced
-  database stays the source of truth and the screen keeps working. What is still missing is the
-  other half of the rule: the exception is not reported anywhere, because crash reporting is not
-  wired up yet. `HomeViewModel`'s `runCatching` is where that call goes.
+- Sync failures reach the user as a snackbar via `HomeEffect.ShowSyncError` **and** are reported
+  through `ErrorReporter` — `SyncLessonsUseCase` now wraps `repository.syncIfNeeded()` in
+  `runCatching { }.onFailure { errorReporter.report(...) }`, the same shape
+  `RefreshLessonContentUseCase` already used. The offline-first contract is unchanged: a sync that
+  cannot run (offline) is a silent no-op, and a sync that fails partway through never touches the
+  previously-synced catalog.
 - `StoryCard`'s `onClick` is still an empty lambda rather than a `HomeIntent.StoryClicked`. There is
   no navigation and no Reader screen for it to reach, and an intent whose reducer branch returns
   `this` and whose effect nobody consumes is dead code that reads like a feature.
@@ -259,10 +281,33 @@ Reader feature (spec-driven pass, `specs/001-story-detail-reader/`):
 - **The 10 topic titles per subject are a first pass, not a vetted curriculum.** They were chosen
   to read as plausible lise-level topics for each subject but haven't been checked against an
   actual curriculum; expect them to be adjusted once real content is written.
+- **The dark-theme preference is an in-memory mock, like entitlement.** `MockThemeRepository`
+  holds a `MutableStateFlow(false)` and resets to light on process death — the project has no
+  DataStore dependency yet and this is the only setting that would need one so far. Swapping in a
+  persisted implementation is one `@Binds` change, same as `EntitlementRepository`.
+- **The bottom tab bar from the Settings mockup (Home/Library/Ask AI/Settings) is not built.**
+  Library and Ask AI don't exist as screens yet, so Settings is reached the same way every other
+  screen is — a push from Home's profile icon — rather than through a persistent tab bar the rest
+  of the app doesn't have.
+- **The profile icon opening Settings needed a back affordance the mockup doesn't show** (it
+  assumed the tab bar). A chevron-left button matching the Reader's back button was added so the
+  screen is actually navigable without the tab bar.
 - **Every seeded lesson claims `hasAudio = true`.** Narration is meant to work universally for
   lesson content, so nothing in the seed currently exercises the "no audio" reader/list state that
   the old fiction catalog demonstrated — worth adding back as an explicit test case if that state
   still needs coverage.
+- **Content authoring has no in-app or admin UI.** Adding, editing, or removing a lesson happens
+  directly in Supabase's own SQL editor/table view. Acceptable for a one-person case study; a real
+  editorial workflow would need its own authoring surface, which is explicitly out of scope here.
+- **Pull-to-refresh's spinner is tied to Paging's own `loadState.refresh`, not the sync's actual
+  network duration.** Room's `PagingSource` auto-invalidates when `syncIfNeeded()` writes to the
+  `lessons` table, so the spinner reflects "the list is reloading from the now-updated local data,"
+  not "a network request is in flight." It disappears correctly either way; it just doesn't cover
+  the earlier network-wait portion of a slow sync.
+- **The never-synced empty state and the no-search-results empty state share one composable**
+  (`EmptyResultsState(isFiltering = …)`) rather than being two separate screens. Chosen to reuse the
+  existing icon/title/body layout exactly as the design system already draws it, at the cost of one
+  conditional branch inside the composable instead of a second file.
 
 ## 🔭 What I'd Do Next / At 10× Scale
 

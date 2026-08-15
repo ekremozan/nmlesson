@@ -5,12 +5,14 @@ import com.example.nativeminds.model.LessonContent
 
 private const val PARAGRAPH_SEPARATOR = "\n\n"
 
+fun splitParagraphs(body: String): List<String> = body.split(PARAGRAPH_SEPARATOR)
+    .map { it.trim() }
+    .filter { it.isNotEmpty() }
+
 fun LessonContentEntity.toDomain(): LessonContent = LessonContent(
     lessonId = lessonId,
     author = author,
-    paragraphs = body.split(PARAGRAPH_SEPARATOR)
-        .map { it.trim() }
-        .filter { it.isNotEmpty() },
+    paragraphs = splitParagraphs(body),
 )
 
 fun LessonContent.toEntity(): LessonContentEntity = LessonContentEntity(

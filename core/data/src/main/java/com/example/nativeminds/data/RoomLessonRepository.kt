@@ -6,8 +6,6 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import androidx.room.withTransaction
 import com.example.nativeminds.common.di.IoDispatcher
-import com.example.nativeminds.data.local.DummyLessonContentSeed
-import com.example.nativeminds.data.local.DummyLessonSeed
 import com.example.nativeminds.data.mapper.toDomain
 import com.example.nativeminds.data.mapper.toEntity
 import com.example.nativeminds.data.remote.RemoteLessonDataSource
@@ -18,6 +16,7 @@ import com.example.nativeminds.domain.repository.OfflineException
 import com.example.nativeminds.domain.repository.LessonRepository
 import com.example.nativeminds.model.Lesson
 import com.example.nativeminds.model.LessonContent
+import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -27,10 +26,9 @@ import kotlinx.coroutines.withContext
 private const val PAGE_SIZE = 20
 
 /**
- * The database is injected alongside its DAOs for one reason: seeding writes two tables that must
- * land together, and `withTransaction` is the only place that guarantee can be made. A crash
- * between the two writes would otherwise leave a catalog whose lessons can never be opened,
- * because `count()` would never be zero again.
+ * The database is injected alongside its DAOs for one reason: a sync's upsert and delete must land
+ * together, and `withTransaction` is the only place that guarantee can be made. A crash between the
+ * two writes would otherwise leave the catalog in a state neither the old nor the new sync produced.
  */
 class RoomLessonRepository @Inject constructor(
     private val database: NativeMindsDatabase,
@@ -60,15 +58,16 @@ class RoomLessonRepository @Inject constructor(
     }
 
     override suspend fun syncIfNeeded() = withContext(ioDispatcher) {
-        if (dao.count() == 0) {
-            database.withTransaction {
-                dao.upsertAll(DummyLessonSeed.lessons.map { it.toEntity() })
-                contentDao.upsertAll(DummyLessonContentSeed.content.map { it.toEntity() })
-            }
+        if (!networkMonitor.isOnline()) return@withContext
+
+        val remoteLessons = remote.fetchLessons()
+        if (remoteLessons.isEmpty()) {
+            throw IOException("Remote lesson catalog was empty — refusing to clear the local one")
         }
-        if (networkMonitor.isOnline()) {
-            dao.upsertAll(remote.fetchLessons().map { it.toEntity() })
+
+        database.withTransaction {
+            dao.upsertAll(remoteLessons.map { it.toEntity() })
+            dao.deleteMissing(remoteLessons.map { it.id })
         }
-        Unit
     }
 }

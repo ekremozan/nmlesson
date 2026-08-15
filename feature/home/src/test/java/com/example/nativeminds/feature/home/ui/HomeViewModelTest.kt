@@ -1,6 +1,7 @@
 package com.example.nativeminds.feature.home.ui
 
 import androidx.paging.PagingData
+import com.example.nativeminds.domain.observability.ErrorReporter
 import com.example.nativeminds.domain.repository.LessonRepository
 import com.example.nativeminds.domain.usecase.GetPagedLessonsUseCase
 import com.example.nativeminds.domain.usecase.GetSubjectsUseCase
@@ -60,6 +61,10 @@ private class RecordingLessonRepository : LessonRepository {
     }
 }
 
+private class NoOpErrorReporter : ErrorReporter {
+    override fun report(throwable: Throwable, context: String) = Unit
+}
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
     private val repository = RecordingLessonRepository()
@@ -86,7 +91,7 @@ class HomeViewModelTest {
     private fun homeViewModel() = HomeViewModel(
         getSubjects = GetSubjectsUseCase(repository),
         getPagedLessons = GetPagedLessonsUseCase(repository),
-        syncLessons = SyncLessonsUseCase(repository),
+        syncLessons = SyncLessonsUseCase(repository, NoOpErrorReporter()),
     )
 
     @Test
@@ -101,6 +106,27 @@ class HomeViewModelTest {
         repository.syncFailure = IOException("no network")
 
         val viewModel = homeViewModel()
+
+        assertEquals(HomeEffect.ShowSyncError, viewModel.effects.first())
+    }
+
+    @Test
+    fun `refresh requested triggers another sync`() = runTest {
+        val viewModel = homeViewModel()
+        val syncCallsAfterInit = repository.syncCalls
+
+        viewModel.onIntent(HomeIntent.RefreshRequested)
+
+        assertEquals(syncCallsAfterInit + 1, repository.syncCalls)
+        assertEquals(1, viewModel.state.value.syncToken)
+    }
+
+    @Test
+    fun `a failing refresh surfaces an error effect too`() = runTest {
+        val viewModel = homeViewModel()
+        repository.syncFailure = IOException("no network")
+
+        viewModel.onIntent(HomeIntent.RefreshRequested)
 
         assertEquals(HomeEffect.ShowSyncError, viewModel.effects.first())
     }
