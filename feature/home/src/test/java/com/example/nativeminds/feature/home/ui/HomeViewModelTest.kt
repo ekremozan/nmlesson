@@ -16,8 +16,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -129,6 +132,23 @@ class HomeViewModelTest {
         viewModel.onIntent(HomeIntent.RefreshRequested)
 
         assertEquals(HomeEffect.ShowSyncError, viewModel.effects.first())
+    }
+
+    @Test
+    fun `a persistently failing sync surfaces exactly one error effect per attempt, never a spammed extra`() = runTest {
+        repository.syncFailure = IOException("no network")
+        val viewModel = homeViewModel()
+        val effects = mutableListOf<HomeEffect>()
+        val collector = launch { viewModel.effects.toList(effects) }
+        runCurrent()
+
+        viewModel.onIntent(HomeIntent.RefreshRequested)
+        runCurrent()
+        viewModel.onIntent(HomeIntent.RefreshRequested)
+        runCurrent()
+
+        collector.cancel()
+        assertEquals(listOf(HomeEffect.ShowSyncError, HomeEffect.ShowSyncError, HomeEffect.ShowSyncError), effects)
     }
 
     @Test
