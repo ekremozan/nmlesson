@@ -12,6 +12,8 @@ import com.example.nativeminds.feature.paywall.navigation.paywallScreen
 import com.example.nativeminds.feature.paywall.navigation.purchaseSuccessScreen
 import com.example.nativeminds.feature.reader.navigation.ReaderRoute
 import com.example.nativeminds.feature.reader.navigation.readerScreen
+import com.example.nativeminds.feature.settings.navigation.SettingsRoute
+import com.example.nativeminds.feature.settings.navigation.settingsScreen
 
 /**
  * The only place that knows every destination exists.
@@ -30,7 +32,10 @@ fun NativeMindsNavHost(modifier: Modifier = Modifier) {
         startDestination = HomeRoute,
         modifier = modifier,
     ) {
-        homeScreen(onLessonClick = { lessonId -> navController.navigate(ReaderRoute(lessonId)) })
+        homeScreen(
+            onLessonClick = { lessonId -> navController.navigate(ReaderRoute(lessonId)) },
+            onProfileClick = { navController.navigate(SettingsRoute) },
+        )
         readerScreen(
             onBack = navController::navigateUp,
             onUnlockRequested = { lessonId, progressPercent ->
@@ -47,6 +52,10 @@ fun NativeMindsNavHost(modifier: Modifier = Modifier) {
         purchaseSuccessScreen(
             onContinueReading = { navController.popBackStack() },
             onExploreLibrary = { navController.popBackStack(HomeRoute, inclusive = false) },
+        )
+        settingsScreen(
+            onBack = navController::navigateUp,
+            onPremiumClick = { navController.navigate(PaywallRoute(lessonId = -1L, progressPercent = 0)) },
         )
     }
 }

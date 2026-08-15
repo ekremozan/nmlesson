@@ -34,4 +34,5 @@ include(":core:audio")
 include(":feature:home")
 include(":feature:reader")
 include(":feature:paywall")
+include(":feature:settings")
  

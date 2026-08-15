@@ -8,9 +8,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -277,6 +279,106 @@ object NativeMindsIcons {
             drawLine(tint, Offset(19f * s, 5f * s), Offset(5f * s, 19f * s), stroke.width, stroke.cap)
         }
     }
+
+    /** Dark-theme toggle row on the settings screen — an outer disc minus an offset cutout. */
+    @Composable
+    fun Moon(tint: Color, modifier: Modifier = Modifier, size: Dp = 20.dp) {
+        StrokeCanvas(modifier, size) { s, stroke ->
+            val outer = Path().apply { addOval(Rect(Offset(4f * s, 4f * s), Size(16f * s, 16f * s))) }
+            val cutout = Path().apply { addOval(Rect(Offset(8.5f * s, 2f * s), Size(14f * s, 14f * s))) }
+            val crescent = Path().apply { op(outer, cutout, PathOperation.Difference) }
+            drawPath(crescent, tint, style = stroke)
+        }
+    }
+
+    /** Five-point rating star — "Rate us" row on the settings screen. */
+    @Composable
+    fun Star(tint: Color, modifier: Modifier = Modifier, size: Dp = 19.dp) {
+        StrokeCanvas(modifier, size) { s, stroke ->
+            val star = Path().apply {
+                moveTo(12f * s, 4f * s)
+                lineTo(14.4f * s, 9f * s)
+                lineTo(20f * s, 9.7f * s)
+                lineTo(15.9f * s, 13.5f * s)
+                lineTo(17f * s, 19f * s)
+                lineTo(12f * s, 16.4f * s)
+                lineTo(7f * s, 19f * s)
+                lineTo(8.1f * s, 13.5f * s)
+                lineTo(4f * s, 9.7f * s)
+                lineTo(9.6f * s, 9f * s)
+                close()
+            }
+            drawPath(star, tint, style = stroke)
+        }
+    }
+
+    /** Envelope — "Contact us" row on the settings screen. */
+    @Composable
+    fun Mail(tint: Color, modifier: Modifier = Modifier, size: Dp = 19.dp) {
+        StrokeCanvas(modifier, size) { s, stroke ->
+            drawRoundRect(
+                color = tint,
+                topLeft = Offset(3f * s, 5f * s),
+                size = Size(18f * s, 14f * s),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(4f * s),
+                style = stroke,
+            )
+            val flap = Path().apply {
+                moveTo(4f * s, 8f * s)
+                lineTo(12f * s, 13f * s)
+                lineTo(20f * s, 8f * s)
+            }
+            drawPath(flap, tint, style = stroke)
+        }
+    }
+
+    /** Shield — "Privacy policy" row on the settings screen. */
+    @Composable
+    fun Shield(tint: Color, modifier: Modifier = Modifier, size: Dp = 19.dp) {
+        StrokeCanvas(modifier, size) { s, stroke ->
+            val shield = Path().apply {
+                moveTo(12f * s, 3f * s)
+                lineTo(19f * s, 6f * s)
+                lineTo(19f * s, 12f * s)
+                cubicTo(19f * s, 16.4f * s, 16f * s, 19.7f * s, 12f * s, 21f * s)
+                cubicTo(8f * s, 19.7f * s, 5f * s, 16.4f * s, 5f * s, 12f * s)
+                lineTo(5f * s, 6f * s)
+                close()
+            }
+            drawPath(shield, tint, style = stroke)
+        }
+    }
+
+    /** Ruled page — "Terms of use" row on the settings screen. */
+    @Composable
+    fun Document(tint: Color, modifier: Modifier = Modifier, size: Dp = 19.dp) {
+        StrokeCanvas(modifier, size) { s, stroke ->
+            val page = Path().apply {
+                moveTo(6f * s, 3f * s)
+                lineTo(14f * s, 3f * s)
+                lineTo(18f * s, 7f * s)
+                lineTo(18f * s, 21f * s)
+                lineTo(6f * s, 21f * s)
+                close()
+            }
+            drawPath(page, tint, style = stroke)
+            drawLine(tint, Offset(9f * s, 12f * s), Offset(15f * s, 12f * s), stroke.width, stroke.cap)
+            drawLine(tint, Offset(9f * s, 16f * s), Offset(13f * s, 16f * s), stroke.width, stroke.cap)
+        }
+    }
+
+    /** Row-disclosure chevron on the settings screen's list rows. */
+    @Composable
+    fun ChevronRight(tint: Color, modifier: Modifier = Modifier, size: Dp = 17.dp) {
+        StrokeCanvas(modifier, size) { s, stroke ->
+            val chevron = Path().apply {
+                moveTo(9f * s, 5f * s)
+                lineTo(16f * s, 12f * s)
+                lineTo(9f * s, 19f * s)
+            }
+            drawPath(chevron, tint, style = stroke)
+        }
+    }
 }
 
 @Composable
@@ -321,6 +423,12 @@ private fun NativeMindsIconsPreview() {
             NativeMindsIcons.Pause(tint = tint, size = 24.dp)
             NativeMindsIcons.Check(tint = tint, size = 24.dp)
             NativeMindsIcons.Download(tint = tint, size = 24.dp)
+            NativeMindsIcons.Moon(tint = tint, size = 24.dp)
+            NativeMindsIcons.Star(tint = tint, size = 24.dp)
+            NativeMindsIcons.Mail(tint = tint, size = 24.dp)
+            NativeMindsIcons.Shield(tint = tint, size = 24.dp)
+            NativeMindsIcons.Document(tint = tint, size = 24.dp)
+            NativeMindsIcons.ChevronRight(tint = tint, size = 24.dp)
         }
     }
 }

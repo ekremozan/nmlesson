@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_back">Geri</string>
+    <string name="settings_title">Ayarlar</string>
+
+    <string name="settings_dark_theme_title">Koyu tema</string>
+    <string name="settings_dark_theme_subtitle_on">Açık</string>
+    <string name="settings_dark_theme_subtitle_off">Kapalı</string>
+
+    <string name="settings_premium_title">Premium’a geç</string>
+    <string name="settings_premium_body">Tüm öyküler, seslendirme ve Ask AI</string>
+    <string name="settings_premium_cta">Planları gör</string>
+
+    <string name="settings_section_support">Destek</string>
+    <string name="settings_rate_us">Bizi puanlayın</string>
+    <string name="settings_contact_us">Bize ulaşın</string>
+
+    <string name="settings_section_legal">Yasal</string>
+    <string name="settings_privacy_policy">Gizlilik politikası</string>
+    <string name="settings_terms_of_use">Kullanım koşulları</string>
+
+    <string name="settings_app_version">NativeMinds 1.0.0</string>
+</resources>
