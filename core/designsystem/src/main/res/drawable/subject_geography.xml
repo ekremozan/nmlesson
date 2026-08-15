@@ -9,14 +9,20 @@
             <gradient
                 android:type="linear"
                 android:startX="0"
-                android:startY="100"
+                android:startY="0"
                 android:endX="100"
-                android:endY="0"
-                android:startColor="#C0B6A5"
-                android:endColor="#474238" />
+                android:endY="100"
+                android:startColor="#DCD3C4"
+                android:endColor="#645C50" />
         </aapt:attr>
     </path>
     <path
-        android:pathData="M0,20 L100,0 L100,14 L0,34 Z M0,50 L100,32 L100,42 L0,60 Z"
-        android:fillColor="#26F9F4ED" />
+        android:pathData="M78,24 m-10,0 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0"
+        android:fillColor="#33F9F4ED" />
+    <path
+        android:pathData="M0,78 L18,52 L32,66 L52,34 L70,58 L84,44 L100,62 L100,100 L0,100 Z"
+        android:fillColor="#40F9F4ED" />
+    <path
+        android:pathData="M0,90 L26,68 L46,82 L66,54 L88,72 L100,64 L100,100 L0,100 Z"
+        android:fillColor="#26474238" />
 </vector>

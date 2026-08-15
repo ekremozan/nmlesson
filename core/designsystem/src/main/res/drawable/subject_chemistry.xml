@@ -12,11 +12,14 @@
                 android:startY="0"
                 android:endX="100"
                 android:endY="100"
-                android:startColor="#FFE1D0"
-                android:endColor="#8FA073" />
+                android:startColor="#FFC6A5"
+                android:endColor="#B2622D" />
         </aapt:attr>
     </path>
     <path
-        android:pathData="M22,78 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0 M42,64 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0 M62,50 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0 M82,36 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0"
-        android:fillColor="#40402310" />
+        android:pathData="M32,68 L66,58 L66,61 L32,71 Z M66,58 L52,28 L54.6,26.8 L68.6,56.8 Z M32,68 L52,28 L54.2,29.2 L34.2,69.2 Z"
+        android:fillColor="#40FFF2EB" />
+    <path
+        android:pathData="M32,68 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0 M66,58 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0 M52,28 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0"
+        android:fillColor="#59FFF2EB" />
 </vector>
