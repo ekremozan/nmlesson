@@ -40,6 +40,7 @@ import com.example.nativeminds.designsystem.icons.NativeMindsIcons
 import com.example.nativeminds.designsystem.preview.ScreenThemePreviews
 import com.example.nativeminds.designsystem.theme.NativeMindsTheme
 import com.example.nativeminds.designsystem.theme.Pill
+import com.example.nativeminds.feature.settings.BuildConfig
 import com.example.nativeminds.feature.settings.R
 import com.example.nativeminds.feature.settings.ui.preview.SettingsPreviewCase
 import com.example.nativeminds.feature.settings.ui.preview.SettingsPreviewCases
@@ -66,17 +67,23 @@ fun SettingsScreen(
         state = state,
         onIntent = viewModel::onIntent,
         onBack = onBack,
+        onTestCrashClick = { throw RuntimeException("Test crash") },
         modifier = modifier,
     )
 }
 
-/** Stateless so it's directly usable from `@Preview`s. */
+/**
+ * Stateless so it's directly usable from `@Preview`s. [onTestCrashClick] is a plain callback, not
+ * an intent, the same way navigating out of a screen is: it changes no state, it only proves to a
+ * QA build that a real crash reaches Crashlytics (spec 005, US2/SC-002).
+ */
 @Composable
 fun SettingsScreenContent(
     state: SettingsUiState,
     onIntent: (SettingsIntent) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    onTestCrashClick: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -136,6 +143,14 @@ fun SettingsScreenContent(
                 icon = NativeMindsIcons::Document,
                 label = stringResource(R.string.settings_terms_of_use),
             )
+        }
+
+        if (BuildConfig.DEBUG) {
+            Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.lg))
+            SectionHeading(text = stringResource(R.string.settings_section_debug))
+            SettingsCard {
+                DebugTestCrashRow(onClick = onTestCrashClick)
+            }
         }
 
         Text(
@@ -312,6 +327,24 @@ private fun SettingsRow(
     }
 }
 
+@Composable
+private fun DebugTestCrashRow(onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(NativeMindsTheme.spacing.md),
+    ) {
+        Text(
+            text = stringResource(R.string.settings_test_crash),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.error,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
 @ScreenThemePreviews
 @Composable
 private fun SettingsScreenContentPreview(
@@ -322,6 +355,7 @@ private fun SettingsScreenContentPreview(
             state = case.state,
             onIntent = {},
             onBack = {},
+            onTestCrashClick = {},
         )
     }
 }

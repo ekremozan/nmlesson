@@ -20,4 +20,7 @@
     <string name="settings_terms_of_use">Kullanım koşulları</string>
 
     <string name="settings_app_version">NativeMinds 1.0.0</string>
+
+    <string name="settings_section_debug">Hata ayıklama</string>
+    <string name="settings_test_crash">Test çökmesi tetikle</string>
 </resources>
