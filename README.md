@@ -155,6 +155,20 @@ recompiling any feature. `:app` is the single place where contract meets impleme
 | `PurchaseDeclined` defined but unreachable | The event exists in `AnalyticsEvent` and `FirebaseAnalyticsReporter`'s mapping, but nothing calls it — the mock purchase flow (`PaywallIntent.PurchaseClicked` → `EntitlementRepository.setPremium(true)`) always succeeds | Sits in the sealed hierarchy ready for a real billing SDK's failure callback; forcing an artificial failure path just to exercise the event would have produced misleading analytics data for no real signal | See Cut Corners |
 | Lesson-level parameters | `onLessonClick` widened from `(Long) -> Unit` to `(lessonId: Long, title: String, index: Int) -> Unit` so `LessonSelected` carries the list position and title without a second lookup | Both values already exist at the tap site inside `HomeScreen`'s `LazyColumn`; passing them through the existing plain callback is cheaper and more accurate than reconstructing them later from just an id | Every current and future caller of `onLessonClick` carries two more parameters than a bare id — acceptable, it's a plain callback, not a public API surface |
 
+| **AI quiz feature (Gemini)** — full reasoning in [`specs/007-ai-quiz-generation/research.md`](specs/007-ai-quiz-generation/research.md), one line each below | | | |
+| New `:feature:quiz` module, own nav route | `QuizRoute(lessonId)` opened from Reader's "Test" button via a plain `onTestRequested` callback (the same shape as `onUnlockRequested`), rather than an in-place overlay boolean in `ReaderUiState` | Keeps `:feature:reader` and `:feature:quiz` independent — neither depends on the other, matching the "`:feature:*` modules never depend on each other" rule — and `:app`'s nav host stays the one place that knows every destination | A second screen's worth of Hilt/Compose/nav boilerplate instead of one boolean; acceptable since the feature is a genuinely separate concern (AI generation, its own loading/error states) |
+| Gemini client library — **reversed after an on-device crash** | Started with the official `com.google.ai.client.generativeai` Android SDK; **replaced** with a hand-rolled Ktor `HttpClient` REST call once real-device testing crashed the app | The SDK is compiled against Ktor 2.3.2; this project's Supabase dependency pins Ktor 3.3.1, and Gradle resolves one version of `ktor-client-core` project-wide. The SDK's transitive 2.3.2 request gets silently force-upgraded to 3.3.1, and `HttpTimeout` changed from a class to a top-level property between those major versions — `ClassNotFoundException` at the exact moment "Test" is tapped, invisible to `compileDebugKotlin` and every unit test, only visible by actually running the app | The very "hand-written DTOs" cost the SDK was chosen to avoid was paid anyway, just later and after a real crash instead of during code review — the lesson (see "How I Worked With AI") is that a passing build is not evidence a third-party SDK is runtime-compatible with the rest of the dependency graph |
+| Gemini model name — **corrected after a live API call** | `gemini-2.5-flash` in the original plan; **`gemini-flash-latest`** in the shipped code | The exact model name was never verified against a live call during planning. On device, `gemini-2.5-flash` returned `404 — "no longer available to new users"` for this freshly-created API key. `curl`ing the `ListModels` endpoint and trying alternatives found `gemini-flash-latest` (an alias that tracks the current stable flash model, currently resolving to `gemini-3.7-flash`) actually works | An alias avoids repeating this exact failure mode when the underlying model is deprecated again, at the cost of the exact model version being outside this repo's control |
+| Structured output over free-text parsing | `responseMimeType = "application/json"` + an explicit `Schema` (question, 4 options, correct index, explanation), validated again in `GeminiQuizPayloadDto.toDomain()` (`check()` on option count, index range, blank strings) | A model can return technically-valid JSON that still violates the app's invariants (3 options, an out-of-range index) — the schema narrows *how* it can fail, the mapper's own checks catch what the schema can't express | One more layer of validation code; worth it because a malformed quiz question reaching the UI would be a silent content bug, not a crash |
+| No persistence for generated questions | Nothing is written to Room; each "Test" tap makes a fresh Gemini call, held only in `QuizViewModel`'s in-memory state | The feature was scoped, mid-planning, from an initial "5-question cached quiz" draft down to "one live-generated question per tap" once the actual design mockup (10a/10b/10c, "Soru 1 / 1") and the user's own description ("anlık olarak gemini'den alacak") made the real shape clear; adding a `QuizEntity`/DAO would have built infrastructure for a caching behavior nobody asked for | The quiz is unusable offline and costs one Gemini call every time it's opened — acceptable for a demo-scale case study; see Cut Corners |
+| Gating: hide the button, then check again | The "Test" button only renders when `ReaderAccess` is `Full` (mirrors the design's own free-preview screen, which has no such button at all); `GenerateQuizUseCase` independently checks `EntitlementRepository.isPremium()` before touching `QuizRepository`, returning `QuizGenerationResult.Locked` with **zero** Gemini calls if not | UI-only gating is not a security boundary — trusting it alone would mean a stray deep link could reach a paid AI call for free. The use-case check is the one that actually matters; the hidden button is the honest UI reflection of it | Two gating checks to keep in sync instead of one, but they fail closed independently rather than compounding a single point of failure |
+| API key management | `GEMINI_API_KEY` follows the exact `local.properties` → `BuildConfig` pattern already used for `SUPABASE_ANON_KEY`, rather than a new secrets tool | The project already has one working, git-ignored pattern for exactly this problem; introducing `secrets-gradle-plugin` for a second key would be unjustified complexity for the same outcome | The key still ships inside the compiled APK's `BuildConfig` — fine for a case study, not for a real release; see Cut Corners |
+| `Reduction(state, effects)` kept feature-local, not extracted | `:feature:quiz` copies `:feature:reader`'s `Reduction` shape locally rather than pulling it into a shared module, even though CLAUDE.md flags "extract at the second consumer" | Extracting a shared MVI module mid-feature was out of scope for what was planned in `tasks.md`; duplicating ~10 lines was the smaller, more reviewable change today | Named explicitly as follow-up work below — a third consumer should not get the same choice again |
+
+| **Content language (TR/EN)** | | | |
+| Language keyed by device locale, one language cached at a time | `ContentLanguageProvider` reads `Locale.getDefault()`; Supabase rows carry an added `language` column, each language's lessons independently keyed (no `lesson_group_id`); Room's schema is untouched — a language switch replaces the cached catalog rather than merging two languages into it | Matches the requirement ("client only passes a parameter") with no Room migration and no new UI; `dao.deleteMissing()` already purges the old language's rows via the existing sync transaction, and `LessonContentEntity`'s cascade FK cleans up their content for free | No Settings override and no shared reading-progress between a lesson's two language versions — both logged in Cut Corners |
+| Startup gated on a system splash screen, not the Home empty state | `androidx.core.splashscreen` + `MainActivityViewModel.isReady`, held via `setKeepOnScreenCondition` until `EnsureContentLanguageUseCase` clears a stale-language cache **and** an initial `SyncLessonsUseCase` fetch either lands or hits a 4s `withTimeoutOrNull`; `HomeViewModel.pagedLessons` also gates on its own `contentVerified` state as a second, independent guard | The first version only waited on the language check, so a cold Room cache (first launch, or a sync still in flight) still showed `EmptyResultsState`'s "Connect to load lessons" for a moment after the splash lifted. Waiting for the fetch too means Home's first frame usually already has lessons to show; the timeout exists so a stalled or absent connection can never make the splash look frozen — that sync just continues in the background via `HomeViewModel`'s own | On a slow connection the splash can sit for up to 4s doing nothing visibly different from a hang; and every launch now makes two sync calls in quick succession (splash's, then Home's own on creation) — harmless at this catalog size, worth a shared "already synced this launch" guard if it ever isn't |
+
 ## 🤖 How I Worked With AI
 
 <!-- Case Part 2: AI'ı nasıl yönlendirdim -->
@@ -197,6 +211,38 @@ Reader feature (spec-driven pass, `specs/001-story-detail-reader/`):
   Lesson: a constitutional *requirement* still has scope decisions inside it (which events, when)
   that are the user's to make, not mine to assume.
 
+AI quiz feature (spec-driven pass, `specs/007-ai-quiz-generation/`):
+
+- **Corrected mid-spec: a 5-question, cached quiz was the wrong shape.** `/speckit-specify` was run
+  from a one-line description ("çoktan seçmeli soru cevaplama sayfası") with no design reference,
+  and produced a reasonable-sounding but wrong default: 5 questions per quiz, persisted and reused
+  across visits. When `/speckit-plan` was run with the actual Claude Design mockup (screens 2 and
+  10 — a single "Soru 1 / 1" question, answered live) and the user's own description ("soruyu anlık
+  olarak gemini'den alacak"), the mismatch was caught before any code was written: the spec was
+  rewritten in place — one question per "Test" tap, generated fresh every time, no persistence —
+  rather than building the originally-drafted five-question feature and discovering the gap later.
+- **Rejected: trusting the hidden "Test" button as the gate.** The first pass toward gating would
+  have stopped at "don't render the button for free users." Applied the same non-negotiable pattern
+  already used for `ReaderAccess`/`EntitlementRepository` elsewhere in the app: `GenerateQuizUseCase`
+  checks entitlement itself and returns `Locked` with zero Gemini calls, so a stray deep link can't
+  reach a paid AI call just because the UI-only gate was bypassed.
+- **A passing build turned out not to be enough — caught only by running on a real device.** The
+  Gemini Android SDK's API surface (`GenerativeModel`, `Schema`, `generationConfig { ... }`) was
+  written from memory, then checked with `./gradlew :core:data:compileDebugKotlin` rather than
+  assumed correct — that part worked. What it didn't catch: the SDK is compiled against Ktor 2.3.2,
+  this project's Supabase dependency forces Ktor 3.3.1 project-wide, and `HttpTimeout` changed from
+  a class to a top-level property between those versions — a `ClassNotFoundException` that neither
+  the compiler, lint, nor any unit test can see, because none of them load that class or instantiate
+  a real `GenerativeModel`. Only tapping "Test" on an actual emulator surfaced it. Rewrote the data
+  source around the plain Ktor `HttpClient` already used for Supabase instead — the same alternative
+  rejected during planning as "unnecessary complexity," now the only option proven to actually work.
+  Immediately after, the *first real* Gemini call returned `404` for the planned `gemini-2.5-flash`
+  model ("no longer available to new users") — caught by `curl`ing the live API directly rather than
+  trusting the model name written during planning, and fixed by switching to the `gemini-flash-latest`
+  alias. Both fixes are recorded in `specs/007-ai-quiz-generation/research.md` R1/R2. Lesson: for a
+  live third-party API, "it compiles and the tests pass" and "it works" are proven by two different
+  actions — the first by a build, the second only by an actual network call from an actual device.
+
 ## ✂️ Cut Corners & Assumptions
 
 <!-- Bilerek kısılan köşeler — anında buraya ekle, sona bırakma -->
@@ -211,6 +257,22 @@ Reader feature (spec-driven pass, `specs/001-story-detail-reader/`):
 - **Restore purchases, Terms, and Privacy are inert.** They match the design for fidelity, but
   Restore only shows a "no purchase found" message and Terms/Privacy do not open a document — there
   is no real store or legal copy to point at yet.
+- **The Gemini API key ships inside the compiled APK.** `GEMINI_API_KEY` is read from git-ignored
+  `local.properties` into `BuildConfig`, same as the Supabase keys — never committed, but still
+  extractable from a release build by anyone who decompiles it. A production release needs a
+  server-side proxy in front of Gemini so the key never reaches the device at all.
+- **Generated quiz questions are never persisted.** Every "Test" tap makes a fresh Gemini call; there
+  is no `QuizEntity`/DAO, no offline quiz, and no history of past attempts or scores. This was a
+  deliberate scope decision (see Key Decisions), not an oversight — the design and the stated
+  requirement were both for a single, live-generated question, not a cached quiz set.
+- **No retry/backoff or rate limiting on Gemini calls.** Repeatedly tapping "Test" makes repeatedly
+  new API calls with no debounce or cooldown; acceptable at demo scale, would need a minimum interval
+  or an in-flight guard before any real traffic.
+- **`QuizViewModel`'s Compose-driven flow is unit-tested at the reducer/use-case level, not with a
+  full `QuizViewModelTest`** the way `ReaderViewModelTest` covers `ReaderViewModel` — the reducer
+  (`QuizReducerTest`) and the use case (`GenerateQuizUseCaseTest`) between them cover every branch
+  the ViewModel forwards, but the ViewModel's own `flatMapLatest`/effect-forwarding wiring has no
+  dedicated coroutine test yet.
 - **Listen now narrates real content** (superseded the "does not play anything" note above) —
   see the notes below for what's still cut in that feature.
 - **Narration position is never persisted.** It lives only in the app-scoped `StoryNarrator`
@@ -235,6 +297,19 @@ Reader feature (spec-driven pass, `specs/001-story-detail-reader/`):
   elsewhere in the app, matching the feature spec's stated scope.
 - **The reader's overflow menu is omitted, not drawn inert.** Font size and theme controls belong to
   a later feature; a spacer keeps the title optically centred until they exist.
+- **Content language follows the device locale, with no in-app override.** `ContentLanguageProvider`
+  reads `Locale.getDefault()` — English devices get English lessons, everything else gets Turkish;
+  there is no Settings toggle to pick a language independent of the system one. Each language's rows
+  live as ordinary, independently-keyed Supabase rows (no `lesson_group_id` linking a lesson to its
+  translation), so switching languages replaces the cached catalog rather than merging into it —
+  acceptable since only one language is ever read at a time, but it means there is no shared
+  reading-progress concept across a lesson's two language versions.
+- **A language switch clears the cache before it can refetch, even while offline.** `HomeViewModel`
+  awaits `EnsureContentLanguageUseCase` before it ever reads from Room, specifically so a device
+  language change can never flash the previous language's lessons for a frame. The cost: if the
+  device language changes for the first time while offline, the user sees the "never synced" empty
+  state rather than the (wrong-language) cached lessons, until connectivity returns — judged better
+  than showing content in the wrong language, but worth knowing before filing it as a bug.
 - **The 100-story catalog is 20 pieces of writing, not 100.** Each of the 20 base stories in
   `StorySeedBases.kt` is published under 5 different titles (and a rotating category/cover), so the
   same paragraphs appear multiple times in the library under different names. This was a deliberate
