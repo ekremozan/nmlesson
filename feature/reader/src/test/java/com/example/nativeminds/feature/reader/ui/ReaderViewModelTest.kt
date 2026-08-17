@@ -62,6 +62,8 @@ private class TestLessonRepository : LessonRepository {
     override suspend fun refreshContent(id: Long) = Unit
 
     override suspend fun syncIfNeeded() = Unit
+
+    override suspend fun clearStaleLanguageContent() = Unit
 }
 
 private class TestEntitlementRepository(premium: Boolean = false) : EntitlementRepository {

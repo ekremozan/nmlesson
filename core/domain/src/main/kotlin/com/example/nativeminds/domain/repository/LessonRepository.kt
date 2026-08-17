@@ -50,4 +50,12 @@ interface LessonRepository {
      * every time the app starts.
      */
     suspend fun syncIfNeeded()
+
+    /**
+     * Wipes the local catalog if it was last synced in a different language than the content
+     * language is now — a no-op otherwise. Local-only, no network: fast enough that a caller can
+     * await it before showing anything from [pagedLessons], so a screen never renders a lesson in
+     * the wrong language while [syncIfNeeded] is still fetching the right one.
+     */
+    suspend fun clearStaleLanguageContent()
 }

@@ -36,6 +36,8 @@ class RoomLessonRepository @Inject constructor(
     private val contentDao: LessonContentDao,
     private val remote: RemoteLessonDataSource,
     private val networkMonitor: NetworkMonitor,
+    private val contentLanguage: ContentLanguageProvider,
+    private val lastSyncedLanguage: LastSyncedLanguageStore,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : LessonRepository {
     override fun pagedLessons(subject: String?, query: String): Flow<PagingData<Lesson>> =
@@ -54,13 +56,14 @@ class RoomLessonRepository @Inject constructor(
         if (!networkMonitor.isOnline()) {
             throw OfflineException("Cannot fetch content for lesson $id while offline")
         }
-        contentDao.upsert(remote.fetchContent(id).toEntity())
+        contentDao.upsert(remote.fetchContent(id, contentLanguage.current()).toEntity())
     }
 
     override suspend fun syncIfNeeded() = withContext(ioDispatcher) {
         if (!networkMonitor.isOnline()) return@withContext
 
-        val remoteLessons = remote.fetchLessons()
+        val language = contentLanguage.current()
+        val remoteLessons = remote.fetchLessons(language)
         if (remoteLessons.isEmpty()) {
             throw IOException("Remote lesson catalog was empty — refusing to clear the local one")
         }
@@ -68,6 +71,13 @@ class RoomLessonRepository @Inject constructor(
         database.withTransaction {
             dao.upsertAll(remoteLessons.map { it.toEntity() })
             dao.deleteMissing(remoteLessons.map { it.id })
+        }
+        lastSyncedLanguage.set(language)
+    }
+
+    override suspend fun clearStaleLanguageContent() = withContext(ioDispatcher) {
+        if (lastSyncedLanguage.get() != contentLanguage.current()) {
+            dao.clearAll()
         }
     }
 }

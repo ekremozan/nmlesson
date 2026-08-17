@@ -5,7 +5,8 @@ import com.example.nativeminds.model.LessonContent
 
 /** The lesson catalog's remote source. [com.example.nativeminds.data.remote.SupabaseRemoteLessonDataSource] is the only implementation. */
 interface RemoteLessonDataSource {
-    suspend fun fetchLessons(): List<Lesson>
+    /** [language] is a Supabase `language` column value, e.g. `"tr"` or `"en"`. */
+    suspend fun fetchLessons(language: String): List<Lesson>
 
     /**
      * The text of one lesson. Fetched on demand rather than with the catalog, because a list of
@@ -14,5 +15,5 @@ interface RemoteLessonDataSource {
      * Throws when the lesson is unknown to the source — the caller turns that into something the
      * reader can see.
      */
-    suspend fun fetchContent(lessonId: Long): LessonContent
+    suspend fun fetchContent(lessonId: Long, language: String): LessonContent
 }

@@ -13,4 +13,5 @@ data class LessonContentDto(
     @SerialName("lesson_id") val lessonId: Long,
     val author: String,
     val body: String,
+    val language: String,
 )

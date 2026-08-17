@@ -17,6 +17,7 @@ class LessonDtoMappersTest {
             hasAudio = true,
             isLocked = false,
             image = "subject_biology",
+            language = "tr",
         )
 
         val domain = dto.toDomain()
@@ -37,6 +38,7 @@ class LessonDtoMappersTest {
             lessonId = 1,
             author = "Doç. Dr. Can Yılmaz",
             body = "First paragraph.\n\nSecond paragraph.",
+            language = "tr",
         )
 
         val domain = dto.toDomain()

@@ -47,6 +47,18 @@ private class SwitchableNetworkMonitor(var online: Boolean) : NetworkMonitor {
     override fun isOnline(): Boolean = online
 }
 
+private class FakeContentLanguageProvider(var language: String = "tr") : ContentLanguageProvider {
+    override fun current(): String = language
+}
+
+private class FakeLastSyncedLanguageStore(private var language: String? = null) : LastSyncedLanguageStore {
+    override fun get(): String? = language
+
+    override fun set(language: String) {
+        this.language = language
+    }
+}
+
 private class FakeRemote(
     var lessons: List<Lesson> = listOf(lesson(1), lesson(2)),
 ) : RemoteLessonDataSource {
@@ -55,17 +67,21 @@ private class FakeRemote(
     var contentCalls = 0
         private set
     var lessonsFailure: Throwable? = null
+    var lastLanguage: String? = null
+        private set
 
     private val content = mutableMapOf(1L to content(1), 2L to content(2))
 
-    override suspend fun fetchLessons(): List<Lesson> {
+    override suspend fun fetchLessons(language: String): List<Lesson> {
         lessonCalls++
+        lastLanguage = language
         lessonsFailure?.let { throw it }
         return lessons
     }
 
-    override suspend fun fetchContent(lessonId: Long): LessonContent {
+    override suspend fun fetchContent(lessonId: Long, language: String): LessonContent {
         contentCalls++
+        lastLanguage = language
         return content.getValue(lessonId)
     }
 }
@@ -81,6 +97,8 @@ class RoomLessonRepositoryTest {
     private lateinit var database: NativeMindsDatabase
     private val network = SwitchableNetworkMonitor(online = false)
     private val remote = FakeRemote()
+    private val contentLanguage = FakeContentLanguageProvider()
+    private val lastSyncedLanguage = FakeLastSyncedLanguageStore()
     private lateinit var repository: RoomLessonRepository
 
     @Before
@@ -95,6 +113,8 @@ class RoomLessonRepositoryTest {
             contentDao = database.lessonContentDao(),
             remote = remote,
             networkMonitor = network,
+            contentLanguage = contentLanguage,
+            lastSyncedLanguage = lastSyncedLanguage,
             ioDispatcher = UnconfinedTestDispatcher(),
         )
     }
@@ -218,5 +238,48 @@ class RoomLessonRepositoryTest {
 
         val stored = repository.lessonContent(target.id).first()
         assertEquals(content(target.id).paragraphs, stored?.paragraphs)
+    }
+
+    @Test
+    fun successfulSyncRecordsTheLanguageItSyncedIn() = runTest {
+        network.online = true
+        contentLanguage.language = "en"
+
+        repository.syncIfNeeded()
+
+        assertEquals("en", lastSyncedLanguage.get())
+    }
+
+    @Test
+    fun clearingStaleLanguageContentIsANoOpWhenTheLanguageMatches() = runTest {
+        network.online = true
+        repository.syncIfNeeded()
+        lastSyncedLanguage.set("tr")
+        contentLanguage.language = "tr"
+
+        repository.clearStaleLanguageContent()
+
+        assertEquals(2, database.lessonDao().count())
+    }
+
+    @Test
+    fun clearingStaleLanguageContentWipesTheCatalogWhenTheLanguageChanged() = runTest {
+        network.online = true
+        repository.syncIfNeeded()
+        lastSyncedLanguage.set("tr")
+        contentLanguage.language = "en"
+
+        repository.clearStaleLanguageContent()
+
+        assertEquals(0, database.lessonDao().count())
+    }
+
+    @Test
+    fun clearingStaleLanguageContentWipesTheCatalogWhenNeverSynced() = runTest {
+        database.lessonDao().upsertAll(remote.lessons.map { it.toEntity() })
+
+        repository.clearStaleLanguageContent()
+
+        assertEquals(0, database.lessonDao().count())
     }
 }

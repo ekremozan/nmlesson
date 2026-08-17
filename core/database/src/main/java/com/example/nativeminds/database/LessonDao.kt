@@ -51,4 +51,12 @@ interface LessonDao {
 
     @Query("SELECT COUNT(*) FROM lessons")
     suspend fun count(): Int
+
+    /**
+     * Wipes the whole catalog, cascading to `lesson_content` via the existing foreign key. Used
+     * when the content language changes: the cached rows are for the wrong language entirely, so
+     * there is nothing in them worth keeping until the next sync repopulates the table.
+     */
+    @Query("DELETE FROM lessons")
+    suspend fun clearAll()
 }

@@ -17,4 +17,5 @@ data class LessonDto(
     @SerialName("has_audio") val hasAudio: Boolean,
     @SerialName("is_locked") val isLocked: Boolean,
     val image: String,
+    val language: String,
 )

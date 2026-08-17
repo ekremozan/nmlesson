@@ -21,16 +21,20 @@ private const val LESSON_CONTENT_TABLE = "lesson_content"
 class SupabaseRemoteLessonDataSource @Inject constructor(
     private val supabase: SupabaseClient,
 ) : RemoteLessonDataSource {
-    override suspend fun fetchLessons(): List<Lesson> =
-        supabase.postgrest.from(LESSONS_TABLE).select()
-            .decodeList<LessonDto>()
+    override suspend fun fetchLessons(language: String): List<Lesson> =
+        supabase.postgrest.from(LESSONS_TABLE).select {
+            filter { eq("language", language) }
+        }.decodeList<LessonDto>()
             .map { it.toDomain() }
 
-    override suspend fun fetchContent(lessonId: Long): LessonContent {
+    override suspend fun fetchContent(lessonId: Long, language: String): LessonContent {
         val rows = supabase.postgrest.from(LESSON_CONTENT_TABLE).select {
-            filter { eq("lesson_id", lessonId) }
+            filter {
+                eq("lesson_id", lessonId)
+                eq("language", language)
+            }
         }.decodeList<LessonContentDto>()
         return rows.firstOrNull()?.toDomain()
-            ?: throw IOException("No content for lesson $lessonId")
+            ?: throw IOException("No content for lesson $lessonId ($language)")
     }
 }
