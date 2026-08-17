@@ -5,9 +5,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
- * `AiFeatureUsed` has no call site yet — the AI feature itself is future work (see
- * specs/006-firebase-analytics/research.md). This proves the event and reporter contract already
- * work end-to-end so wiring in a real call site later is a one-line change.
+ * `AiFeatureUsed` is now logged by `QuizViewModel` (see specs/007-ai-quiz-generation). This proves
+ * the event and reporter contract work end-to-end independent of any one feature's call site.
  */
 class AnalyticsEventTest {
     @Test

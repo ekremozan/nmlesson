@@ -1,7 +1,10 @@
 package com.example.nativeminds.feature.reader.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,15 +28,21 @@ import com.example.nativeminds.designsystem.icons.NativeMindsIcons
 import com.example.nativeminds.designsystem.preview.PreviewSurface
 import com.example.nativeminds.designsystem.preview.ThemePreviews
 import com.example.nativeminds.designsystem.theme.NativeMindsTheme
+import com.example.nativeminds.designsystem.theme.Pill
 import com.example.nativeminds.feature.reader.R
 
+private val TestActionHeight = 34.dp
+private val TestActionIconSize = 15.dp
+private const val TestActionBackgroundAlpha = 0.14f
+
 /**
- * The reader's chrome: back, and the lesson's title repeated small and muted.
+ * The reader's chrome: back, the lesson's title repeated small and muted, and — for a lesson the
+ * reader has full access to — the "Test" action that opens an AI-generated quiz question.
  *
  * The design also puts an overflow control on the right. It is left out rather than drawn inert —
  * everything behind it (font size, theme) belongs to a later feature, and a button that answers a
  * tap with nothing is the most misleading thing a screen can contain. A spacer of the same width
- * keeps the title optically centred until the control exists.
+ * keeps the title optically centred when neither trailing control is shown.
  *
  * The title truncates rather than wrapping — the bar is a fixed height and a two-line title here
  * would push the lesson itself down the page.
@@ -42,6 +51,8 @@ import com.example.nativeminds.feature.reader.R
 fun ReaderTopBar(
     title: String,
     onBack: () -> Unit,
+    showTest: Boolean,
+    onTestClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -70,7 +81,33 @@ fun ReaderTopBar(
                 .padding(horizontal = NativeMindsTheme.spacing.sm),
         )
 
-        Spacer(modifier = Modifier.size(NativeMindsTheme.sizes.iconButton))
+        if (showTest) {
+            TestAction(onClick = onTestClick)
+        } else {
+            Spacer(modifier = Modifier.size(NativeMindsTheme.sizes.iconButton))
+        }
+    }
+}
+
+/** "Test" pill — opens the AI-generated quiz for the lesson currently on screen. */
+@Composable
+private fun TestAction(onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(NativeMindsTheme.spacing.xs),
+        modifier = Modifier
+            .height(TestActionHeight)
+            .clip(Pill)
+            .background(NativeMindsTheme.colors.accentText.copy(alpha = TestActionBackgroundAlpha))
+            .clickable(onClick = onClick)
+            .padding(horizontal = NativeMindsTheme.spacing.md, vertical = NativeMindsTheme.spacing.xs),
+    ) {
+        NativeMindsIcons.Sparkle(tint = NativeMindsTheme.colors.accentText, size = TestActionIconSize)
+        Text(
+            text = stringResource(R.string.reader_test),
+            style = NativeMindsTheme.typography.chip,
+            color = NativeMindsTheme.colors.accentText,
+        )
     }
 }
 
@@ -96,6 +133,19 @@ private fun IconAction(
 @Composable
 private fun ReaderTopBarPreview() {
     PreviewSurface(padding = 0.dp) {
-        ReaderTopBar(title = "The Lighthouse Keeper's Last Letter", onBack = {})
+        Column {
+            ReaderTopBar(
+                title = "The Lighthouse Keeper's Last Letter",
+                onBack = {},
+                showTest = true,
+                onTestClick = {},
+            )
+            ReaderTopBar(
+                title = "The Cartographer of Missing Islands",
+                onBack = {},
+                showTest = false,
+                onTestClick = {},
+            )
+        }
     }
 }

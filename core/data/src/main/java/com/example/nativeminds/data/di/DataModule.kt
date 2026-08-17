@@ -1,14 +1,22 @@
 package com.example.nativeminds.data.di
 
 import com.example.nativeminds.data.AndroidNetworkMonitor
+import com.example.nativeminds.data.ContentLanguageProvider
+import com.example.nativeminds.data.DeviceContentLanguageProvider
+import com.example.nativeminds.data.LastSyncedLanguageStore
 import com.example.nativeminds.data.MockEntitlementRepository
 import com.example.nativeminds.data.MockThemeRepository
 import com.example.nativeminds.data.NetworkMonitor
 import com.example.nativeminds.data.RoomLessonRepository
+import com.example.nativeminds.data.SharedPreferencesLastSyncedLanguageStore
 import com.example.nativeminds.data.remote.RemoteLessonDataSource
 import com.example.nativeminds.data.remote.SupabaseRemoteLessonDataSource
+import com.example.nativeminds.data.remote.quiz.GeminiQuizDataSource
+import com.example.nativeminds.data.remote.quiz.GeminiRemoteQuizDataSource
+import com.example.nativeminds.data.repository.QuizRepositoryImpl
 import com.example.nativeminds.domain.repository.EntitlementRepository
 import com.example.nativeminds.domain.repository.LessonRepository
+import com.example.nativeminds.domain.repository.QuizRepository
 import com.example.nativeminds.domain.repository.ThemeRepository
 import dagger.Binds
 import dagger.Module
@@ -50,4 +58,20 @@ abstract class DataModule {
 
     @Binds
     abstract fun networkMonitor(impl: AndroidNetworkMonitor): NetworkMonitor
+
+    /** Unscoped: it is stateless, so a new instance per injection point costs nothing. */
+    @Binds
+    abstract fun contentLanguageProvider(impl: DeviceContentLanguageProvider): ContentLanguageProvider
+
+    @Binds
+    @Singleton
+    abstract fun lastSyncedLanguageStore(
+        impl: SharedPreferencesLastSyncedLanguageStore,
+    ): LastSyncedLanguageStore
+
+    @Binds
+    abstract fun geminiQuizDataSource(impl: GeminiRemoteQuizDataSource): GeminiQuizDataSource
+
+    @Binds
+    abstract fun quizRepository(impl: QuizRepositoryImpl): QuizRepository
 }

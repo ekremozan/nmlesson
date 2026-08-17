@@ -93,4 +93,13 @@ private fun AnalyticsEvent.toFirebaseEvent(): Pair<String, Bundle> = when (this)
         lessonId?.let { putLong("lesson_id", it) }
         putString("feature_name", featureName)
     }
+
+    is AnalyticsEvent.QuizRequested -> "quiz_requested" to Bundle().apply {
+        putLong("lesson_id", lessonId)
+    }
+
+    is AnalyticsEvent.QuizAnswered -> "quiz_answered" to Bundle().apply {
+        putLong("lesson_id", lessonId)
+        putBoolean("is_correct", isCorrect)
+    }
 }

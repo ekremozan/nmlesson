@@ -17,8 +17,13 @@ data class ReaderRoute(val lessonId: Long)
 fun NavGraphBuilder.readerScreen(
     onBack: () -> Unit,
     onUnlockRequested: (lessonId: Long, progressPercent: Int) -> Unit,
+    onTestRequested: (lessonId: Long) -> Unit,
 ) {
     composable<ReaderRoute> {
-        ReaderScreen(onBack = onBack, onUnlockRequested = onUnlockRequested)
+        ReaderScreen(
+            onBack = onBack,
+            onUnlockRequested = onUnlockRequested,
+            onTestRequested = onTestRequested,
+        )
     }
 }

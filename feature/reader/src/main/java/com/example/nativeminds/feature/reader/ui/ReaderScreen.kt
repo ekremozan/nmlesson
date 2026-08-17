@@ -57,6 +57,7 @@ private const val PERCENT = 100
 fun ReaderScreen(
     onBack: () -> Unit,
     onUnlockRequested: (lessonId: Long, progressPercent: Int) -> Unit,
+    onTestRequested: (lessonId: Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ReaderViewModel = hiltViewModel(),
 ) {
@@ -79,6 +80,7 @@ fun ReaderScreen(
         onIntent = viewModel::onIntent,
         onBack = onBack,
         onUnlockRequested = { onUnlockRequested(state.lessonId, state.progressPercent) },
+        onTestRequested = { onTestRequested(state.lessonId) },
         modifier = modifier,
     )
 }
@@ -91,6 +93,7 @@ fun ReaderScreenContent(
     onIntent: (ReaderIntent) -> Unit,
     onBack: () -> Unit,
     onUnlockRequested: () -> Unit,
+    onTestRequested: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
@@ -111,6 +114,8 @@ fun ReaderScreenContent(
             ReaderTopBar(
                 title = state.readyContent?.lesson?.title.orEmpty(),
                 onBack = onBack,
+                showTest = state.readyContent != null && !state.isRestricted,
+                onTestClick = onTestRequested,
             )
 
             when (val content = state.content) {
@@ -316,6 +321,7 @@ private fun ReaderScreenContentPreview(
             onIntent = {},
             onBack = {},
             onUnlockRequested = {},
+            onTestRequested = {},
         )
     }
 }

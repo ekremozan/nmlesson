@@ -18,6 +18,8 @@ import com.example.nativeminds.feature.paywall.navigation.PaywallRoute
 import com.example.nativeminds.feature.paywall.navigation.PurchaseSuccessRoute
 import com.example.nativeminds.feature.paywall.navigation.paywallScreen
 import com.example.nativeminds.feature.paywall.navigation.purchaseSuccessScreen
+import com.example.nativeminds.feature.quiz.navigation.QuizRoute
+import com.example.nativeminds.feature.quiz.navigation.quizScreen
 import com.example.nativeminds.feature.reader.navigation.ReaderRoute
 import com.example.nativeminds.feature.reader.navigation.readerScreen
 import com.example.nativeminds.feature.settings.navigation.SettingsRoute
@@ -27,6 +29,7 @@ import com.example.nativeminds.feature.settings.navigation.settingsScreen
 private fun screenNameOf(destination: NavDestination): String? = when {
     destination.hasRoute<HomeRoute>() -> "home"
     destination.hasRoute<ReaderRoute>() -> "reader"
+    destination.hasRoute<QuizRoute>() -> "quiz"
     destination.hasRoute<PaywallRoute>() -> "paywall"
     destination.hasRoute<PurchaseSuccessRoute>() -> "purchase_success"
     destination.hasRoute<SettingsRoute>() -> "settings"
@@ -84,6 +87,13 @@ fun NativeMindsNavHost(modifier: Modifier = Modifier) {
             onBack = navController::navigateUp,
             onUnlockRequested = { lessonId, progressPercent ->
                 navController.navigate(PaywallRoute(lessonId, progressPercent, triggerSource = "reader_unlock"))
+            },
+            onTestRequested = { lessonId -> navController.navigate(QuizRoute(lessonId)) },
+        )
+        quizScreen(
+            onBack = navController::navigateUp,
+            onPaywallRequested = { lessonId ->
+                navController.navigate(PaywallRoute(lessonId, progressPercent = 0, triggerSource = "quiz_locked"))
             },
         )
         paywallScreen(

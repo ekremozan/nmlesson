@@ -63,6 +63,13 @@ sealed interface AnalyticsEvent {
         val lessonId: Long?,
         val featureName: String,
     ) : AnalyticsEvent
+
+    data class QuizRequested(val lessonId: Long) : AnalyticsEvent
+
+    data class QuizAnswered(
+        val lessonId: Long,
+        val isCorrect: Boolean,
+    ) : AnalyticsEvent
 }
 
 enum class NavigationSource { FORWARD, BACK }
