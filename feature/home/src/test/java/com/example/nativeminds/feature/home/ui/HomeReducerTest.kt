@@ -15,4 +15,13 @@ class HomeReducerTest {
         assertEquals(state.selectedSubject, reduced.selectedSubject)
         assertEquals(state.subjects, reduced.subjects)
     }
+
+    @Test
+    fun `content language verified marks content as verified`() {
+        val state = HomeUiState(contentVerified = false)
+
+        val reduced = state.reduce(HomeIntent.ContentLanguageVerified)
+
+        assertEquals(true, reduced.contentVerified)
+    }
 }

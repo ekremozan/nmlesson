@@ -7,4 +7,5 @@ internal fun HomeUiState.reduce(intent: HomeIntent): HomeUiState = when (intent)
     is HomeIntent.SuggestionSelected -> copy(query = "", selectedSubject = intent.subject)
     is HomeIntent.SubjectsLoaded -> copy(subjects = intent.subjects)
     HomeIntent.RefreshRequested -> copy(syncToken = syncToken + 1)
+    HomeIntent.ContentLanguageVerified -> copy(contentVerified = true)
 }

@@ -7,6 +7,7 @@ import androidx.paging.cachedIn
 import androidx.paging.map
 import com.example.nativeminds.domain.observability.AnalyticsEvent
 import com.example.nativeminds.domain.observability.AnalyticsReporter
+import com.example.nativeminds.domain.usecase.EnsureContentLanguageUseCase
 import com.example.nativeminds.domain.usecase.GetPagedLessonsUseCase
 import com.example.nativeminds.domain.usecase.GetSubjectsUseCase
 import com.example.nativeminds.domain.usecase.SyncLessonsUseCase
@@ -27,16 +28,20 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 private const val USER_NAME = "Ozan"
 private const val FILTER_ANALYTICS_DEBOUNCE_MS = 600L
 
 private data class FilterParams(val subject: String?, val query: String)
+
+private data class PagedLessonsParams(val subject: String?, val query: String, val contentVerified: Boolean)
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
@@ -44,6 +49,7 @@ class HomeViewModel @Inject constructor(
     getSubjects: GetSubjectsUseCase,
     getPagedLessons: GetPagedLessonsUseCase,
     private val syncLessons: SyncLessonsUseCase,
+    private val ensureContentLanguage: EnsureContentLanguageUseCase,
     private val analyticsReporter: AnalyticsReporter,
 ) : ViewModel() {
     private val _state = MutableStateFlow(
@@ -57,13 +63,21 @@ class HomeViewModel @Inject constructor(
     val effects: Flow<HomeEffect> = effectChannel.receiveAsFlow()
 
     val pagedLessons: Flow<PagingData<LessonUiModel>> = _state
-        .map { FilterParams(it.selectedSubject, it.query.trim()) }
+        .map { PagedLessonsParams(it.selectedSubject, it.query.trim(), it.contentVerified) }
         .distinctUntilChanged()
-        .flatMapLatest { params -> getPagedLessons(params.subject, params.query) }
+        .flatMapLatest { params ->
+            if (!params.contentVerified) flowOf(PagingData.empty())
+            else getPagedLessons(params.subject, params.query)
+        }
         .map { pagingData -> pagingData.map { it.toUiModel() } }
         .cachedIn(viewModelScope)
 
     init {
+        viewModelScope.launch {
+            ensureContentLanguage()
+            onIntent(HomeIntent.ContentLanguageVerified)
+        }
+
         getSubjects()
             .onEach { onIntent(HomeIntent.SubjectsLoaded(it)) }
             .launchIn(viewModelScope)

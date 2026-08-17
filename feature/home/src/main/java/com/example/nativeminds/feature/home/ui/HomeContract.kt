@@ -21,6 +21,12 @@ data class HomeUiState(
     val selectedSubject: String? = null,
     val subjects: List<String> = emptyList(),
     val syncToken: Int = 0,
+    /**
+     * `false` until the local catalog's language has been checked against the current content
+     * language, once, on creation. [HomeViewModel.pagedLessons] gates on this so a device-language
+     * switch can never render a lesson cached in the previous language, even for one frame.
+     */
+    val contentVerified: Boolean = false,
 ) {
     val chips: List<ChipUiModel>
         get() = (listOf(null) + subjects).map { subject ->
@@ -47,6 +53,9 @@ sealed interface HomeIntent {
 
     /** Pull-to-refresh. The reduction only bumps [HomeUiState.syncToken]. */
     data object RefreshRequested : HomeIntent
+
+    /** The one-time startup language check has finished. Unblocks [HomeUiState.contentVerified]. */
+    data object ContentLanguageVerified : HomeIntent
 }
 
 sealed interface HomeEffect {

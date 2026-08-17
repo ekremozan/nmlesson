@@ -9,4 +9,15 @@
     <style name="Theme.NativeMinds" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/nm_window_background</item>
     </style>
+
+    <!--
+      Shown from process start until MainActivityViewModel confirms the local lesson cache matches
+      the current content language — see MainActivity.setKeepOnScreenCondition. postSplashScreenTheme
+      hands the window straight to Theme.NativeMinds once the platform dismisses this one.
+    -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/nm_window_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.NativeMinds</item>
+    </style>
 </resources>

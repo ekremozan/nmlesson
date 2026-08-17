@@ -5,12 +5,14 @@ import com.example.nativeminds.domain.observability.AnalyticsEvent
 import com.example.nativeminds.domain.observability.AnalyticsReporter
 import com.example.nativeminds.domain.observability.ErrorReporter
 import com.example.nativeminds.domain.repository.LessonRepository
+import com.example.nativeminds.domain.usecase.EnsureContentLanguageUseCase
 import com.example.nativeminds.domain.usecase.GetPagedLessonsUseCase
 import com.example.nativeminds.domain.usecase.GetSubjectsUseCase
 import com.example.nativeminds.domain.usecase.SyncLessonsUseCase
 import com.example.nativeminds.model.Lesson
 import com.example.nativeminds.model.LessonContent
 import java.io.IOException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -42,6 +44,11 @@ private class RecordingLessonRepository : LessonRepository {
     var lastSubject: String? = "<not called>"
     var lastQuery: String = "<not called>"
     var pagingRequests = 0
+    var clearStaleLanguageContentCalls = 0
+
+    /** Complete this from a test to control exactly when the language check resolves. Completed
+     * by default so every test that doesn't care about the gate sees it open immediately. */
+    var clearStaleLanguageContentGate = CompletableDeferred(Unit)
 
     /** Ordered by lesson count the way the DAO returns it, so chip order is verifiable. */
     val subjects = MutableStateFlow(listOf("Biyoloji", "Kimya", "Tarih", "Coğrafya"))
@@ -64,6 +71,11 @@ private class RecordingLessonRepository : LessonRepository {
     override suspend fun syncIfNeeded() {
         syncCalls++
         syncFailure?.let { throw it }
+    }
+
+    override suspend fun clearStaleLanguageContent() {
+        clearStaleLanguageContentCalls++
+        clearStaleLanguageContentGate.await()
     }
 }
 
@@ -106,6 +118,7 @@ class HomeViewModelTest {
         getSubjects = GetSubjectsUseCase(repository),
         getPagedLessons = GetPagedLessonsUseCase(repository),
         syncLessons = SyncLessonsUseCase(repository, NoOpErrorReporter()),
+        ensureContentLanguage = EnsureContentLanguageUseCase(repository, NoOpErrorReporter()),
         analyticsReporter = analyticsReporter,
     )
 
@@ -114,6 +127,36 @@ class HomeViewModelTest {
         homeViewModel()
 
         assertEquals(1, repository.syncCalls)
+    }
+
+    @Test
+    fun `checks the content language once on creation`() = runTest {
+        homeViewModel()
+
+        assertEquals(1, repository.clearStaleLanguageContentCalls)
+    }
+
+    @Test
+    fun `paged lessons are not requested until the content-language check completes`() = runTest {
+        repository.clearStaleLanguageContentGate = CompletableDeferred()
+        val viewModel = homeViewModel()
+
+        viewModel.collectOnce()
+
+        assertEquals(0, repository.pagingRequests)
+    }
+
+    @Test
+    fun `paged lessons are requested once the content-language check completes`() = runTest {
+        repository.clearStaleLanguageContentGate = CompletableDeferred()
+        val viewModel = homeViewModel()
+        viewModel.collectOnce()
+        assertEquals(0, repository.pagingRequests)
+
+        repository.clearStaleLanguageContentGate.complete(Unit)
+        viewModel.collectOnce()
+
+        assertEquals(1, repository.pagingRequests)
     }
 
     @Test
