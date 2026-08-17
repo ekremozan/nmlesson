@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
@@ -10,7 +11,10 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/core" />
+            <option value="$PROJECT_DIR$/core/analytics" />
+            <option value="$PROJECT_DIR$/core/audio" />
             <option value="$PROJECT_DIR$/core/common" />
+            <option value="$PROJECT_DIR$/core/crashreporting" />
             <option value="$PROJECT_DIR$/core/data" />
             <option value="$PROJECT_DIR$/core/database" />
             <option value="$PROJECT_DIR$/core/designsystem" />
@@ -18,7 +22,10 @@
             <option value="$PROJECT_DIR$/core/model" />
             <option value="$PROJECT_DIR$/feature" />
             <option value="$PROJECT_DIR$/feature/home" />
+            <option value="$PROJECT_DIR$/feature/paywall" />
+            <option value="$PROJECT_DIR$/feature/quiz" />
             <option value="$PROJECT_DIR$/feature/reader" />
+            <option value="$PROJECT_DIR$/feature/settings" />
           </set>
         </option>
       </GradleProjectSettings>

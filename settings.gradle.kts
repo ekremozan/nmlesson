@@ -37,4 +37,5 @@ include(":feature:home")
 include(":feature:reader")
 include(":feature:paywall")
 include(":feature:settings")
+include(":feature:quiz")
  

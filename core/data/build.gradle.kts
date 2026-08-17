@@ -30,6 +30,11 @@ android {
             "SUPABASE_ANON_KEY",
             "\"${localProperties.getProperty("SUPABASE_ANON_KEY", "")}\"",
         )
+        buildConfigField(
+            "String",
+            "GEMINI_API_KEY",
+            "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\"",
+        )
     }
 
     buildFeatures {
@@ -71,6 +76,8 @@ dependencies {
 
     implementation(libs.supabase.postgrest)
     implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
     coreLibraryDesugaring(libs.android.desugar.jdk.libs)
 
     testImplementation(libs.junit)
