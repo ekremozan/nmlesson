@@ -9,11 +9,17 @@ interface RemoteLessonDataSource {
     suspend fun fetchLessons(language: String): List<Lesson>
 
     /**
-     * The text of one lesson. Fetched on demand rather than with the catalog, because a list of
-     * cards has no use for six full lessons.
+     * The text of one lesson. Used as a fallback for a lesson [fetchAllContent] missed — an
+     * interrupted sync, or one added remotely since.
      *
      * Throws when the lesson is unknown to the source — the caller turns that into something the
      * reader can see.
      */
     suspend fun fetchContent(lessonId: Long, language: String): LessonContent
+
+    /**
+     * Every lesson's text for [language], fetched in the same pass as [fetchLessons] so offline
+     * reading works before a lesson has ever been opened online.
+     */
+    suspend fun fetchAllContent(language: String): List<LessonContent>
 }

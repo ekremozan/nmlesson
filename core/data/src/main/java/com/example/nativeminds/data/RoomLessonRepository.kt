@@ -19,6 +19,8 @@ import com.example.nativeminds.model.LessonContent
 import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -63,7 +65,11 @@ class RoomLessonRepository @Inject constructor(
         if (!networkMonitor.isOnline()) return@withContext
 
         val language = contentLanguage.current()
-        val remoteLessons = remote.fetchLessons(language)
+        val (remoteLessons, remoteContent) = coroutineScope {
+            val lessons = async { remote.fetchLessons(language) }
+            val content = async { remote.fetchAllContent(language) }
+            lessons.await() to content.await()
+        }
         if (remoteLessons.isEmpty()) {
             throw IOException("Remote lesson catalog was empty — refusing to clear the local one")
         }
@@ -71,6 +77,7 @@ class RoomLessonRepository @Inject constructor(
         database.withTransaction {
             dao.upsertAll(remoteLessons.map { it.toEntity() })
             dao.deleteMissing(remoteLessons.map { it.id })
+            contentDao.upsertAll(remoteContent.map { it.toEntity() })
         }
         lastSyncedLanguage.set(language)
     }

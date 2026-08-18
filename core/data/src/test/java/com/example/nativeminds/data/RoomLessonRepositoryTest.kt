@@ -66,7 +66,10 @@ private class FakeRemote(
         private set
     var contentCalls = 0
         private set
+    var allContentCalls = 0
+        private set
     var lessonsFailure: Throwable? = null
+    var allContentFailure: Throwable? = null
     var lastLanguage: String? = null
         private set
 
@@ -83,6 +86,13 @@ private class FakeRemote(
         contentCalls++
         lastLanguage = language
         return content.getValue(lessonId)
+    }
+
+    override suspend fun fetchAllContent(language: String): List<LessonContent> {
+        allContentCalls++
+        lastLanguage = language
+        allContentFailure?.let { throw it }
+        return lessons.map { content.getValue(it.id) }
     }
 }
 
@@ -130,6 +140,7 @@ class RoomLessonRepositoryTest {
 
         assertEquals(0, database.lessonDao().count())
         assertEquals(0, remote.lessonCalls)
+        assertEquals(0, remote.allContentCalls)
     }
 
     @Test
@@ -138,8 +149,31 @@ class RoomLessonRepositoryTest {
 
         repository.syncIfNeeded()
 
-        val first = remote.lessons.first()
-        assertEquals(first.title, repository.lesson(first.id).first()?.title)
+        for (remoteLesson in remote.lessons) {
+            assertEquals(remoteLesson.title, repository.lesson(remoteLesson.id).first()?.title)
+            assertEquals(
+                content(remoteLesson.id).paragraphs,
+                repository.lessonContent(remoteLesson.id).first()?.paragraphs,
+            )
+        }
+    }
+
+    @Test
+    fun aFailedContentFetchLeavesThePreviousCatalogAndContentUntouched() = runTest {
+        network.online = true
+        repository.syncIfNeeded()
+        val titleBefore = repository.lesson(1).first()?.title
+        val contentBefore = repository.lessonContent(1).first()?.paragraphs
+
+        remote.lessons = listOf(lesson(1, title = "Updated title"))
+        remote.allContentFailure = IOException("connection dropped")
+        assertThrows(IOException::class.java) {
+            runBlocking { repository.syncIfNeeded() }
+        }
+
+        assertEquals(titleBefore, repository.lesson(1).first()?.title)
+        assertEquals(contentBefore, repository.lessonContent(1).first()?.paragraphs)
+        assertEquals(2, database.lessonDao().count())
     }
 
     @Test

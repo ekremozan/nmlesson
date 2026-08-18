@@ -37,4 +37,10 @@ class SupabaseRemoteLessonDataSource @Inject constructor(
         return rows.firstOrNull()?.toDomain()
             ?: throw IOException("No content for lesson $lessonId ($language)")
     }
+
+    override suspend fun fetchAllContent(language: String): List<LessonContent> =
+        supabase.postgrest.from(LESSON_CONTENT_TABLE).select {
+            filter { eq("language", language) }
+        }.decodeList<LessonContentDto>()
+            .map { it.toDomain() }
 }
