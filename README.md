@@ -8,6 +8,26 @@ Kısa ders içerikleri sunan, okunabilen ve dinlenebilen bir Android uygulaması
 - **Demo videosu**: [docs/demo.mp4](docs/demo.mp4)
 - **Kurulabilir build (signed APK)**: [docs/nativeminds-release.apk](docs/nativeminds-release.apk)
 
+## Kurulum
+
+`google-services.json` repoda mevcut, ayrıca bir şey yapmaya gerek yok — Firebase'in Android API key'i tanımlayıcı niteliğinde, gizli bir değer değil.
+
+Uygulamanın Supabase ve Gemini'ye bağlanabilmesi için proje kökündeki `local.properties` dosyasına şunları eklemek gerekiyor:
+
+```properties
+SUPABASE_URL=https://<proje>.supabase.co
+SUPABASE_ANON_KEY=<publishable key>
+GEMINI_API_KEY=<Google AI Studio key>
+```
+
+Bu değerler build sırasında `BuildConfig` alanlarına gömülüyor ([core/data/build.gradle.kts](core/data/build.gradle.kts)). Boş bırakılırsa proje derlenir ama içerik senkronu ve quiz üretimi çalışmaz.
+
+Supabase tarafındaki tablolar ve örnek içerik için [supabase/schema.sql](supabase/schema.sql) ve [supabase/seed.sql](supabase/seed.sql) sırayla çalıştırılmalı.
+
+```bash
+./gradlew assembleDebug
+```
+
 ## Mimari kararlar ve nedenleri
 
 ### 1. MVI, MVVM değil
