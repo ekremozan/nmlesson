@@ -43,4 +43,38 @@ class SettingsReducerTest {
         assertEquals(state, reduction.state)
         assertEquals(listOf(SettingsEffect.NavigateToPaywall), reduction.effects)
     }
+
+    @Test
+    fun premiumStatusChangedFoldsAnExternalValueIntoState() {
+        val reduction = SettingsUiState(isPremium = false).reduce(SettingsIntent.PremiumStatusChanged(true))
+
+        assertTrue(reduction.state.isPremium)
+    }
+
+    @Test
+    fun cancelPremiumClickedOpensTheConfirmationDialog() {
+        val reduction = SettingsUiState(isPremium = true).reduce(SettingsIntent.CancelPremiumClicked)
+
+        assertTrue(reduction.state.showCancelPremiumDialog)
+    }
+
+    @Test
+    fun cancelPremiumDialogDismissedClosesTheDialogWithNoEffect() {
+        val state = SettingsUiState(isPremium = true, showCancelPremiumDialog = true)
+
+        val reduction = state.reduce(SettingsIntent.CancelPremiumDialogDismissed)
+
+        assertEquals(false, reduction.state.showCancelPremiumDialog)
+        assertEquals(emptyList<SettingsEffect>(), reduction.effects)
+    }
+
+    @Test
+    fun cancelPremiumConfirmedClosesTheDialogAndRaisesACancelEffect() {
+        val state = SettingsUiState(isPremium = true, showCancelPremiumDialog = true)
+
+        val reduction = state.reduce(SettingsIntent.CancelPremiumConfirmed)
+
+        assertEquals(false, reduction.state.showCancelPremiumDialog)
+        assertEquals(listOf(SettingsEffect.CancelPremium), reduction.effects)
+    }
 }

@@ -17,11 +17,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,6 +62,7 @@ fun SettingsScreen(
             when (effect) {
                 SettingsEffect.NavigateToPaywall -> onPremiumClick()
                 is SettingsEffect.PersistDarkTheme -> Unit
+                SettingsEffect.CancelPremium -> Unit
             }
         }
     }
@@ -114,7 +117,18 @@ fun SettingsScreenContent(
 
         Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.md))
 
-        PremiumCard(onClick = { onIntent(SettingsIntent.PremiumClicked) })
+        PremiumCard(
+            isPremium = state.isPremium,
+            onUpgradeClick = { onIntent(SettingsIntent.PremiumClicked) },
+            onCancelClick = { onIntent(SettingsIntent.CancelPremiumClicked) },
+        )
+
+        if (state.showCancelPremiumDialog) {
+            CancelPremiumDialog(
+                onConfirm = { onIntent(SettingsIntent.CancelPremiumConfirmed) },
+                onDismiss = { onIntent(SettingsIntent.CancelPremiumDialogDismissed) },
+            )
+        }
 
         Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.xl))
 
@@ -231,7 +245,7 @@ private fun DarkThemeRow(isDarkTheme: Boolean, onToggle: () -> Unit) {
 }
 
 @Composable
-private fun PremiumCard(onClick: () -> Unit) {
+private fun PremiumCard(isPremium: Boolean, onUpgradeClick: () -> Unit, onCancelClick: () -> Unit) {
     Column(
         verticalArrangement = Arrangement.spacedBy(NativeMindsTheme.spacing.md),
         modifier = Modifier
@@ -255,19 +269,33 @@ private fun PremiumCard(onClick: () -> Unit) {
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(R.string.settings_premium_title),
+                    text = stringResource(
+                        if (isPremium) {
+                            R.string.settings_premium_active_title
+                        } else {
+                            R.string.settings_premium_title
+                        },
+                    ),
                     style = MaterialTheme.typography.headlineSmall,
                     color = NativeMindsTheme.colors.premiumChipContent,
                 )
                 Text(
-                    text = stringResource(R.string.settings_premium_body),
+                    text = stringResource(
+                        if (isPremium) {
+                            R.string.settings_premium_active_body
+                        } else {
+                            R.string.settings_premium_body
+                        },
+                    ),
                     style = NativeMindsTheme.typography.lessonTeaser,
                     color = NativeMindsTheme.colors.premiumChipContent,
                 )
             }
         }
         Text(
-            text = stringResource(R.string.settings_premium_cta),
+            text = stringResource(
+                if (isPremium) R.string.settings_premium_cancel_cta else R.string.settings_premium_cta,
+            ),
             style = NativeMindsTheme.typography.actionLabel,
             color = MaterialTheme.colorScheme.onPrimary,
             textAlign = TextAlign.Center,
@@ -276,10 +304,48 @@ private fun PremiumCard(onClick: () -> Unit) {
                 .height(NativeMindsTheme.sizes.actionButton)
                 .clip(Pill)
                 .background(MaterialTheme.colorScheme.primary)
-                .clickable(onClick = onClick)
+                .clickable(onClick = if (isPremium) onCancelClick else onUpgradeClick)
                 .padding(vertical = NativeMindsTheme.spacing.md),
         )
     }
+}
+
+@Composable
+private fun CancelPremiumDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = NativeMindsTheme.colors.textMuted,
+        title = {
+            Text(
+                text = stringResource(R.string.settings_cancel_premium_dialog_title),
+                style = MaterialTheme.typography.titleLarge,
+            )
+        },
+        text = {
+            Text(
+                text = stringResource(R.string.settings_cancel_premium_dialog_body),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    text = stringResource(R.string.settings_cancel_premium_dialog_confirm),
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = stringResource(R.string.settings_cancel_premium_dialog_dismiss),
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        },
+    )
 }
 
 @Composable

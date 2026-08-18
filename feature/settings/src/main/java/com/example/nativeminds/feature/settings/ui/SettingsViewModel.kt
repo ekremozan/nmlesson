@@ -2,6 +2,7 @@ package com.example.nativeminds.feature.settings.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.nativeminds.domain.repository.EntitlementRepository
 import com.example.nativeminds.domain.repository.ThemeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val themeRepository: ThemeRepository,
+    private val entitlementRepository: EntitlementRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(SettingsUiState())
 
@@ -31,6 +33,9 @@ class SettingsViewModel @Inject constructor(
         themeRepository.isDarkTheme()
             .onEach { onIntent(SettingsIntent.ThemeChanged(it)) }
             .launchIn(viewModelScope)
+        entitlementRepository.isPremium()
+            .onEach { onIntent(SettingsIntent.PremiumStatusChanged(it)) }
+            .launchIn(viewModelScope)
     }
 
     fun onIntent(intent: SettingsIntent) {
@@ -43,6 +48,7 @@ class SettingsViewModel @Inject constructor(
         when (effect) {
             is SettingsEffect.PersistDarkTheme -> themeRepository.setDarkTheme(effect.isDarkTheme)
             SettingsEffect.NavigateToPaywall -> viewModelScope.launch { effectChannel.send(effect) }
+            SettingsEffect.CancelPremium -> entitlementRepository.setPremium(false)
         }
     }
 }

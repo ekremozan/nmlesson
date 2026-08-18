@@ -2,17 +2,24 @@ package com.example.nativeminds.feature.settings.ui
 
 data class SettingsUiState(
     val isDarkTheme: Boolean = false,
+    val isPremium: Boolean = false,
+    val showCancelPremiumDialog: Boolean = false,
 )
 
 sealed interface SettingsIntent {
     data object ThemeToggleClicked : SettingsIntent
     data class ThemeChanged(val isDarkTheme: Boolean) : SettingsIntent
     data object PremiumClicked : SettingsIntent
+    data class PremiumStatusChanged(val isPremium: Boolean) : SettingsIntent
+    data object CancelPremiumClicked : SettingsIntent
+    data object CancelPremiumDialogDismissed : SettingsIntent
+    data object CancelPremiumConfirmed : SettingsIntent
 }
 
 sealed interface SettingsEffect {
     data object NavigateToPaywall : SettingsEffect
     data class PersistDarkTheme(val isDarkTheme: Boolean) : SettingsEffect
+    data object CancelPremium : SettingsEffect
 }
 
 data class SettingsReduction(

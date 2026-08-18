@@ -11,6 +11,15 @@
     <string name="settings_premium_body">All lessons, narration, and Ask AI</string>
     <string name="settings_premium_cta">View plans</string>
 
+    <string name="settings_premium_active_title">Premium Active</string>
+    <string name="settings_premium_active_body">All lessons, narration, and Ask AI unlocked</string>
+    <string name="settings_premium_cancel_cta">Cancel premium</string>
+
+    <string name="settings_cancel_premium_dialog_title">Cancel premium?</string>
+    <string name="settings_cancel_premium_dialog_body">You\'ll lose access to full lessons, narration, and Ask AI.</string>
+    <string name="settings_cancel_premium_dialog_confirm">Cancel premium</string>
+    <string name="settings_cancel_premium_dialog_dismiss">Keep premium</string>
+
     <string name="settings_section_support">Support</string>
     <string name="settings_rate_us">Rate us</string>
     <string name="settings_contact_us">Contact us</string>

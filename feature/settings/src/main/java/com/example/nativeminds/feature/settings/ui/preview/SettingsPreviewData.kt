@@ -10,5 +10,10 @@ class SettingsPreviewCases : PreviewParameterProvider<SettingsPreviewCase> {
     override val values = sequenceOf(
         SettingsPreviewCase(label = "Light theme selected", state = SettingsUiState(isDarkTheme = false)),
         SettingsPreviewCase(label = "Dark theme selected", state = SettingsUiState(isDarkTheme = true)),
+        SettingsPreviewCase(label = "Premium active", state = SettingsUiState(isPremium = true)),
+        SettingsPreviewCase(
+            label = "Cancel premium dialog",
+            state = SettingsUiState(isPremium = true, showCancelPremiumDialog = true),
+        ),
     )
 }

@@ -11,6 +11,15 @@
     <string name="settings_premium_body">Tüm öyküler, seslendirme ve Ask AI</string>
     <string name="settings_premium_cta">Planları gör</string>
 
+    <string name="settings_premium_active_title">Premium Aktif</string>
+    <string name="settings_premium_active_body">Tüm öyküler, seslendirme ve Ask AI açık</string>
+    <string name="settings_premium_cancel_cta">Premium’ı iptal et</string>
+
+    <string name="settings_cancel_premium_dialog_title">Premium iptal edilsin mi?</string>
+    <string name="settings_cancel_premium_dialog_body">Tüm öykülere, seslendirmeye ve Ask AI’a erişimini kaybedersin.</string>
+    <string name="settings_cancel_premium_dialog_confirm">Premium’ı iptal et</string>
+    <string name="settings_cancel_premium_dialog_dismiss">Premium’da kal</string>
+
     <string name="settings_section_support">Destek</string>
     <string name="settings_rate_us">Bizi puanlayın</string>
     <string name="settings_contact_us">Bize ulaşın</string>
