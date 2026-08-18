@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="reader_back">Geri</string>
+    <string name="reader_test">Test</string>
+    <string name="reader_by_author">%1$s tarafından</string>
+    <string name="reader_kicker">%1$s · %2$d dk</string>
+    <string name="reader_premium_badge">Premium</string>
+    <string name="reader_closing_note">Sırada: %1$s</string>
+    <string name="reader_listen">Dinle</string>
+    <string name="reader_pause">Duraklat</string>
+    <string name="reader_resume">Devam et</string>
+    <string name="reader_progress">%1$d%%</string>
+    <string name="reader_remaining">%1$d dk kaldı</string>
+    <string name="reader_audio_unavailable">Dinleme henüz kullanılamıyor.</string>
+
+    <string name="reader_unlock_show">Dersin tamamını aç</string>
+
+    <string name="reader_offline_title">Çevrimdışısın</string>
+    <string name="reader_offline_body">Bu ders henüz indirilmedi. Bağlantını kontrol edip tekrar dene.</string>
+    <string name="reader_error_title">Bir şeyler ters gitti</string>
+    <string name="reader_error_body">Bu dersi yükleyemedik. Birazdan tekrar dene.</string>
+    <string name="reader_missing_title">Ders bulunamadı</string>
+    <string name="reader_missing_body">Bu ders artık kitaplığında yok.</string>
+    <string name="reader_retry">Tekrar dene</string>
+</resources>

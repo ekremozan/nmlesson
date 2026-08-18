@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_greeting_morning">Günaydın</string>
+    <string name="home_greeting_afternoon">İyi günler</string>
+    <string name="home_greeting_evening">İyi akşamlar</string>
+
+    <string name="home_search_placeholder">Ders, konu veya başlık ara</string>
+    <string name="home_search_clear_cd">Aramayı temizle</string>
+    <string name="home_avatar_cd">Hesap</string>
+
+    <string name="subject_all">Tümü</string>
+
+    <string name="home_heading_for_you">Senin için</string>
+    <string name="home_heading_results">Sonuçlar</string>
+
+    <plurals name="home_lesson_count">
+        <item quantity="one">%d ders</item>
+        <item quantity="other">%d ders</item>
+    </plurals>
+
+    <string name="home_audio_cd">Sesli dinlenebilir</string>
+    <string name="home_premium_badge">Premium</string>
+
+    <string name="home_empty_title">Burada henüz bir şey yok</string>
+    <string name="home_empty_body">“%1$s” için bir ders bulamadık. Daha kısa bir kelime dene ya da aşağıdan bir konuya göz at.</string>
+    <string name="home_clear_search">Aramayı temizle</string>
+
+    <string name="home_never_synced_title">Dersleri yüklemek için bağlan</string>
+    <string name="home_never_synced_body">Bu cihaza henüz ders indirilmedi. İnternete bağlanıp aşağı çekerek yenile.</string>
+
+    <string name="home_sync_error">Dersler yenilenemedi. Kayıtlı olanlar gösteriliyor.</string>
+</resources>

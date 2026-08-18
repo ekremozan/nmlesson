@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="paywall_close">Kapat</string>
+    <string name="paywall_headline">Tüm derslerin kilidini aç</string>
+    <string name="paywall_body">Dört yüz kısa ders, hepsi seslendirilmiş. Her Perşembe yenileri eklenir.</string>
+
+    <string name="paywall_benefit_unlimited_title">Sınırsız ders</string>
+    <string name="paywall_benefit_unlimited_body">Günlük limit olmadan tüm kitaplık</string>
+    <string name="paywall_benefit_audio_title">Tam sesli anlatım</string>
+    <string name="paywall_benefit_audio_body">Profesyonel seslerle okunur</string>
+    <string name="paywall_benefit_ai_title">Herhangi bir ders hakkında AI\'a sor</string>
+    <string name="paywall_benefit_ai_body">Bağlam, temalar, sırada ne okunmalı</string>
+    <string name="paywall_benefit_offline_title">Çevrimdışı dinleme</string>
+    <string name="paywall_benefit_offline_body">Yolda dinlemek için indir</string>
+
+    <string name="paywall_plan_monthly_label">Aylık</string>
+    <string name="paywall_plan_monthly_price">$4.99</string>
+    <string name="paywall_plan_monthly_period">ayda bir</string>
+    <string name="paywall_plan_yearly_badge">En avantajlı</string>
+    <string name="paywall_plan_yearly_label">Yıllık</string>
+    <string name="paywall_plan_yearly_price">$34.99</string>
+    <string name="paywall_plan_yearly_terms">$2.92/ay · %%41 tasarruf</string>
+
+    <string name="paywall_cta_label">Şimdi abone ol</string>
+    <string name="paywall_cta_sub_monthly">Aylık $4.99 · istediğin zaman iptal et</string>
+    <string name="paywall_cta_sub_yearly">Yıllık $34.99 · istediğin zaman iptal et</string>
+
+    <string name="paywall_restore_purchases">Satın alımları geri yükle</string>
+    <string name="paywall_restore_purchases_result">Önceki bir satın alım bulunamadı.</string>
+    <string name="paywall_terms">Koşullar</string>
+    <string name="paywall_privacy">Gizlilik</string>
+
+    <string name="paywall_success_close">Kapat</string>
+    <string name="paywall_success_headline">Artık premium\'sun</string>
+    <string name="paywall_success_body">Tüm kitaplığın kilidi açıldı. Ödemen tamamlandı — %1$s</string>
+    <string name="paywall_success_plan_monthly">$4.99/ay</string>
+    <string name="paywall_success_plan_yearly">$34.99/yıl</string>
+
+    <string name="paywall_success_recap_library">400+ ders, hepsi birden</string>
+    <string name="paywall_success_recap_audio">Anlatım ve çevrimdışı dinleme</string>
+    <string name="paywall_success_recap_ai">Her derste Ask AI kullanılabilir</string>
+
+    <string name="paywall_success_resume_label">Kaldığın yer</string>
+    <string name="paywall_success_resume_progress">%%%1$d okundu · %2$d dk kaldı</string>
+
+    <string name="paywall_success_continue_reading">Okumaya devam et</string>
+    <string name="paywall_success_explore_library">Kitaplığı keşfet</string>
+    <string name="paywall_success_receipt_note">E-postana bir makbuz gönderildi. Aboneliğini Ayarlar\'dan yönetebilirsin.</string>
+</resources>

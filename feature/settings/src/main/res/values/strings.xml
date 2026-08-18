@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="settings_back">Geri</string>
-    <string name="settings_title">Ayarlar</string>
+    <string name="settings_back">Back</string>
+    <string name="settings_title">Settings</string>
 
-    <string name="settings_dark_theme_title">Koyu tema</string>
-    <string name="settings_dark_theme_subtitle_on">Açık</string>
-    <string name="settings_dark_theme_subtitle_off">Kapalı</string>
+    <string name="settings_dark_theme_title">Dark theme</string>
+    <string name="settings_dark_theme_subtitle_on">On</string>
+    <string name="settings_dark_theme_subtitle_off">Off</string>
 
-    <string name="settings_premium_title">Premium’a geç</string>
-    <string name="settings_premium_body">Tüm öyküler, seslendirme ve Ask AI</string>
-    <string name="settings_premium_cta">Planları gör</string>
+    <string name="settings_premium_title">Go Premium</string>
+    <string name="settings_premium_body">All lessons, narration, and Ask AI</string>
+    <string name="settings_premium_cta">View plans</string>
 
-    <string name="settings_section_support">Destek</string>
-    <string name="settings_rate_us">Bizi puanlayın</string>
-    <string name="settings_contact_us">Bize ulaşın</string>
+    <string name="settings_section_support">Support</string>
+    <string name="settings_rate_us">Rate us</string>
+    <string name="settings_contact_us">Contact us</string>
 
-    <string name="settings_section_legal">Yasal</string>
-    <string name="settings_privacy_policy">Gizlilik politikası</string>
-    <string name="settings_terms_of_use">Kullanım koşulları</string>
+    <string name="settings_section_legal">Legal</string>
+    <string name="settings_privacy_policy">Privacy policy</string>
+    <string name="settings_terms_of_use">Terms of use</string>
 
     <string name="settings_app_version">NativeMinds 1.0.0</string>
 
-    <string name="settings_section_debug">Hata ayıklama</string>
-    <string name="settings_test_crash">Test çökmesi tetikle</string>
+    <string name="settings_section_debug">Debug</string>
+    <string name="settings_test_crash">Trigger test crash</string>
 </resources>

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="quiz_top_bar_title">Okuma testi</string>
-    <string name="quiz_close">Kapat</string>
-    <string name="quiz_ai_badge">AI ile hazırlandı</string>
-    <string name="quiz_progress_label">Soru 1 / 1</string>
-    <string name="quiz_correct_label">Doğru</string>
-    <string name="quiz_incorrect_label">Yanlış — doğrusu %1$s şıkkı</string>
-    <string name="quiz_continue_reading">Okumaya dön</string>
-    <string name="quiz_error_title">Bir şeyler ters gitti</string>
-    <string name="quiz_error_body">Soru yüklenemedi. Birazdan tekrar deneyin.</string>
-    <string name="quiz_retry">Tekrar dene</string>
+    <string name="quiz_top_bar_title">Reading quiz</string>
+    <string name="quiz_close">Close</string>
+    <string name="quiz_ai_badge">Made with AI</string>
+    <string name="quiz_progress_label">Question 1 / 1</string>
+    <string name="quiz_correct_label">Correct</string>
+    <string name="quiz_incorrect_label">Incorrect — the right answer is %1$s</string>
+    <string name="quiz_continue_reading">Back to reading</string>
+    <string name="quiz_error_title">Something went wrong</string>
+    <string name="quiz_error_body">The question couldn\'t load. Try again in a moment.</string>
+    <string name="quiz_retry">Try again</string>
 </resources>
