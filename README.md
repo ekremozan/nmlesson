@@ -6,10 +6,11 @@ Kısa ders içerikleri sunan, okunabilen ve dinlenebilen bir Android uygulaması
 
 - **Mimari diyagram (Miro)**: [NativeMinds Mimari Diyagramı](https://miro.com/app/board/uXjVHxPA-AE=/) — modül bağımlılık grafiği ve kullanıcı akış şeması. Link herkese açık, giriş gerektirmez.
 - **Demo videosu**: [docs/demo.mp4](docs/demo.mp4)
+- **Kurulabilir build (signed APK)**: [docs/nativeminds-release.apk](docs/nativeminds-release.apk)
 
 ## Kurulum
 
-Firebase (Crashlytics, Analytics) için `app/google-services.json` gerekiyor ama repoda yok — Firebase konsolundan projeye ait dosyayı indirip `app/` klasörüne koymak gerekiyor. Bu dosya olmadan build patlar; sağlaması gerekli bir dosya olduğu için burada not düşüyorum ama Firebase projesini herkese açık tutmak istemediğim için repoya eklemedim.
+`google-services.json` repoda mevcut. Bu repo private olduğu için Firebase projesini ve API key'lerini burada tutmakta sakınca görmedim — public bir repoda aynı tercihi yapmazdım.
 
 Uygulamanın Supabase ve Gemini'ye bağlanabilmesi için proje kökündeki `local.properties` dosyasına şunları eklemek gerekiyor:
 

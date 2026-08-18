@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "821620244720",
+    "project_id": "nativeminds-68169",
+    "storage_bucket": "nativeminds-68169.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:821620244720:android:0eea68627d67af62d60235",
+        "android_client_info": {
+          "package_name": "com.example.nativeminds"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRFle4vYYaBMiR0diFzyyiVM1rle4-pvE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
