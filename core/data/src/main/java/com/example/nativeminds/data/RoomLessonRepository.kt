@@ -10,8 +10,8 @@ import com.example.nativeminds.data.mapper.toDomain
 import com.example.nativeminds.data.mapper.toEntity
 import com.example.nativeminds.data.remote.RemoteLessonDataSource
 import com.example.nativeminds.database.NativeMindsDatabase
-import com.example.nativeminds.database.LessonContentDao
-import com.example.nativeminds.database.LessonDao
+import com.example.nativeminds.database.dao.LessonContentDao
+import com.example.nativeminds.database.dao.LessonDao
 import com.example.nativeminds.domain.repository.OfflineException
 import com.example.nativeminds.domain.repository.LessonRepository
 import com.example.nativeminds.model.Lesson

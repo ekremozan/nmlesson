@@ -1,6 +1,6 @@
 package com.example.nativeminds.data.mapper
 
-import com.example.nativeminds.database.LessonContentEntity
+import com.example.nativeminds.database.entity.LessonContentEntity
 import com.example.nativeminds.model.LessonContent
 
 private const val PARAGRAPH_SEPARATOR = "\n\n"

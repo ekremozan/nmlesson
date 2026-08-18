@@ -4,6 +4,10 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.nativeminds.database.dao.LessonContentDao
+import com.example.nativeminds.database.dao.LessonDao
+import com.example.nativeminds.database.entity.LessonContentEntity
+import com.example.nativeminds.database.entity.LessonEntity
 
 /**
  * Construction and lifetime are owned by

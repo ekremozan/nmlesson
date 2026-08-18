@@ -1,8 +1,9 @@
-package com.example.nativeminds.database
+package com.example.nativeminds.database.dao
 
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
+import com.example.nativeminds.database.entity.LessonContentEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

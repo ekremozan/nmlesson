@@ -1,9 +1,11 @@
-package com.example.nativeminds.database
+package com.example.nativeminds.database.dao
 
 import androidx.paging.PagingSource
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.example.nativeminds.database.NativeMindsDatabase
+import com.example.nativeminds.database.entity.LessonEntity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After

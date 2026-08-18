@@ -5,7 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.example.nativeminds.data.mapper.toEntity
 import com.example.nativeminds.data.remote.RemoteLessonDataSource
 import com.example.nativeminds.database.NativeMindsDatabase
-import com.example.nativeminds.database.LessonEntity
+import com.example.nativeminds.database.entity.LessonEntity
 import com.example.nativeminds.domain.repository.OfflineException
 import com.example.nativeminds.model.Lesson
 import com.example.nativeminds.model.LessonContent

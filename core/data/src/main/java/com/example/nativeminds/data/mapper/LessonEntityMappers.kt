@@ -1,6 +1,6 @@
 package com.example.nativeminds.data.mapper
 
-import com.example.nativeminds.database.LessonEntity
+import com.example.nativeminds.database.entity.LessonEntity
 import com.example.nativeminds.model.Lesson
 
 fun LessonEntity.toDomain(): Lesson = Lesson(

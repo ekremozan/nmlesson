@@ -1,4 +1,4 @@
-package com.example.nativeminds.database
+package com.example.nativeminds.database.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey

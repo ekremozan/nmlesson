@@ -2,12 +2,12 @@ package com.example.nativeminds.database.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.nativeminds.database.LessonContentDao
-import com.example.nativeminds.database.LessonDao
 import com.example.nativeminds.database.MIGRATION_1_2
 import com.example.nativeminds.database.MIGRATION_2_3
 import com.example.nativeminds.database.MIGRATION_3_4
 import com.example.nativeminds.database.NativeMindsDatabase
+import com.example.nativeminds.database.dao.LessonContentDao
+import com.example.nativeminds.database.dao.LessonDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

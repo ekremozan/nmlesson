@@ -3,8 +3,8 @@ package com.example.nativeminds.di
 import android.content.Context
 import androidx.room.Room
 import com.example.nativeminds.database.NativeMindsDatabase
-import com.example.nativeminds.database.LessonContentDao
-import com.example.nativeminds.database.LessonDao
+import com.example.nativeminds.database.dao.LessonContentDao
+import com.example.nativeminds.database.dao.LessonDao
 import com.example.nativeminds.database.di.DatabaseModule
 import dagger.Module
 import dagger.Provides
