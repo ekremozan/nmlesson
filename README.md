@@ -1,6 +1,13 @@
 # NativeMinds
 
 Kısa ders içerikleri sunan, okunabilen ve dinlenebilen bir Android uygulaması.
+
+## Teslimatlar
+
+- **Mimari diyagram (Miro)**: [NativeMinds Mimari Diyagramı](https://miro.com/app/board/uXjVHxPA-AE=/) — modül bağımlılık grafiği ve kullanıcı akış şeması. Link herkese açık, giriş gerektirmez.
+- **Demo videosu**: [docs/demo.mp4](docs/demo.mp4)
+- **Kurulabilir build (signed APK)**: [docs/nativeminds-release.apk](docs/nativeminds-release.apk)
+
 ## Mimari kararlar ve nedenleri
 
 ### 1. MVI, MVVM değil
