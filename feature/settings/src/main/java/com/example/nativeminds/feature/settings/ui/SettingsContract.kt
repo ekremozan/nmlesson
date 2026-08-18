@@ -12,6 +12,7 @@ sealed interface SettingsIntent {
 
 sealed interface SettingsEffect {
     data object NavigateToPaywall : SettingsEffect
+    data class PersistDarkTheme(val isDarkTheme: Boolean) : SettingsEffect
 }
 
 data class SettingsReduction(

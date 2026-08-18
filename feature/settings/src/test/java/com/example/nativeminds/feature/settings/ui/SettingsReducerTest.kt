@@ -11,11 +11,11 @@ class SettingsReducerTest {
     }
 
     @Test
-    fun togglingTheThemeFlipsItAndRaisesNoEffect() {
+    fun togglingTheThemeFlipsItAndRaisesAPersistEffect() {
         val reduction = SettingsUiState(isDarkTheme = false).reduce(SettingsIntent.ThemeToggleClicked)
 
         assertTrue(reduction.state.isDarkTheme)
-        assertTrue(reduction.effects.isEmpty())
+        assertEquals(listOf(SettingsEffect.PersistDarkTheme(true)), reduction.effects)
     }
 
     @Test

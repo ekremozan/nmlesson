@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -32,16 +33,16 @@ class SettingsViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    /**
-     * The toggle's write to [ThemeRepository] happens here, keyed to the one intent that means
-     * "flip the theme" — the reducer already applied the new value to state, this only persists it.
-     */
     fun onIntent(intent: SettingsIntent) {
         val reduction = _state.value.reduce(intent)
         _state.value = reduction.state
-        if (intent is SettingsIntent.ThemeToggleClicked) {
-            themeRepository.setDarkTheme(reduction.state.isDarkTheme)
+        reduction.effects.forEach(::applyEffect)
+    }
+
+    private fun applyEffect(effect: SettingsEffect) {
+        when (effect) {
+            is SettingsEffect.PersistDarkTheme -> themeRepository.setDarkTheme(effect.isDarkTheme)
+            SettingsEffect.NavigateToPaywall -> viewModelScope.launch { effectChannel.send(effect) }
         }
-        reduction.effects.forEach(effectChannel::trySend)
     }
 }

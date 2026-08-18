@@ -59,6 +59,7 @@ fun SettingsScreen(
         viewModel.effects.flowWithLifecycle(lifecycle).collect { effect ->
             when (effect) {
                 SettingsEffect.NavigateToPaywall -> onPremiumClick()
+                is SettingsEffect.PersistDarkTheme -> Unit
             }
         }
     }
