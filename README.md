@@ -9,7 +9,7 @@ Kısa ders içerikleri sunan, okunabilen ve dinlenebilen bir Android uygulaması
 
 ## Kurulum
 
-`google-services.json` repoda mevcut, ayrıca bir şey yapmaya gerek yok — Firebase'in Android API key'i tanımlayıcı niteliğinde, gizli bir değer değil.
+Firebase (Crashlytics, Analytics) için `app/google-services.json` gerekiyor ama repoda yok — Firebase konsolundan projeye ait dosyayı indirip `app/` klasörüne koymak gerekiyor. Bu dosya olmadan build patlar; sağlaması gerekli bir dosya olduğu için burada not düşüyorum ama Firebase projesini herkese açık tutmak istemediğim için repoya eklemedim.
 
 Uygulamanın Supabase ve Gemini'ye bağlanabilmesi için proje kökündeki `local.properties` dosyasına şunları eklemek gerekiyor:
 
