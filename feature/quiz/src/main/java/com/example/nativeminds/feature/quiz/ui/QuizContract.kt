@@ -15,6 +15,10 @@ sealed interface QuizContentUiState {
     data object Locked : QuizContentUiState
 
     data object Error : QuizContentUiState
+
+    /** Rendered as a dismissible popup rather than an inline body — there is nothing else to show
+     * while offline, and a retry here would just fail the same way. */
+    data object Offline : QuizContentUiState
 }
 
 data class QuizUiState(
@@ -22,6 +26,12 @@ data class QuizUiState(
     val content: QuizContentUiState = QuizContentUiState.Loading,
     /** Incremented by a retry so the load key changes and a fresh question is requested. */
     val retryToken: Int = 0,
+    /**
+     * Folded in from [com.example.nativeminds.domain.repository.EntitlementRepository] so the
+     * load key changes and a fresh question is requested after a purchase completes while this
+     * screen is still on the back stack.
+     */
+    val isPremium: Boolean = false,
 )
 
 data class QuizQuestionUiModel(
@@ -51,6 +61,9 @@ sealed interface QuizIntent {
     data class OptionSelected(val optionId: String) : QuizIntent
 
     data object RetryRequested : QuizIntent
+
+    /** Folded in from [com.example.nativeminds.domain.repository.EntitlementRepository]. */
+    data class EntitlementChanged(val isPremium: Boolean) : QuizIntent
 }
 
 sealed interface QuizEffect {

@@ -59,5 +59,9 @@ class QuizPreviewCases : PreviewParameterProvider<QuizPreviewCase> {
             label = "Error",
             state = QuizUiState(lessonId = 1, content = QuizContentUiState.Error),
         ),
+        QuizPreviewCase(
+            label = "Offline",
+            state = QuizUiState(lessonId = 1, content = QuizContentUiState.Offline),
+        ),
     )
 }

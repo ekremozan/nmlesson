@@ -10,4 +10,7 @@
     <string name="quiz_error_title">Bir şeyler ters gitti</string>
     <string name="quiz_error_body">Soru yüklenemedi. Birazdan tekrar deneyin.</string>
     <string name="quiz_retry">Tekrar dene</string>
+    <string name="quiz_offline_dialog_title">İnternet bağlantısı yok</string>
+    <string name="quiz_offline_dialog_body">AI testi internet bağlantısı gerektirir ve çevrimdışıyken kullanılamaz. Bağlantınızı sağlayıp tekrar deneyin.</string>
+    <string name="quiz_offline_dialog_confirm">Tamam</string>
 </resources>

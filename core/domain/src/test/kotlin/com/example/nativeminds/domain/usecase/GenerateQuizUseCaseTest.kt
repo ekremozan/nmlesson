@@ -4,6 +4,7 @@ import com.example.nativeminds.domain.FakeEntitlementRepository
 import com.example.nativeminds.domain.FakeLessonRepository
 import com.example.nativeminds.domain.FakeQuizRepository
 import com.example.nativeminds.domain.RecordingErrorReporter
+import com.example.nativeminds.domain.repository.OfflineException
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -51,6 +52,19 @@ class GenerateQuizUseCaseTest {
         val result = useCase(lessons, quizzes).invoke(unlockedLesson.id)
 
         assertTrue(result is QuizGenerationResult.Failed)
+        assertEquals(1, errorReporter.reported.size)
+    }
+
+    @Test
+    fun anOfflineRepositoryFailureIsReportedAndReturnedAsOfflineRatherThanFailed() = runTest {
+        entitlements.setPremium(true)
+        val lessons = FakeLessonRepository(unlockedLesson, lessonContent)
+        val quizzes = FakeQuizRepository()
+        quizzes.failure = OfflineException("no network")
+
+        val result = useCase(lessons, quizzes).invoke(unlockedLesson.id)
+
+        assertEquals(QuizGenerationResult.Offline, result)
         assertEquals(1, errorReporter.reported.size)
     }
 

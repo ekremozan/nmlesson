@@ -4,6 +4,7 @@ import com.example.nativeminds.domain.model.QuizQuestion
 import com.example.nativeminds.domain.observability.ErrorReporter
 import com.example.nativeminds.domain.repository.EntitlementRepository
 import com.example.nativeminds.domain.repository.LessonRepository
+import com.example.nativeminds.domain.repository.OfflineException
 import com.example.nativeminds.domain.repository.QuizRepository
 import javax.inject.Inject
 import kotlinx.coroutines.flow.first
@@ -11,12 +12,15 @@ import kotlinx.coroutines.flow.first
 /**
  * What asking for a quiz question produced — structurally unable to carry a [QuizQuestion] in the
  * [Locked] case, the same shape [com.example.nativeminds.domain.model.ReaderAccess] uses for the
- * same reason.
+ * same reason. [Offline] is split out from [Failed] so the screen can tell "no network" apart from
+ * an actual failure worth a generic retry prompt.
  */
 sealed interface QuizGenerationResult {
     data class Success(val question: QuizQuestion) : QuizGenerationResult
 
     data object Locked : QuizGenerationResult
+
+    data object Offline : QuizGenerationResult
 
     data class Failed(val throwable: Throwable) : QuizGenerationResult
 }
@@ -51,7 +55,9 @@ class GenerateQuizUseCase @Inject constructor(
             .onFailure { errorReporter.report(it, "generateQuiz(lessonId=$lessonId)") }
             .fold(
                 onSuccess = { QuizGenerationResult.Success(it) },
-                onFailure = { QuizGenerationResult.Failed(it) },
+                onFailure = {
+                    if (it is OfflineException) QuizGenerationResult.Offline else QuizGenerationResult.Failed(it)
+                },
             )
     }
 }

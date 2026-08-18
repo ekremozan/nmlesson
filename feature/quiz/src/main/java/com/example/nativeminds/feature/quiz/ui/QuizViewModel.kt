@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.example.nativeminds.domain.observability.AnalyticsEvent
 import com.example.nativeminds.domain.observability.AnalyticsReporter
+import com.example.nativeminds.domain.repository.EntitlementRepository
 import com.example.nativeminds.domain.usecase.GenerateQuizUseCase
 import com.example.nativeminds.domain.usecase.QuizGenerationResult
 import com.example.nativeminds.feature.quiz.navigation.QuizRoute
@@ -28,14 +29,18 @@ import kotlinx.coroutines.flow.receiveAsFlow
 /**
  * What the question request is keyed on. A retry changes [retryToken], which changes the key,
  * which re-subscribes — so retry is a pure state transition rather than an imperative reload call.
+ * [isPremium] does the same for a purchase completed while this screen is still on the back stack:
+ * without it, a key built only from [lessonId] and [retryToken] never changes, so the AI request
+ * that a locked result skipped is never retried once the reader becomes premium.
  */
-private data class LoadKey(val lessonId: Long, val retryToken: Int)
+private data class LoadKey(val lessonId: Long, val retryToken: Int, val isPremium: Boolean)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class QuizViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val generateQuiz: GenerateQuizUseCase,
+    private val entitlementRepository: EntitlementRepository,
     private val analyticsReporter: AnalyticsReporter,
 ) : ViewModel() {
     private val lessonId = savedStateHandle.toRoute<QuizRoute>().lessonId
@@ -49,8 +54,12 @@ class QuizViewModel @Inject constructor(
     val effects: Flow<QuizUiEffect> = effectChannel.receiveAsFlow()
 
     init {
+        entitlementRepository.isPremium()
+            .onEach { onIntent(QuizIntent.EntitlementChanged(it)) }
+            .launchIn(viewModelScope)
+
         _state
-            .map { LoadKey(it.lessonId, it.retryToken) }
+            .map { LoadKey(it.lessonId, it.retryToken, it.isPremium) }
             .distinctUntilChanged()
             .onEach { analyticsReporter.log(AnalyticsEvent.QuizRequested(it.lessonId)) }
             .flatMapLatest { key -> flow { emit(generateQuiz(key.lessonId)) } }

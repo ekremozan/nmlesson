@@ -17,9 +17,11 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -92,7 +94,10 @@ fun QuizScreenContent(
             QuizTopBar(onClose = onBack)
 
             when (val content = state.content) {
-                QuizContentUiState.Loading, QuizContentUiState.Locked -> QuizLoadingBody()
+                QuizContentUiState.Loading,
+                QuizContentUiState.Locked,
+                QuizContentUiState.Offline,
+                -> QuizLoadingBody()
 
                 QuizContentUiState.Error -> QuizErrorBody(
                     onRetry = { onIntent(QuizIntent.RetryRequested) },
@@ -106,7 +111,41 @@ fun QuizScreenContent(
                 )
             }
         }
+
+        if (state.content == QuizContentUiState.Offline) {
+            QuizOfflineDialog(onDismiss = onBack)
+        }
     }
+}
+
+@Composable
+private fun QuizOfflineDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = NativeMindsTheme.colors.textMuted,
+        title = {
+            Text(
+                text = stringResource(R.string.quiz_offline_dialog_title),
+                style = MaterialTheme.typography.titleLarge,
+            )
+        },
+        text = {
+            Text(
+                text = stringResource(R.string.quiz_offline_dialog_body),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = stringResource(R.string.quiz_offline_dialog_confirm),
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        },
+    )
 }
 
 @Composable

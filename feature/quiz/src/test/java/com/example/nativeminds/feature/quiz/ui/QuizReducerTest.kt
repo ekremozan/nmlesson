@@ -46,6 +46,15 @@ class QuizReducerTest {
     }
 
     @Test
+    fun anOfflineResultShowsTheOfflineState() {
+        val reduction = QuizUiState(lessonId = 1)
+            .reduce(QuizIntent.ResultLoaded(QuizGenerationResult.Offline))
+
+        assertEquals(QuizContentUiState.Offline, reduction.state.content)
+        assertTrue(reduction.effects.isEmpty())
+    }
+
+    @Test
     fun selectingTheCorrectOptionRevealsItAsCorrect() {
         val ready = QuizUiState(lessonId = 1, content = QuizContentUiState.Ready(question.toReadyUiModel()))
 
@@ -85,6 +94,29 @@ class QuizReducerTest {
 
         assertEquals(QuizContentUiState.Loading, reduction.state.content)
         assertEquals(1, reduction.state.retryToken)
+    }
+
+    @Test
+    fun becomingPremiumWhileLockedMovesBackToLoading() {
+        val locked = QuizUiState(lessonId = 1, content = QuizContentUiState.Locked, isPremium = false)
+
+        val reduction = locked.reduce(QuizIntent.EntitlementChanged(isPremium = true))
+
+        assertEquals(QuizContentUiState.Loading, reduction.state.content)
+        assertTrue(reduction.state.isPremium)
+    }
+
+    @Test
+    fun anUnchangedEntitlementLeavesContentAlone() {
+        val ready = QuizUiState(
+            lessonId = 1,
+            content = QuizContentUiState.Ready(question.toReadyUiModel()),
+            isPremium = true,
+        )
+
+        val reduction = ready.reduce(QuizIntent.EntitlementChanged(isPremium = true))
+
+        assertEquals(ready, reduction.state)
     }
 }
 

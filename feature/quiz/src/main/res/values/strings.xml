@@ -10,4 +10,7 @@
     <string name="quiz_error_title">Something went wrong</string>
     <string name="quiz_error_body">The question couldn\'t load. Try again in a moment.</string>
     <string name="quiz_retry">Try again</string>
+    <string name="quiz_offline_dialog_title">No internet connection</string>
+    <string name="quiz_offline_dialog_body">The AI quiz needs an internet connection and can\'t be used offline. Reconnect and try again.</string>
+    <string name="quiz_offline_dialog_confirm">OK</string>
 </resources>

@@ -16,6 +16,18 @@ fun QuizUiState.reduce(intent: QuizIntent): Reduction = when (intent) {
     QuizIntent.RetryRequested -> Reduction(
         copy(content = QuizContentUiState.Loading, retryToken = retryToken + 1),
     )
+
+    is QuizIntent.EntitlementChanged -> reduceEntitlementChanged(intent.isPremium)
+}
+
+private fun QuizUiState.reduceEntitlementChanged(isPremium: Boolean): Reduction {
+    if (isPremium == this.isPremium) return Reduction(this)
+    val content = if (isPremium && content == QuizContentUiState.Locked) {
+        QuizContentUiState.Loading
+    } else {
+        content
+    }
+    return Reduction(copy(isPremium = isPremium, content = content))
 }
 
 private fun QuizUiState.reduceResultLoaded(result: QuizGenerationResult): Reduction = when (result) {
@@ -24,6 +36,8 @@ private fun QuizUiState.reduceResultLoaded(result: QuizGenerationResult): Reduct
 
     QuizGenerationResult.Locked ->
         Reduction(copy(content = QuizContentUiState.Locked), listOf(QuizEffect.NavigateToPaywall))
+
+    QuizGenerationResult.Offline -> Reduction(copy(content = QuizContentUiState.Offline))
 
     is QuizGenerationResult.Failed -> Reduction(copy(content = QuizContentUiState.Error))
 }
