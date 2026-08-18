@@ -15,8 +15,8 @@ Kısa ders içerikleri sunan, okunabilen ve dinlenebilen bir Android uygulaması
 Uygulamanın Supabase ve Gemini'ye bağlanabilmesi için proje kökündeki `local.properties` dosyasına şunları eklemek gerekiyor:
 
 ```properties
-SUPABASE_URL=https://<proje>.supabase.co
-SUPABASE_ANON_KEY=<publishable key>
+SUPABASE_URL=https://zqkbnifxyfztpkcpezaw.supabase.co
+SUPABASE_ANON_KEY=sb_publishable_O1E_S1IEcDf6_vx7jXiIMQ_mdcGFYCc
 GEMINI_API_KEY=<Google AI Studio key>
 ```
 
