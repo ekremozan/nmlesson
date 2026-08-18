@@ -4,11 +4,11 @@ import com.example.nativeminds.data.AndroidNetworkMonitor
 import com.example.nativeminds.data.ContentLanguageProvider
 import com.example.nativeminds.data.DeviceContentLanguageProvider
 import com.example.nativeminds.data.LastSyncedLanguageStore
-import com.example.nativeminds.data.MockThemeRepository
 import com.example.nativeminds.data.NetworkMonitor
 import com.example.nativeminds.data.RoomLessonRepository
 import com.example.nativeminds.data.SharedPreferencesEntitlementRepository
 import com.example.nativeminds.data.SharedPreferencesLastSyncedLanguageStore
+import com.example.nativeminds.data.SharedPreferencesThemeRepository
 import com.example.nativeminds.data.remote.RemoteLessonDataSource
 import com.example.nativeminds.data.remote.SupabaseRemoteLessonDataSource
 import com.example.nativeminds.data.remote.quiz.GeminiQuizDataSource
@@ -49,10 +49,10 @@ abstract class DataModule {
         impl: SharedPreferencesEntitlementRepository,
     ): EntitlementRepository
 
-    /** Scoped for the same reason as [entitlementRepository]: the mock's state lives in memory. */
+    /** Scoped for the same reason as [entitlementRepository]: a single `SharedPreferences`-backed instance. */
     @Binds
     @Singleton
-    abstract fun themeRepository(impl: MockThemeRepository): ThemeRepository
+    abstract fun themeRepository(impl: SharedPreferencesThemeRepository): ThemeRepository
 
     /** Unscoped: it is stateless, so a new instance per injection point costs nothing. */
     @Binds
