@@ -92,45 +92,49 @@ fun SettingsScreenContent(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
             .padding(horizontal = NativeMindsTheme.spacing.screen),
     ) {
-        Box(modifier = Modifier.padding(top = NativeMindsTheme.spacing.xs)) {
-            BackButton(onClick = onBack)
-        }
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            Box(modifier = Modifier.padding(top = NativeMindsTheme.spacing.xs)) {
+                BackButton(onClick = onBack)
+            }
 
-        Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.lg))
+            Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.lg))
 
-        Text(
-            text = stringResource(R.string.settings_title),
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-
-        Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.xl))
-
-        DarkThemeRow(
-            isDarkTheme = state.isDarkTheme,
-            onToggle = { onIntent(SettingsIntent.ThemeToggleClicked) },
-        )
-
-        Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.md))
-
-        PremiumCard(
-            isPremium = state.isPremium,
-            onUpgradeClick = { onIntent(SettingsIntent.PremiumClicked) },
-            onCancelClick = { onIntent(SettingsIntent.CancelPremiumClicked) },
-        )
-
-        if (state.showCancelPremiumDialog) {
-            CancelPremiumDialog(
-                onConfirm = { onIntent(SettingsIntent.CancelPremiumConfirmed) },
-                onDismiss = { onIntent(SettingsIntent.CancelPremiumDialogDismissed) },
+            Text(
+                text = stringResource(R.string.settings_title),
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onBackground,
             )
+
+            Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.xl))
+
+            DarkThemeRow(
+                isDarkTheme = state.isDarkTheme,
+                onToggle = { onIntent(SettingsIntent.ThemeToggleClicked) },
+            )
+
+            Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.md))
+
+            PremiumCard(
+                isPremium = state.isPremium,
+                onUpgradeClick = { onIntent(SettingsIntent.PremiumClicked) },
+                onCancelClick = { onIntent(SettingsIntent.CancelPremiumClicked) },
+            )
+
+            if (state.showCancelPremiumDialog) {
+                CancelPremiumDialog(
+                    onConfirm = { onIntent(SettingsIntent.CancelPremiumConfirmed) },
+                    onDismiss = { onIntent(SettingsIntent.CancelPremiumDialogDismissed) },
+                )
+            }
         }
 
         if (BuildConfig.DEBUG) {
-            Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.lg))
             SectionHeading(text = stringResource(R.string.settings_section_debug))
             SettingsCard {
                 DebugTestCrashRow(onClick = onTestCrashClick)
