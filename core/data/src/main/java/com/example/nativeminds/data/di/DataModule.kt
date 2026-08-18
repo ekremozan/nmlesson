@@ -4,10 +4,10 @@ import com.example.nativeminds.data.AndroidNetworkMonitor
 import com.example.nativeminds.data.ContentLanguageProvider
 import com.example.nativeminds.data.DeviceContentLanguageProvider
 import com.example.nativeminds.data.LastSyncedLanguageStore
-import com.example.nativeminds.data.MockEntitlementRepository
 import com.example.nativeminds.data.MockThemeRepository
 import com.example.nativeminds.data.NetworkMonitor
 import com.example.nativeminds.data.RoomLessonRepository
+import com.example.nativeminds.data.SharedPreferencesEntitlementRepository
 import com.example.nativeminds.data.SharedPreferencesLastSyncedLanguageStore
 import com.example.nativeminds.data.remote.RemoteLessonDataSource
 import com.example.nativeminds.data.remote.SupabaseRemoteLessonDataSource
@@ -39,13 +39,15 @@ abstract class DataModule {
     abstract fun lessonRepository(impl: RoomLessonRepository): LessonRepository
 
     /**
-     * Scoped, unlike the other bindings here: the mock holds the entitlement in memory, so a
-     * second instance would be a second source of truth — exactly what this interface exists to
-     * prevent.
+     * Scoped, unlike the other bindings here: the entitlement lives in a single
+     * `SharedPreferences`-backed instance, so a second instance would be a second source of
+     * truth — exactly what this interface exists to prevent.
      */
     @Binds
     @Singleton
-    abstract fun entitlementRepository(impl: MockEntitlementRepository): EntitlementRepository
+    abstract fun entitlementRepository(
+        impl: SharedPreferencesEntitlementRepository,
+    ): EntitlementRepository
 
     /** Scoped for the same reason as [entitlementRepository]: the mock's state lives in memory. */
     @Binds
