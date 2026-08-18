@@ -10,6 +10,7 @@ import com.example.nativeminds.data.remote.quiz.dto.GeminiQuizPayloadDto
 import com.example.nativeminds.data.remote.quiz.dto.QuizResponseSchema
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -31,7 +32,8 @@ class GeminiRemoteQuizDataSource @Inject constructor(
     private val httpClient: HttpClient,
 ) : GeminiQuizDataSource {
     override suspend fun generateQuestion(storyTitle: String, storyBody: String): GeminiQuizPayloadDto {
-        val response = httpClient.post("$GEMINI_BASE_URL/$GEMINI_MODEL_NAME:generateContent?key=${BuildConfig.GEMINI_API_KEY}") {
+        val response = httpClient.post("$GEMINI_BASE_URL/$GEMINI_MODEL_NAME:generateContent") {
+            header("x-goog-api-key", BuildConfig.GEMINI_API_KEY)
             contentType(ContentType.Application.Json)
             setBody(
                 GeminiGenerateContentRequestDto(
