@@ -2,11 +2,11 @@
 
 ## Fonts
 
-The bundled typefaces in `app/src/main/res/font/` are licensed under the
+The bundled typefaces in `core/designsystem/src/main/res/font/` are licensed under the
 SIL Open Font License, Version 1.1. Full license text follows the notices below.
 
-- **Caprasimo** — Copyright 2023 The Caprasimo Project Authors
-  (https://github.com/docrepair-fonts/caprasimo-fonts)
+- **Google Sans Flex** — Copyright 2015 Google LLC. All Rights Reserved.
+  (https://fonts.google.com/specimen/Google+Sans+Flex)
 - **Figtree** — Copyright 2022 The Figtree Project Authors
   (https://github.com/erikdkennedy/figtree)
 - **Newsreader** — Copyright 2020 The Newsreader Project Authors

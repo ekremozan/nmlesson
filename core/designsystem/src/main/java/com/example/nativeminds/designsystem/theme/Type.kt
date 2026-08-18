@@ -14,7 +14,11 @@ import com.example.nativeminds.designsystem.R
 /**
  * The design system uses three voices:
  *
- * - **Display** (Caprasimo) — the warm, chunky brand voice. Greetings, empty states, hero titles.
+ * - **Display** (Google Sans Flex) — the warm, chunky brand voice. Greetings, empty states, hero
+ *   titles. Bundled as its 36pt-optical-size Bold static instance, which sits closest to the
+ *   20–42sp range the display styles below actually render at. The original choice, Caprasimo,
+ *   was dropped: it has no `ş`/`Ş`/`ğ`/`Ğ`/`İ` glyphs in any released version, so Turkish headings
+ *   fell back to a mismatched system font for those letters.
  * - **Reading** (Newsreader) — the editorial voice. Lesson titles, teasers, and body copy in the
  *   reader. A serif here is a product decision, not decoration: it is what makes a wall of text
  *   feel like a lesson rather than a settings screen.
@@ -32,7 +36,7 @@ import com.example.nativeminds.designsystem.R
  * All three families are licensed under the SIL Open Font License (see THIRD_PARTY_LICENSES.md).
  */
 val DisplayFontFamily = FontFamily(
-    Font(R.font.caprasimo_regular, FontWeight.Normal),
+    Font(R.font.google_sans_flex_bold, FontWeight.Normal),
 )
 
 val ReadingFontFamily = FontFamily(
