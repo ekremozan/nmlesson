@@ -38,7 +38,7 @@ private const val ERROR_CONTEXT = "TextToSpeechNarrator"
  */
 @Singleton
 class TextToSpeechNarrator @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val errorReporter: ErrorReporter,
 ) : LessonNarrator {
     private val _state = MutableStateFlow<NarrationState>(NarrationState.Idle)

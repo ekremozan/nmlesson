@@ -19,6 +19,7 @@ abstract class AnalyticsModule {
 
     companion object {
         @Provides
+        @Suppress("MissingPermission")
         fun firebaseAnalytics(@ApplicationContext context: Context): FirebaseAnalytics =
             FirebaseAnalytics.getInstance(context)
     }

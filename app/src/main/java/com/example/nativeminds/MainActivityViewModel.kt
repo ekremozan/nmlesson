@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.Duration.Companion.milliseconds
 
 /** Generous enough for a ~40-row catalog fetch on a normal connection, short enough that a stalled
  * or absent network can never make the splash look frozen — the sync that times out here just
@@ -33,7 +34,7 @@ class MainActivityViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             ensureContentLanguage()
-            withTimeoutOrNull(INITIAL_SYNC_TIMEOUT_MS) { syncLessons() }
+            withTimeoutOrNull(INITIAL_SYNC_TIMEOUT_MS.milliseconds) { syncLessons() }
             _isReady.value = true
         }
     }
