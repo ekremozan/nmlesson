@@ -18,7 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -127,36 +126,6 @@ fun SettingsScreenContent(
             CancelPremiumDialog(
                 onConfirm = { onIntent(SettingsIntent.CancelPremiumConfirmed) },
                 onDismiss = { onIntent(SettingsIntent.CancelPremiumDialogDismissed) },
-            )
-        }
-
-        Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.xl))
-
-        SectionHeading(text = stringResource(R.string.settings_section_support))
-        SettingsCard {
-            SettingsRow(
-                icon = NativeMindsIcons::Star,
-                label = stringResource(R.string.settings_rate_us),
-            )
-            HorizontalDivider(color = NativeMindsTheme.colors.cardBorder)
-            SettingsRow(
-                icon = NativeMindsIcons::Mail,
-                label = stringResource(R.string.settings_contact_us),
-            )
-        }
-
-        Spacer(modifier = Modifier.height(NativeMindsTheme.spacing.lg))
-
-        SectionHeading(text = stringResource(R.string.settings_section_legal))
-        SettingsCard {
-            SettingsRow(
-                icon = NativeMindsIcons::Shield,
-                label = stringResource(R.string.settings_privacy_policy),
-            )
-            HorizontalDivider(color = NativeMindsTheme.colors.cardBorder)
-            SettingsRow(
-                icon = NativeMindsIcons::Document,
-                label = stringResource(R.string.settings_terms_of_use),
             )
         }
 
@@ -368,30 +337,6 @@ private fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
             .border(1.dp, NativeMindsTheme.colors.cardBorder, MaterialTheme.shapes.large),
         content = content,
     )
-}
-
-/** A row with no [onClick]: rate/contact/legal destinations aren't wired up yet. */
-@Composable
-private fun SettingsRow(
-    icon: @Composable (tint: androidx.compose.ui.graphics.Color, modifier: Modifier, size: androidx.compose.ui.unit.Dp) -> Unit,
-    label: String,
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(NativeMindsTheme.spacing.md),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(NativeMindsTheme.spacing.md),
-    ) {
-        icon(NativeMindsTheme.colors.accentText, Modifier, 19.dp)
-        Text(
-            text = label,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
-        )
-        NativeMindsIcons.ChevronRight(tint = NativeMindsTheme.colors.textSubtle)
-    }
 }
 
 @Composable
