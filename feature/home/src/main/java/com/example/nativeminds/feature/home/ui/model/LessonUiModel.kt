@@ -8,7 +8,7 @@ data class LessonUiModel(
     val subject: String,
     val title: String,
     val teaser: String,
-    val minutesLabel: String,
+    val minutes: Int,
     val hasAudio: Boolean,
     val isLocked: Boolean,
     val image: String,

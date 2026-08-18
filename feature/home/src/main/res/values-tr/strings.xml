@@ -18,6 +18,11 @@
         <item quantity="other">%d ders</item>
     </plurals>
 
+    <plurals name="home_lesson_minutes">
+        <item quantity="one">%d dk</item>
+        <item quantity="other">%d dk</item>
+    </plurals>
+
     <string name="home_audio_cd">Sesli dinlenebilir</string>
     <string name="home_premium_badge">Premium</string>
 

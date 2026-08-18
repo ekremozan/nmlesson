@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -96,7 +97,7 @@ fun LessonCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = lesson.minutesLabel,
+                    text = pluralStringResource(R.plurals.home_lesson_minutes, lesson.minutes, lesson.minutes),
                     style = NativeMindsTheme.typography.lessonMeta,
                     color = NativeMindsTheme.colors.textMuted,
                     fontWeight = FontWeight.SemiBold,

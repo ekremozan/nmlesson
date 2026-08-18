@@ -25,7 +25,7 @@ internal val PreviewLesson = LessonUiModel(
     subject = "Biyoloji",
     title = "Hücre Yapısı ve Organeller",
     teaser = "Zarın içindeki küçük fabrika.",
-    minutesLabel = "6 min",
+    minutes = 6,
     hasAudio = true,
     isLocked = false,
     image = "subject_biology",
@@ -36,7 +36,7 @@ internal val PreviewLockedLesson = LessonUiModel(
     subject = "Tarih",
     title = "İstanbul'un Fethi ve Sonuçları",
     teaser = "Bir çağın kapanıp diğerinin açılması.",
-    minutesLabel = "8 min",
+    minutes = 8,
     hasAudio = false,
     isLocked = true,
     image = "subject_history",
@@ -44,9 +44,9 @@ internal val PreviewLockedLesson = LessonUiModel(
 
 internal val PreviewLessons = listOf(
     PreviewLesson,
-    LessonUiModel(2, "Kimya", "Maddenin Yapısı ve Atom Modelleri", "Her şeyin en küçük yapı taşı.", "4 min", hasAudio = true, isLocked = false, image = "subject_chemistry"),
+    LessonUiModel(2, "Kimya", "Maddenin Yapısı ve Atom Modelleri", "Her şeyin en küçük yapı taşı.", minutes = 4, hasAudio = true, isLocked = false, image = "subject_chemistry"),
     PreviewLockedLesson,
-    LessonUiModel(4, "Coğrafya", "Türkiye'nin Coğrafi Konumu", "Üç kıtanın kesiştiği noktada bir ülke.", "5 min", hasAudio = true, isLocked = false, image = "subject_geography"),
+    LessonUiModel(4, "Coğrafya", "Türkiye'nin Coğrafi Konumu", "Üç kıtanın kesiştiği noktada bir ülke.", minutes = 5, hasAudio = true, isLocked = false, image = "subject_geography"),
 )
 
 /** One row of the home screen's preview matrix: a state and the lessons the pager returns for it. */

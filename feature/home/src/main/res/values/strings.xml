@@ -19,6 +19,11 @@
         <item quantity="other">%d lessons</item>
     </plurals>
 
+    <plurals name="home_lesson_minutes">
+        <item quantity="one">%d min</item>
+        <item quantity="other">%d min</item>
+    </plurals>
+
     <string name="home_audio_cd">Available as audio</string>
     <string name="home_premium_badge">Premium</string>
 
