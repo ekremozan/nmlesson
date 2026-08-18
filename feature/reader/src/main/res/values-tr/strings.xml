@@ -13,7 +13,13 @@
     <string name="reader_remaining">%1$d dk kaldı</string>
     <string name="reader_audio_unavailable">Dinleme henüz kullanılamıyor.</string>
 
-    <string name="reader_unlock_show">Dersin tamamını aç</string>
+    <string name="reader_unlock_card_title">Dersin tamamını aç</string>
+    <string name="reader_unlock_card_body">İlk %%%1$d\'ini okudun. Premium bunu ve kütüphanedeki her şeyi açar.</string>
+    <string name="reader_unlock_card_benefit_unlimited">Günlük limit olmadan tüm dersler</string>
+    <string name="reader_unlock_card_benefit_audio">Tüm kütüphane için sesli anlatım</string>
+    <string name="reader_unlock_card_benefit_ai">Okuduğun her şey hakkında AI\'a sor</string>
+    <string name="reader_unlock_card_cta">Planları gör</string>
+    <string name="reader_unlock_card_caption">Aylık veya yıllık planlar · istediğin zaman iptal et</string>
 
     <string name="reader_offline_title">Çevrimdışısın</string>
     <string name="reader_offline_body">Bu ders henüz indirilmedi. Bağlantını kontrol edip tekrar dene.</string>

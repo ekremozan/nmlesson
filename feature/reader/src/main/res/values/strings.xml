@@ -13,7 +13,13 @@
     <string name="reader_remaining">%1$d min left</string>
     <string name="reader_audio_unavailable">Listening is not available yet.</string>
 
-    <string name="reader_unlock_show">Unlock the full lesson</string>
+    <string name="reader_unlock_card_title">Unlock the full lesson</string>
+    <string name="reader_unlock_card_body">You’ve read the first %1$d%%. Premium opens this one and everything else in the library.</string>
+    <string name="reader_unlock_card_benefit_unlimited">Unlimited lessons, no daily limit</string>
+    <string name="reader_unlock_card_benefit_audio">Narrated audio for the whole library</string>
+    <string name="reader_unlock_card_benefit_ai">Ask AI about anything you read</string>
+    <string name="reader_unlock_card_cta">View plans</string>
+    <string name="reader_unlock_card_caption">Monthly or yearly plans · cancel anytime</string>
 
     <string name="reader_offline_title">You\'re offline</string>
     <string name="reader_offline_body">This lesson hasn\'t been downloaded yet. Reconnect and try again.</string>

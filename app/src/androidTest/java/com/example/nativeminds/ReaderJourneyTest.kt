@@ -7,7 +7,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.espresso.Espresso
-import com.example.nativeminds.data.MockEntitlementRepository
+import com.example.nativeminds.data.SharedPreferencesEntitlementRepository
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
@@ -24,7 +24,7 @@ private const val PREMIUM_LESSON_TITLE = "DNA ve Protein Sentezi"
 private const val PREMIUM_LESSON_OPENING = "DNA, canlıların kalıtsal"
 private const val PREMIUM_LESSON_WITHHELD = "Protein sentezi, DNA'daki"
 
-private const val UNLOCK_CTA = "Unlock the full lesson"
+private const val UNLOCK_CTA = "View plans"
 private const val PAYWALL_HEADLINE = "Unlock every lesson"
 private const val PAYWALL_PURCHASE_ACTION = "Subscribe now"
 private const val SUCCESS_HEADLINE = "You're premium now"
@@ -44,7 +44,7 @@ class ReaderJourneyTest {
     val rule: RuleChain = RuleChain.outerRule(hiltRule).around(composeRule)
 
     @Inject
-    lateinit var entitlements: MockEntitlementRepository
+    lateinit var entitlements: SharedPreferencesEntitlementRepository
 
     @Before
     fun setUp() {

@@ -1,7 +1,6 @@
 package com.example.nativeminds.feature.reader.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -20,7 +19,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,10 +26,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -39,12 +35,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.flowWithLifecycle
 import com.example.nativeminds.designsystem.preview.ScreenThemePreviews
 import com.example.nativeminds.designsystem.theme.NativeMindsTheme
-import com.example.nativeminds.designsystem.theme.Pill
 import com.example.nativeminds.feature.reader.R
 import com.example.nativeminds.feature.reader.ui.components.ListenPill
 import com.example.nativeminds.feature.reader.ui.components.ReaderBody
 import com.example.nativeminds.feature.reader.ui.components.ReaderTopBar
 import com.example.nativeminds.feature.reader.ui.components.ReaderUnavailableState
+import com.example.nativeminds.feature.reader.ui.components.UnlockCard
 import com.example.nativeminds.feature.reader.ui.components.paragraphItemIndex
 import com.example.nativeminds.feature.reader.ui.preview.ReaderPreviewCase
 import com.example.nativeminds.feature.reader.ui.preview.ReaderPreviewCases
@@ -245,8 +241,8 @@ private fun BoxScope.BodyFade() {
 }
 
 /**
- * What sits above the bottom edge: the listen pill while the lesson is readable, or the control that
- * brings the unlock sheet back once it has been pushed away.
+ * What sits above the bottom edge: the unlock card once the lesson has faded into it, or the
+ * listen pill while the lesson is readable.
  */
 @Composable
 private fun ReaderFooter(
@@ -256,39 +252,34 @@ private fun ReaderFooter(
     modifier: Modifier = Modifier,
 ) {
     val content = state.readyContent ?: return
-    val background = MaterialTheme.colorScheme.background
 
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(NativeMindsTheme.sizes.footerScrim)
-            .background(
-                Brush.verticalGradient(
-                    0f to background.copy(alpha = 0f),
-                    0.42f to background,
-                ),
-            )
-            .padding(
+    if (state.isRestricted) {
+        UnlockCard(
+            freeSharePercent = content.body.freeSharePercent,
+            onUnlockRequested = onUnlockRequested,
+            modifier = modifier.padding(
                 horizontal = NativeMindsTheme.spacing.lg,
-                vertical = NativeMindsTheme.spacing.screen,
+                vertical = NativeMindsTheme.spacing.lg,
             ),
-        contentAlignment = Alignment.BottomCenter,
-    ) {
-        if (state.isRestricted) {
-            Text(
-                text = stringResource(R.string.reader_unlock_show),
-                style = NativeMindsTheme.typography.actionLabel,
-                color = MaterialTheme.colorScheme.onPrimary,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(NativeMindsTheme.sizes.actionButton)
-                    .clip(Pill)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .clickable(onClick = onUnlockRequested)
-                    .padding(vertical = NativeMindsTheme.spacing.md),
-            )
-        } else if (!content.body.isTruncated) {
+        )
+    } else if (!content.body.isTruncated) {
+        val background = MaterialTheme.colorScheme.background
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(NativeMindsTheme.sizes.footerScrim)
+                .background(
+                    Brush.verticalGradient(
+                        0f to background.copy(alpha = 0f),
+                        0.42f to background,
+                    ),
+                )
+                .padding(
+                    horizontal = NativeMindsTheme.spacing.lg,
+                    vertical = NativeMindsTheme.spacing.screen,
+                ),
+            contentAlignment = Alignment.BottomCenter,
+        ) {
             ListenPill(
                 progress = state.listenPillProgress,
                 remainingMinutes = remainingMinutes(
