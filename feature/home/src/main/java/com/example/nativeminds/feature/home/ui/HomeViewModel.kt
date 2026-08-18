@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val USER_NAME = "Ozan"
 private const val FILTER_ANALYTICS_DEBOUNCE_MS = 600L
@@ -91,7 +92,7 @@ class HomeViewModel @Inject constructor(
         _state
             .map { FilterParams(it.selectedSubject, it.query.trim()) }
             .distinctUntilChanged()
-            .debounce(FILTER_ANALYTICS_DEBOUNCE_MS)
+            .debounce(FILTER_ANALYTICS_DEBOUNCE_MS.milliseconds)
             .filter { it.query.isNotEmpty() || it.subject != null }
             .onEach { params ->
                 analyticsReporter.log(AnalyticsEvent.LessonsFiltered(params.query.ifEmpty { null }, params.subject))
